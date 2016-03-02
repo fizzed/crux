@@ -29,7 +29,7 @@ public class DemoMain {
         OkEdgeState state = new OkEdgeState()
             .cookies(true)
             .insecure(true)
-            .loggingLevel(OkEdge.LoggingLevel.HEADERS);
+            .logging(OkEdge.LoggingLevel.HEADERS);
         
         Response response;
         

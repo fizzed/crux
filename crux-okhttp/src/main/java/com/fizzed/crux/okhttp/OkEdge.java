@@ -16,6 +16,8 @@
 package com.fizzed.crux.okhttp;
 
 import java.io.IOException;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSocketFactory;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,6 +31,9 @@ public class OkEdge {
     private final HttpLoggingInterceptor loggingInterceptor;
     private final OkHttpClient.Builder clientBuilder;
     private final Request.Builder requestBuilder;
+    // for toggling state between secure/insecure
+    private SSLSocketFactory defaultSSLSocketFactory;
+    private HostnameVerifier defaultHostnameVerifier;
     
     public OkEdge() {
         this(null);
@@ -48,10 +53,18 @@ public class OkEdge {
     }
     
     private void init(OkEdgeState state) {
-        this.clientBuilder.cookieJar(state.cookieJar());
-        this.logging(state.logging());
-        this.followRedirects(state.followRedirects());
-        this.insecure(state.insecure());
+        if (state.cookieJar() != null) {
+            this.clientBuilder.cookieJar(state.cookieJar());
+        }
+        if (state.logging() != null) {
+            this.logging(state.logging());
+        }
+        if (state.followRedirects() != null) {
+            this.followRedirects(state.followRedirects());
+        }
+        if (state.insecure() != null) {
+            this.insecure(state.insecure());
+        }
         this.requestBuilder.headers(state.headersBuilder().build());
     }
     
@@ -63,11 +76,14 @@ public class OkEdge {
     
     public OkEdge insecure(boolean insecure) {
         if (insecure) {
-            this.clientBuilder.sslSocketFactory(OkHttpConstants.TRUST_ALL_SSL_SOCKET_FACTORY);
-            this.clientBuilder.hostnameVerifier(OkHttpConstants.TRUST_ALL_HOSTNAME_VERIFIER);
+            // save current values since okhttp3 builder requires they are there...
+            this.defaultSSLSocketFactory = OkHttpUtils.getField(this.clientBuilder, "sslSocketFactory");
+            this.defaultHostnameVerifier = OkHttpUtils.getField(this.clientBuilder, "hostnameVerifier");
+            this.clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY);
+            this.clientBuilder.hostnameVerifier(OkHttpUtils.TRUST_ALL_HOSTNAME_VERIFIER);
         } else {
-            this.clientBuilder.sslSocketFactory(null);
-            this.clientBuilder.hostnameVerifier(null);
+            this.clientBuilder.sslSocketFactory(this.defaultSSLSocketFactory);
+            this.clientBuilder.hostnameVerifier(this.defaultHostnameVerifier);
         }
         return this;
     }
@@ -141,10 +157,6 @@ public class OkEdge {
     
     // POST
     
-    public OkEdge postEmpty(String url) {
-        return methodEmpty("POST", url);
-    }
-    
     public OkEdgeForm postForm(String url) {
         return methodForm("POST", url);
     }
@@ -155,10 +167,6 @@ public class OkEdge {
     
     // PUT
     
-    public OkEdge putEmpty(String url) {
-        return methodEmpty("PUT", url);
-    }
-    
     public OkEdgeForm putForm(String url) {
         return methodForm("PUT", url);
     }
@@ -168,12 +176,6 @@ public class OkEdge {
     }
     
     // GENERIC METHOD
-    
-    public OkEdge methodEmpty(String method, String url) {
-        requestBuilder.url(url);
-        requestBuilder.method(method, RequestBody.create(null, ByteString.EMPTY));
-        return this;
-    }
     
     public OkEdgeForm methodForm(String method, String url) {
         requestBuilder.url(url);

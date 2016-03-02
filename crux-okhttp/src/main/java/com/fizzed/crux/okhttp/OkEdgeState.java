@@ -28,40 +28,39 @@ public class OkEdgeState {
     static public final OkEdgeState DEFAULT_INSTANCE = new OkEdgeState();
     
     private LoggingLevel loggingLevel;
-    private boolean followRedirects;
-    private boolean insecure;
+    private Boolean followRedirects;
+    private Boolean insecure;
     private CookieJar cookieJar;
     private final Headers.Builder headersBuilder;
 
     public OkEdgeState() {
         this.headersBuilder = new Headers.Builder();
-        // like a browser, why would you NOT follow redirects?
-        this.followRedirects = true;
+        this.cookieJar = null;
     }
     
     LoggingLevel logging() {
         return this.loggingLevel;
     }
     
-    public OkEdgeState loggingLevel(LoggingLevel loggingLevel) {
+    public OkEdgeState logging(LoggingLevel loggingLevel) {
         this.loggingLevel = loggingLevel;
         return this;
     }
     
-    boolean followRedirects() {
+    Boolean followRedirects() {
         return this.followRedirects;
     }
     
-    public OkEdgeState followRedirects(boolean followRedirects) {
+    public OkEdgeState followRedirects(Boolean followRedirects) {
         this.followRedirects = followRedirects;
         return this;
     }
     
-    boolean insecure() {
+    Boolean insecure() {
         return this.insecure;
     }
     
-    public OkEdgeState insecure(boolean insecure) {
+    public OkEdgeState insecure(Boolean insecure) {
         this.insecure = insecure;
         return this;
     }

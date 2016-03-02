@@ -16,10 +16,16 @@
 package com.fizzed.crux.okhttp;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okio.BufferedSink;
 
 public class OkEdgeBody extends OkEdgeCommit {
+    
+    static private final byte[] EMPTY_BYTES = new byte[0];
     
     private final String contentType;
     private RequestBody body;
@@ -32,6 +38,29 @@ public class OkEdgeBody extends OkEdgeCommit {
     RequestBody getRequestBody() {
         return this.body;
     }
+    
+    public OkEdge emptyBody() {
+        this.body = RequestBody.create(MediaType.parse(contentType), EMPTY_BYTES);
+        return this.commit();
+    }
+    
+    /**
+    public OkEdge body(InputStream input) {
+        this.body = new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return MediaType.parse(contentType);
+            }
+
+            @Override
+            public void writeTo(BufferedSink sink) throws IOException {
+                OutputStream output = sink.outputStream();
+                Files.
+            }
+        }
+        return this.commit();
+    }
+    */
     
     public OkEdge body(File file) {
         this.body = RequestBody.create(MediaType.parse(contentType), file);
