@@ -16,6 +16,11 @@
         <java.version>1.8</java.version>
     </properties>
 
+    <scm>
+        <url>https://github.com/fizzed/crux</url>
+        <connection>scm:git:git@github.com:fizzed/crux.git</connection>
+    </scm>
+
     <modules>
         <module>crux-util</module>
         <module>crux-okhttp</module>
