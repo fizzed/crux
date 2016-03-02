@@ -9,7 +9,7 @@ A work-in-progress. Foundational libraries for Fizzed.
 
 ## OkHttp extensions
 
-(crux-okhttp)
+[crux-okhttp](crux-okhttp)
 
  * OkEdge client+requestor
  * Hamcrest matchers
