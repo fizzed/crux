@@ -16,7 +16,6 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
-import java.lang.reflect.Field;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -27,16 +26,5 @@ public class OkHttpUtils {
     
     static public final HostnameVerifier TRUST_ALL_HOSTNAME_VERIFIER
         = SecureUtil.createTrustAllHostnameVerifier();
-    
-    static public <T> T getField(Object target, String fieldName) {
-        Field field;
-        try {
-            field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return (T)field.get(target);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
     
 }

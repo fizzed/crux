@@ -25,12 +25,24 @@ import okio.BufferedSource;
 
 public class ResponseBodyLogger {
     
+    static public final long MAX_BODY_SIZE_TO_LOG = 30000L;
+    
     static public void log(ResponseBody responseBody) throws IOException {
+        // much safer body logger in case where the body shouldn't be logged
+        // smart detection of file downloads, etc.
+        long contentLength = responseBody.contentLength();
+        
+        if (contentLength >= MAX_BODY_SIZE_TO_LOG) {
+            System.out.println("");
+            System.out.println("Body content length exceeds max body size you'd want to log!");
+            System.out.println("<-- END HTTP (" +contentLength + "-byte body)");
+            return;
+        }
+        
         BufferedSource source = responseBody.source();
-        source.request(Long.MAX_VALUE);         // Buffer the entire body.
+        source.request(MAX_BODY_SIZE_TO_LOG);         // Buffer up to max size we'd log
         Buffer buffer = source.buffer();
 
-        long contentLength = responseBody.contentLength();
         Charset charset = Charset.forName("UTF-8");
         MediaType contentType = responseBody.contentType();
         if (contentType != null) {
@@ -38,8 +50,9 @@ public class ResponseBodyLogger {
                 charset = contentType.charset(charset);
             } catch (UnsupportedCharsetException e) {
                 System.out.println("");
-                System.out.println("Couldn't decode the response body; charset is likely malformed.");
+                System.out.println("Couldn't decode the response body; charset is malformed.");
                 System.out.println("<-- END HTTP");
+                return;
             }
         }
 

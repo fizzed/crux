@@ -23,7 +23,7 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-public class OkEdgeBody extends OkEdgeCommit {
+public class OkEdgeBody extends OkEdgeDone {
     
     static private final byte[] EMPTY_BYTES = new byte[0];
     
@@ -41,7 +41,7 @@ public class OkEdgeBody extends OkEdgeCommit {
     
     public OkEdge emptyBody() {
         this.body = RequestBody.create(MediaType.parse(contentType), EMPTY_BYTES);
-        return this.commit();
+        return this.done();
     }
     
     /**
@@ -64,17 +64,17 @@ public class OkEdgeBody extends OkEdgeCommit {
     
     public OkEdge body(File file) {
         this.body = RequestBody.create(MediaType.parse(contentType), file);
-        return this.commit();
+        return this.done();
     }
     
     public OkEdge body(byte[] bytes) {
         this.body = RequestBody.create(MediaType.parse(contentType), bytes);
-        return this.commit();
+        return this.done();
     }
     
     public OkEdge body(String string) {
         this.body = RequestBody.create(MediaType.parse(contentType), string);
-        return this.commit();
+        return this.done();
     }
     
 }

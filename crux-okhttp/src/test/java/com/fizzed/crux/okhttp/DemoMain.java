@@ -15,11 +15,14 @@
  */
 package com.fizzed.crux.okhttp;
 
+import com.fizzed.crux.okhttp.OkEdge.LoggingLevel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import okhttp3.HttpUrl;
 import okhttp3.Response;
 
 public class DemoMain {
@@ -29,7 +32,7 @@ public class DemoMain {
         OkEdgeState state = new OkEdgeState()
             .cookies(true)
             .insecure(true)
-            .logging(OkEdge.LoggingLevel.HEADERS);
+            .logging(LoggingLevel.HEADERS);
         
         Response response;
         
@@ -53,22 +56,46 @@ public class DemoMain {
             .execute();
         */
         
+        HttpUrl url = HttpUrl.parse("http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.11-win32.zip");
+        
         response = new OkEdge(state)
-            .get("http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.11-win32.zip")
+            .get(url.toString())
             .execute();
         
         System.out.println("Done executing, has response...");
         
-        // 1-shot body...
-        InputStream input = response.body().byteStream();
-        File targetFile = new File("mysql-5.7.11-win32.zip");
-        OutputStream output = new FileOutputStream(targetFile);
-        byte[] buffer = new byte[8 * 1024];
-        int bytesRead;
-        System.err.println("About to start I/O from input to output");
-        while ((bytesRead = input.read(buffer)) != -1) {
-            output.write(buffer, 0, bytesRead);
-            System.err.println(".");
+        try (InputStream input = response.body().byteStream()) {
+        
+            List<String> paths = url.pathSegments();
+            String lastPath = paths.get(paths.size()-1);
+            
+            File targetFile = new File(lastPath);
+            
+            if (targetFile.exists()) {
+                System.err.println("Target file " + targetFile + " already exists. Delete it.");
+                System.exit(1);
+            }
+            
+            try (OutputStream output = new FileOutputStream(targetFile)) {
+                byte[] buffer = new byte[16 * 1024];
+                int bytesRead;
+                System.out.println("About to start I/O from input to output");
+
+                int count = 0;
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+
+                    if (count > 72) {
+                        count = 0;
+                        System.out.println();
+                    }
+
+                    System.out.print(".");
+                    System.out.flush();
+
+                    count++;
+                }
+            }
         }
         
         /**

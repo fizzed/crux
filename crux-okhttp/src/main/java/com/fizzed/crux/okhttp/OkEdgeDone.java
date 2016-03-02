@@ -15,26 +15,26 @@
  */
 package com.fizzed.crux.okhttp;
 
-public class OkEdgeCommit {
+public class OkEdgeDone {
 
     static public interface Callback {
-        public void onCommit();
+        public void onDone();
     }
     
     private final OkEdge edge;
     private Callback callback;
 
-    public OkEdgeCommit(OkEdge edge) {
+    public OkEdgeDone(OkEdge edge) {
         this.edge = edge;
     }
     
-    public void callback(Callback callback) {
+    void callback(Callback callback) {
         this.callback = callback;
     }
     
-    public OkEdge commit() {
+    public OkEdge done() {
         if (callback != null) {
-            this.callback.onCommit();
+            this.callback.onDone();
         }
         return this.edge;
     }

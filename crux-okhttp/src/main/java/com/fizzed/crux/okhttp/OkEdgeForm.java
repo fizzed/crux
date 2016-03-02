@@ -18,7 +18,7 @@ package com.fizzed.crux.okhttp;
 import java.util.Objects;
 import okhttp3.FormBody;
 
-public class OkEdgeForm extends OkEdgeCommit {
+public class OkEdgeForm extends OkEdgeDone {
     
     private final FormBody.Builder formBodyBuilder;
     
