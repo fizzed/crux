@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import okhttp3.MediaType;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.BufferedSource;
@@ -27,7 +28,7 @@ public class ResponseBodyLogger {
     
     static public final long MAX_BODY_SIZE_TO_LOG = 30000L;
     
-    static public void log(ResponseBody responseBody) throws IOException {
+    static public void log(final Response response, final ResponseBody responseBody) throws IOException {
         // much safer body logger in case where the body shouldn't be logged
         // smart detection of file downloads, etc.
         long contentLength = responseBody.contentLength();

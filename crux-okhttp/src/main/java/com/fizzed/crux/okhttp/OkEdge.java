@@ -28,6 +28,7 @@ public class OkEdge {
     private final OkHttpClient.Builder clientBuilder;
     private final Request.Builder requestBuilder;
     private Boolean insecure;
+    private LoggingLevel loggingLevel;
     
     public OkEdge() {
         this(null);
@@ -95,6 +96,8 @@ public class OkEdge {
      * @return This instance
      */
     public OkEdge logging(LoggingLevel loggingLevel) {
+        this.loggingLevel = loggingLevel;
+        
         if (loggingLevel == null) {
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
             return this;
@@ -111,7 +114,9 @@ public class OkEdge {
                 loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
                 break;
             case BODY:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                // do not ever log using square's body logger!
+                // they actually do an awful job of handling body
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
                 break;
         }
         
@@ -213,13 +218,8 @@ public class OkEdge {
         Response response = client.newCall(request).execute();
         
         // network-level logging interceptor won't log encoded bodies
-        if (this.loggingInterceptor.getLevel() == HttpLoggingInterceptor.Level.BODY) {
-            // if the request was encoded then the logging interceptor did not log the body
-            // only the network response would have this header since it would have been ungzipp'ed
-            if (response.networkResponse().header("Content-Encoding") != null) {
-                // limit how large of requests we handle????
-                ResponseBodyLogger.log(response.body());
-            }
+        if (this.loggingLevel != null && this.loggingLevel == LoggingLevel.BODY) {
+            ResponseBodyLogger.log(response, response.body());
         }
         
         return response;

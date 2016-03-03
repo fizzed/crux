@@ -32,7 +32,7 @@ public class DemoMain {
         OkEdgeState state = new OkEdgeState()
             .cookies(true)
             .insecure(true)
-            .logging(LoggingLevel.HEADERS);
+            .logging(LoggingLevel.BODY);
         
         Response response;
         
