@@ -5,16 +5,30 @@ Crux by Fizzed
 
 ## Overview
 
-Foundational libraries for Fizzed.  Attempts to keep dependencies to a bare
-minimum.
+Foundational libraries for Java 8+.
 
 ## [crux-util](crux-util)
 
+Utilities reusable across a wide variety of projects.  Dependencies are kept to
+either zero or a bare minimum.
+
  * Utilities for working with security (e.g. TLS)
+
+### Usage
+
+```xml
+<dependency>
+    <groupId>com.fizzed</groupId>
+    <artifactId>crux-util</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
 
 ## [crux-okhttp](crux-okhttp)
 
- * OkEdge: client+request combined for much simpler usage w/ better readability
+Extensions and utilities to Square's [okhttp library](https://github.com/square/okhttp).
+
+ * OkEdge: the client + request combined for much simpler usage w/ better readability
  * Shared state, with per-request overrides for things like followRedirects, etc.
  * Helpers to trust any cert (insecure mode)
  * In-memory cookie jar
@@ -24,6 +38,30 @@ minimum.
  * Simplified authentication
  * Hamcrest matchers for your unit tests!
 
+### Usage
+
+```xml
+<dependency>
+    <groupId>com.fizzed</groupId>
+    <artifactId>crux-okhttp</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
+
+### Example of OkEdge
+
+```java
+public class MyClass {
+    
+    static public void main(String[] args) throws Exception {
+        Response response = new OkEdge()
+            .getJson("http://jsonplaceholder.typicode.com/posts/1")
+            .execute();
+    }
+
+}
+```
+
 ## [crux-vagrant](crux-vagrant)
 
  * Fetch vagrant ssh config file
@@ -31,6 +69,18 @@ minimum.
  * Verify if all or any machines running
  * Values are cached for reuse (since querying vagrant is expensive)
  * Super useful for using in your unit tests (e.g. skip class if vagrant not running)
+
+### Usage
+
+```xml
+<dependency>
+    <groupId>com.fizzed</groupId>
+    <artifactId>crux-vagrant</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
+
+### Example in a unit test
 
 ```java
 public class MyTest {
@@ -49,7 +99,6 @@ public class MyTest {
 }
 ```
  
-
 ## License
 
 Copyright (C) 2016 Fizzed, Inc.
