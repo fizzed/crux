@@ -22,6 +22,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+/**
+ * Utilities related to security (e.g. TLS)
+ * 
+ * @author jjlauer
+ */
 public class SecureUtil {
     
     static public SSLSocketFactory createTrustAllSSLSocketFactory() throws UncheckedSecureException {

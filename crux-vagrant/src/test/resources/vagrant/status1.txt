@@ -1,0 +1,16 @@
+1458355185,ubuntu1404,metadata,provider,virtualbox
+1458355186,debian8,metadata,provider,virtualbox
+1458355186,centos7,metadata,provider,virtualbox
+1458355187,ubuntu1404,provider-name,virtualbox
+1458355187,ubuntu1404,state,running
+1458355187,ubuntu1404,state-human-short,running
+1458355187,ubuntu1404,state-human-long,The VM is running. To stop this VM%!(VAGRANT_COMMA) you can run `vagrant halt` to\nshut it down forcefully%!(VAGRANT_COMMA) or you can run `vagrant suspend` to simply\nsuspend the virtual machine. In either case%!(VAGRANT_COMMA) to restart it again%!(VAGRANT_COMMA)\nsimply run `vagrant up`.
+1458355187,debian8,provider-name,virtualbox
+1458355187,debian8,state,running
+1458355187,debian8,state-human-short,running
+1458355187,debian8,state-human-long,The VM is running. To stop this VM%!(VAGRANT_COMMA) you can run `vagrant halt` to\nshut it down forcefully%!(VAGRANT_COMMA) or you can run `vagrant suspend` to simply\nsuspend the virtual machine. In either case%!(VAGRANT_COMMA) to restart it again%!(VAGRANT_COMMA)\nsimply run `vagrant up`.
+1458355187,centos7,provider-name,virtualbox
+1458355187,centos7,state,running
+1458355187,centos7,state-human-short,running
+1458355187,centos7,state-human-long,The VM is running. To stop this VM%!(VAGRANT_COMMA) you can run `vagrant halt` to\nshut it down forcefully%!(VAGRANT_COMMA) or you can run `vagrant suspend` to simply\nsuspend the virtual machine. In either case%!(VAGRANT_COMMA) to restart it again%!(VAGRANT_COMMA)\nsimply run `vagrant up`.
+1458355187,,ui,info,Current machine states:\n\nubuntu1404                running (virtualbox)\ndebian8                   running (virtualbox)\ncentos7                   running (virtualbox)\n\nThis environment represents multiple VMs. The VMs are all listed\nabove with their current state. For more information about a specific\nVM%!(VAGRANT_COMMA) run `vagrant status NAME`.
