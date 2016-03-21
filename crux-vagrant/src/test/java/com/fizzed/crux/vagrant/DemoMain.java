@@ -24,11 +24,10 @@ public class DemoMain {
     
     static public void main(String[] args) throws IOException {
         
-        VagrantClient vagrant = new VagrantClient.Builder()
-            .safeLoad();
+        VagrantClient vagrant = VagrantClients.cachingOrEmptyClient();
         
-        log.info("status: {}", vagrant.fetchStatus());
-        log.info("ssh config: {}", vagrant.fetchSshConfig());
+        log.info("status: {}", vagrant.status());
+        //log.info("ssh config: {}", vagrant.sshConfig());
         log.info("all running? {}", vagrant.areAllMachinesRunning());
         log.info("any running? {}", vagrant.areAnyMachinesRunning());
         

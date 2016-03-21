@@ -20,13 +20,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
@@ -34,18 +34,19 @@ import org.zeroturnaround.exec.ProcessResult;
 
 public class DefaultVagrantClient implements VagrantClient {
     
+    static public class Builder extends VagrantClient.Builder<Builder> {
+        
+        @Override
+        public VagrantClient build() throws VagrantException {
+            return new DefaultVagrantClient(this.workingDirectory);
+        }
+        
+    }
+    
     private final Path workingDirectory;
-    private final AtomicReference<Map<String,VagrantStatus>> statusRef;
-    private final AtomicBoolean areAllMachinesRunning;
-    private final AtomicBoolean areAnyMachinesRunning;
-    private final AtomicReference<Path> sshConfigFileRef;
 
-    DefaultVagrantClient(Path workingDirectory) {
+    protected DefaultVagrantClient(Path workingDirectory) {
         this.workingDirectory = workingDirectory;
-        this.statusRef = new AtomicReference<>();
-        this.areAllMachinesRunning = new AtomicBoolean();
-        this.areAnyMachinesRunning = new AtomicBoolean();
-        this.sshConfigFileRef = new AtomicReference<>();
     }
 
     @Override
@@ -54,18 +55,46 @@ public class DefaultVagrantClient implements VagrantClient {
     }
     
     @Override
-    public Map<String,VagrantStatus> fetchStatus() throws VagrantException {
-        return fetchStatus(false);
+    public boolean areAllMachinesRunning() throws VagrantException {
+        Map<String,MachineStatus> status = this.status();
+        
+        // at least 1 machine needs to be defined
+        if (status.isEmpty()) {
+            return false;
+        }
+        
+        for (MachineStatus vs : status.values()) {
+            if (!vs.isRunning()) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     @Override
-    public Map<String,VagrantStatus> fetchStatus(boolean refresh) throws VagrantException {
-        Map<String,VagrantStatus> status = this.statusRef.get();
+    public boolean areAnyMachinesRunning() throws VagrantException {
+        Map<String,MachineStatus> status = this.status();
         
-        if (!refresh && status != null) {
-            return status;
+        for (MachineStatus vs : status.values()) {
+            if (vs.isRunning()) {
+                return true;
+            }
         }
         
+        return false;
+    }
+    
+    @Override
+    public Set<String> machinesRunning() throws VagrantException {
+        return this.status().values().stream()
+            .filter((status) -> status.isRunning())
+            .map((status) -> status.getName())
+            .collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
+    }
+    
+    @Override
+    public Map<String,MachineStatus> status() throws VagrantException {
         try {
             ProcessResult result
                 = new ProcessExecutor()
@@ -76,24 +105,7 @@ public class DefaultVagrantClient implements VagrantClient {
 
             List<String> lines = VagrantUtil.parseLines(result);
 
-            status = VagrantUtil.parseStatus(lines);
-            
-            // all/any machines running?
-            boolean allMachinesRunning = (0 != status.size());      // true if some exist or false if no machines
-            boolean anyMachinesRunning = false;
-            for (VagrantStatus vs : status.values()) {
-                if (!vs.isRunning()) {
-                    allMachinesRunning = false;
-                } else {
-                    anyMachinesRunning = true;
-                }
-            }
-            
-            this.areAllMachinesRunning.set(allMachinesRunning);
-            this.areAnyMachinesRunning.set(anyMachinesRunning);
-            this.statusRef.set(status);
-            
-            return status;
+            return VagrantUtil.parseStatus(lines);
         } catch (InvalidExitValueException e) {
             throw new VagrantException(e.getMessage());
         } catch (IOException | InterruptedException | TimeoutException e) {
@@ -102,80 +114,33 @@ public class DefaultVagrantClient implements VagrantClient {
     }
     
     @Override
-    public boolean areAllMachinesRunning() throws VagrantException {
-        return this.areAllMachinesRunning(false);
-    }
-    
-    @Override
-    public boolean areAllMachinesRunning(boolean refresh) throws VagrantException {
-        if (!refresh && this.statusRef.get() != null) {
-            return areAllMachinesRunning.get();
-        }
-
-        this.fetchStatus(refresh);
-        return areAllMachinesRunning.get();
-    }
-    
-    @Override
-    public boolean areAnyMachinesRunning() throws VagrantException {
-        return this.areAnyMachinesRunning(false);
-    }
-    
-    @Override
-    public boolean areAnyMachinesRunning(boolean refresh) throws VagrantException {
-        if (!refresh && this.statusRef.get() != null) {
-            return areAnyMachinesRunning.get();
-        }
-        
-        this.fetchStatus(refresh);
-        return areAnyMachinesRunning.get();
-    }
-    
-    @Override
-    public Set<String> fetchMachinesRunning() throws VagrantException {
-        return fetchMachinesRunning(false);
-    }
-    
-    @Override
-    public Set<String> fetchMachinesRunning(boolean refresh) throws VagrantException {
-        return this.fetchStatus(refresh).values().stream()
-            .filter((status) -> status.isRunning())
-            .map((status) -> status.getName())
-            .collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
-    }
-    
-    @Override
-    public Path fetchSshConfig() throws VagrantException {
-        return fetchSshConfig(false);
-    }
-    
-    @Override
-    public Path fetchSshConfig(boolean refresh) throws VagrantException {
-        Path sshConfigFile = this.sshConfigFileRef.get();
-        
-        if (!refresh && sshConfigFile != null) {
-            return sshConfigFile;
-        }
-        
+    public Path sshConfig(String... machineNames) throws VagrantException {
         try {
             File tempFile = File.createTempFile("vagrant.", ".ssh-config");
             tempFile.deleteOnExit();
-            sshConfigFile = tempFile.toPath();
+            Path sshConfigFile = tempFile.toPath();
+            sshConfigWrite(sshConfigFile, machineNames);
+            return sshConfigFile;
         } catch (IOException e) {
             throw new VagrantException(e.getMessage(), e);
         }
-        
-        fetchSshConfig(sshConfigFile);
-        this.sshConfigFileRef.set(sshConfigFile);
-        return sshConfigFile;
     }
     
     @Override
-    public void fetchSshConfig(Path sshConfigFile) throws VagrantException {
+    public void sshConfigWrite(Path sshConfigFile, String... machineNames) throws VagrantException {
         try {
+            // build command so we can append machine names if necessary
+            List<String> commands = new ArrayList<>();
+            commands.add("vagrant");
+            commands.add("ssh-config");
+            
+            if (machineNames != null) {
+                commands.addAll(Arrays.asList(machineNames));
+            }
+            
             ProcessResult result
                 = new ProcessExecutor()
-                    .command("vagrant", "ssh-config")
+                    .command(commands)
                     .readOutput(true)
                     .exitValueNormal()
                     .execute();

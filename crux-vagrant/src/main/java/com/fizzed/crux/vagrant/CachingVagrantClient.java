@@ -16,27 +16,39 @@
 package com.fizzed.crux.vagrant;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class EmptyVagrantClient extends DefaultVagrantClient {
+public class CachingVagrantClient extends DefaultVagrantClient {
     
     static public class Builder extends VagrantClient.Builder<Builder> {
         
         @Override
         public VagrantClient build() throws VagrantException {
-            return new EmptyVagrantClient(this.workingDirectory);
+            return new CachingVagrantClient(this.workingDirectory);
         }
         
     }
+    
+    private final AtomicReference<Map<String,MachineStatus>> statusRef;
 
-    protected EmptyVagrantClient(Path workingDirectory) {
+    protected CachingVagrantClient(Path workingDirectory) {
         super(workingDirectory);
+        this.statusRef = new AtomicReference<>();
     }
     
     @Override
     public Map<String,MachineStatus> status() throws VagrantException {
-        return Collections.emptyMap();
+        Map<String,MachineStatus> status = this.statusRef.get();
+        
+        if (status != null) {
+            return status;
+        }
+        
+        status = super.status();
+        this.statusRef.set(status);
+        
+        return status;
     }
     
 }

@@ -20,63 +20,41 @@ import java.util.Map;
 import java.util.Set;
 
 public interface VagrantClient {
+    
+    Path workingDirectory();
 
     boolean areAllMachinesRunning() throws VagrantException;
 
-    boolean areAllMachinesRunning(boolean refresh) throws VagrantException;
-
     boolean areAnyMachinesRunning() throws VagrantException;
-
-    boolean areAnyMachinesRunning(boolean refresh) throws VagrantException;
     
-    Set<String> fetchMachinesRunning() throws VagrantException;
-    
-    Set<String> fetchMachinesRunning(boolean refresh) throws VagrantException;
+    Set<String> machinesRunning() throws VagrantException;
 
-    Path fetchSshConfig() throws VagrantException;
+    /**
+     * Gets a temporary file that is the ssh config file for connecting to
+     * the specified machine names.
+     * @param machineNames May be null or a list of machine names
+     * @return A temporary file that is the ssh config file
+     * @throws VagrantException 
+     */
+    Path sshConfig(String... machineNames) throws VagrantException;
 
-    Path fetchSshConfig(boolean refresh) throws VagrantException;
+    void sshConfigWrite(Path sshConfigFile, String... machineNames) throws VagrantException;
 
-    void fetchSshConfig(Path sshConfigFile) throws VagrantException;
+    Map<String,MachineStatus> status() throws VagrantException;
 
-    Map<String,VagrantStatus> fetchStatus() throws VagrantException;
-
-    Map<String,VagrantStatus> fetchStatus(boolean refresh) throws VagrantException;
-
-    Path workingDirectory();
-    
-    static public class Builder {
+    static abstract public class Builder<T> {
         
-        private Path workingDirectory;
+        protected Path workingDirectory;
 
         public Builder() {
         }
 
-        public Builder workingDirectory(Path workingDirectory) {
+        public T workingDirectory(Path workingDirectory) {
             this.workingDirectory = workingDirectory;
-            return this;
+            return (T)this;
         }
         
-        public VagrantClient build() {
-            return new DefaultVagrantClient(workingDirectory);
-        }
-        
-        /**
-         * Builds a client then attempts to fetch both the status and ssh-config
-         * but if those fail then returns an empty client.  Helpful for use
-         * as a static instance in junit tests, etc.
-         * @return Either a load client or an empty one
-         */
-        public VagrantClient safeLoad() {
-            try {
-                VagrantClient client = build();
-                client.fetchStatus();
-                client.fetchSshConfig();
-                return client;
-            } catch (Exception e) {
-                return new EmptyVagrantClient(workingDirectory);
-            }
-        }
+        abstract public VagrantClient build() throws VagrantException;
     }
     
 }

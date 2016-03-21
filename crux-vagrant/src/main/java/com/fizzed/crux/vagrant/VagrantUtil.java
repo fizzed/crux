@@ -37,8 +37,8 @@ public class VagrantUtil {
         return lines;
     }
     
-    static public Map<String,VagrantStatus> parseStatus(List<String> lines) {
-        Map<String,VagrantStatus> statuses = new LinkedHashMap<>();
+    static public Map<String,MachineStatus> parseStatus(List<String> lines) {
+        Map<String,MachineStatus> statuses = new LinkedHashMap<>();
         
         for (String line : lines) {
             String[] values = line.split(",");
@@ -58,10 +58,10 @@ public class VagrantUtil {
                 continue;
             }
             
-            VagrantStatus status = statuses.get(name);
+            MachineStatus status = statuses.get(name);
             
             if (status == null) {
-                status = new VagrantStatus(name);
+                status = new MachineStatus(name);
                 statuses.put(name, status);
             }
             

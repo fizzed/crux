@@ -19,12 +19,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class VagrantStatus {
+public class MachineStatus {
     
     private final String name;
     private final Map<String,String> values;
 
-    public VagrantStatus(String name) {
+    public MachineStatus(String name) {
         this.name = name;
         this.values = new LinkedHashMap<>();
     }

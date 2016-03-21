@@ -34,22 +34,22 @@ public class VagrantUtilTest {
         URI uri = VagrantUtilTest.class.getResource("/vagrant/status1.txt").toURI();
         Path statusFile = Paths.get(uri);
         
-        Map<String, VagrantStatus> statuses
+        Map<String, MachineStatus> statuses
             = VagrantUtil.parseStatus(Files.readAllLines(statusFile));
         
         assertThat(statuses, hasKey("debian8"));
         assertThat(statuses, hasKey("centos7"));
         assertThat(statuses, hasKey("ubuntu1404"));
         
-        VagrantStatus debian8 = statuses.get("debian8");
+        MachineStatus debian8 = statuses.get("debian8");
         assertThat(debian8.isRunning(), is(true));
         assertThat(debian8.getValues(), hasKey("provider-name"));
         
-        VagrantStatus centos7 = statuses.get("centos7");
+        MachineStatus centos7 = statuses.get("centos7");
         assertThat(centos7.isRunning(), is(true));
         assertThat(centos7.getValues(), hasKey("provider-name"));
         
-        VagrantStatus ubuntu1404 = statuses.get("ubuntu1404");
+        MachineStatus ubuntu1404 = statuses.get("ubuntu1404");
         assertThat(ubuntu1404.isRunning(), is(true));
         assertThat(ubuntu1404.getValues(), hasKey("provider-name"));
     }
