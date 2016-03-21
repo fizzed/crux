@@ -1,7 +1,7 @@
 Crux by Fizzed
 ===============
 
-#### 0.2.1 - 2016-03-21
+#### 0.3.0 - 2016-03-21
  
  - Refactored crux-vagrant. New com.fizzed.crux.vagrant.VagrantClients class
    for simplified building of various client types.
