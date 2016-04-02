@@ -1,7 +1,11 @@
 Crux by Fizzed
 ===============
 
-#### 0.3.1 - 2016-04-02
+#### 0.3.2 - 2016-04-02
+
+ - VagrantClients.emptyOrCaching works when vagrant not installed locally
+
+#### 0.3.1 - 2016-04-01
 
  - Vagrant CachingClient now supports caching of ssh-configs
 
