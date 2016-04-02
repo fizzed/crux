@@ -20,7 +20,7 @@ either zero or a bare minimum.
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-util</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.1</version>
 </dependency>
 ```
 
@@ -44,7 +44,7 @@ Extensions and utilities to Square's [okhttp library](https://github.com/square/
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-okhttp</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.1</version>
 </dependency>
 ```
 
@@ -76,7 +76,7 @@ public class MyClass {
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-vagrant</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.1</version>
 </dependency>
 ```
 
