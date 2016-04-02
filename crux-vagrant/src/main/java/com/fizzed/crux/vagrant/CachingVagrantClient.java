@@ -17,6 +17,8 @@ package com.fizzed.crux.vagrant;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CachingVagrantClient extends DefaultVagrantClient {
@@ -31,10 +33,12 @@ public class CachingVagrantClient extends DefaultVagrantClient {
     }
     
     private final AtomicReference<Map<String,MachineStatus>> statusRef;
+    private final ConcurrentHashMap<String,Path> sshConfigs;
 
     protected CachingVagrantClient(Path workingDirectory) {
         super(workingDirectory);
         this.statusRef = new AtomicReference<>();
+        this.sshConfigs = new ConcurrentHashMap<>();
     }
     
     @Override
@@ -50,5 +54,36 @@ public class CachingVagrantClient extends DefaultVagrantClient {
         
         return status;
     }
-    
+
+    @Override
+    public Path sshConfig(String... machineNames) throws VagrantException {
+        // since we can only return a single path -- the cached paths must
+        // all be the same for it to be valid
+        Path sshConfigFile = null;
+        
+        for (String machineName : machineNames) {
+            Path f = this.sshConfigs.get(machineName);
+            if (sshConfigFile == null) {
+                sshConfigFile = f;
+            } else if (!Objects.equals(sshConfigFile, f)) {
+                sshConfigFile = null;
+                break;
+            }
+        }
+
+        if (sshConfigFile != null) {
+            return sshConfigFile;
+        }
+        
+        // fresh lookup
+        sshConfigFile = super.sshConfig(machineNames);
+        
+        // cache them
+        for (String machineName : machineNames) {
+            this.sshConfigs.put(machineName, sshConfigFile);
+        }
+        
+        return sshConfigFile;
+    }
+
 }
