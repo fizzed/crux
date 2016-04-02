@@ -15,8 +15,30 @@
  */
 package com.fizzed.crux.vagrant;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+import org.zeroturnaround.exec.InvalidExitValueException;
+import org.zeroturnaround.exec.ProcessExecutor;
+import org.zeroturnaround.exec.ProcessResult;
+
 public class VagrantClients {
 
+    static public boolean isVagrantInstalled() {
+        try {
+            ProcessResult result
+                = new ProcessExecutor()
+                    // "vagrant version" verifies you have latest version, while "vagrant -v"
+                    // quickly prints version and then exits
+                    .command(VagrantUtil.COMMAND, "-v")
+                    .readOutput(true)
+                    .exitValueNormal()
+                    .execute();
+            return true;
+        } catch (IOException | InterruptedException | TimeoutException | InvalidExitValueException e) {
+            return false;
+        }
+    }
+    
     static public VagrantClient defaultClient() throws VagrantException {
         return new CachingVagrantClient.Builder()
             .build();
@@ -33,13 +55,19 @@ public class VagrantClients {
     }
     
     static public VagrantClient cachingOrEmptyClient() throws VagrantException {
-        try {
-            VagrantClient cachingClient = cachingClient();
-            cachingClient.status();     // may throw exception
-            return cachingClient;
-        } catch (Exception e) {
-            return emptyClient();
+        // is vagrant installed?
+        if (isVagrantInstalled()) { 
+            try {
+                // try to fetch initial status in order to fallback to empty...
+                VagrantClient cachingClient = cachingClient();
+                cachingClient.status();     // may throw exception
+                return cachingClient;
+            } catch (Exception e) {
+                // do nothing, let fallthru to end
+            }
         }
+        
+        return emptyClient();
     }
     
 }

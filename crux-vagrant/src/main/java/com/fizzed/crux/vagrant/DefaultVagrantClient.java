@@ -15,24 +15,21 @@
  */
 package com.fizzed.crux.vagrant;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 import org.zeroturnaround.exec.ProcessResult;
 
-public class DefaultVagrantClient implements VagrantClient {
+public class DefaultVagrantClient extends BaseVagrantClient {
     
     static public class Builder extends VagrantClient.Builder<Builder> {
         
@@ -42,63 +39,17 @@ public class DefaultVagrantClient implements VagrantClient {
         }
         
     }
-    
-    private final Path workingDirectory;
 
     protected DefaultVagrantClient(Path workingDirectory) {
-        this.workingDirectory = workingDirectory;
+        super(workingDirectory);
     }
 
-    @Override
-    public Path workingDirectory() {
-        return this.workingDirectory;
-    }
-    
-    @Override
-    public boolean areAllMachinesRunning() throws VagrantException {
-        Map<String,MachineStatus> status = this.status();
-        
-        // at least 1 machine needs to be defined
-        if (status.isEmpty()) {
-            return false;
-        }
-        
-        for (MachineStatus vs : status.values()) {
-            if (!vs.isRunning()) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    @Override
-    public boolean areAnyMachinesRunning() throws VagrantException {
-        Map<String,MachineStatus> status = this.status();
-        
-        for (MachineStatus vs : status.values()) {
-            if (vs.isRunning()) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    @Override
-    public Set<String> machinesRunning() throws VagrantException {
-        return this.status().values().stream()
-            .filter((status) -> status.isRunning())
-            .map((status) -> status.getName())
-            .collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
-    }
-    
     @Override
     public Map<String,MachineStatus> status() throws VagrantException {
         try {
             ProcessResult result
                 = new ProcessExecutor()
-                    .command("vagrant", "status", "--machine-readable")
+                    .command(VagrantUtil.COMMAND, "status", "--machine-readable")
                     .readOutput(true)
                     .exitValueNormal()
                     .execute();
@@ -114,24 +65,11 @@ public class DefaultVagrantClient implements VagrantClient {
     }
     
     @Override
-    public Path sshConfig(String... machineNames) throws VagrantException {
-        try {
-            File tempFile = File.createTempFile("vagrant.", ".ssh-config");
-            tempFile.deleteOnExit();
-            Path sshConfigFile = tempFile.toPath();
-            sshConfigWrite(sshConfigFile, machineNames);
-            return sshConfigFile;
-        } catch (IOException e) {
-            throw new VagrantException(e.getMessage(), e);
-        }
-    }
-    
-    @Override
     public void sshConfigWrite(Path sshConfigFile, String... machineNames) throws VagrantException {
         try {
             // build command so we can append machine names if necessary
             List<String> commands = new ArrayList<>();
-            commands.add("vagrant");
+            commands.add(VagrantUtil.COMMAND);
             commands.add("ssh-config");
             
             if (machineNames != null) {
@@ -148,7 +86,7 @@ public class DefaultVagrantClient implements VagrantClient {
             // save .ssh-config
             Files.write(sshConfigFile,
                         result.output(),
-                        StandardOpenOption.TRUNCATE_EXISTING);
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             
             // fix ssh-config for windows
             // remove UserKnownHostsFile line
@@ -161,7 +99,7 @@ public class DefaultVagrantClient implements VagrantClient {
         
             Files.write(sshConfigFile,
                         filteredConfig,
-                        StandardOpenOption.TRUNCATE_EXISTING);
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (InvalidExitValueException e) {
             throw new VagrantException(e.getMessage());
         } catch (IOException | InterruptedException | TimeoutException e) {

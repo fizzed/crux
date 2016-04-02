@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
-public class EmptyVagrantClient extends DefaultVagrantClient {
-    
+public class EmptyVagrantClient extends BaseVagrantClient {
+
     static public class Builder extends VagrantClient.Builder<Builder> {
         
         @Override
@@ -34,9 +34,21 @@ public class EmptyVagrantClient extends DefaultVagrantClient {
         super(workingDirectory);
     }
     
+    // override methods that actually make calls out to vagrant
+    
     @Override
     public Map<String,MachineStatus> status() throws VagrantException {
         return Collections.emptyMap();
+    }
+
+    @Override
+    public Path sshConfig(String... machineNames) throws VagrantException {
+        return null;
+    }
+
+    @Override
+    public void sshConfigWrite(Path sshConfigFile, String... machineNames) throws VagrantException {
+        // do nothing
     }
     
 }

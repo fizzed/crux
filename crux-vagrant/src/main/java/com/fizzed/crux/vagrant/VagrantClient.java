@@ -16,6 +16,7 @@
 package com.fizzed.crux.vagrant;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,6 +48,8 @@ public interface VagrantClient {
         protected Path workingDirectory;
 
         public Builder() {
+            // default working dir is current
+            this.workingDirectory = Paths.get(".");
         }
 
         public T workingDirectory(Path workingDirectory) {

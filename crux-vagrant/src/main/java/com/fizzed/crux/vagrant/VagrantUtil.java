@@ -27,6 +27,8 @@ import org.zeroturnaround.exec.ProcessResult;
  */
 public class VagrantUtil {
     
+    static public String COMMAND = "vagrant";
+    
     static public List<String> parseLines(ProcessResult result) {
         String output = result.outputUTF8();
         String[] split = output.split("[\\r\\n]");
