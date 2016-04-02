@@ -83,12 +83,13 @@ public class MyClass {
 ### Example in a unit test
 
 ```java
+import com.fizzed.crux.vagrant.VagrantClient;
+import com.fizzed.crux.vagrant.VagrantClients;
+
 public class MyTest {
     
-    static public final VagrantClient VAGRANT
-        = new VagrantClient.Builder()
-            .workingDirectory(Paths.get("."))
-            .safeLoad();
+    static public final VagrantClient VAGRANT_CLIENT
+        = VagrantClients.cachingOrEmptyClient();
     
     @Before
     public void onlyIfAllVagrantMachinesRunning() {
