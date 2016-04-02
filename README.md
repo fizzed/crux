@@ -93,7 +93,7 @@ public class MyTest {
     
     @Before
     public void onlyIfAllVagrantMachinesRunning() {
-        assumeTrue("Is vagrant running?", VAGRANT.areAllMachinesRunning());
+        assumeTrue("Are vagrant machines running?", VAGRANT_CLIENT.areAllMachinesRunning());
     }
 
     // rest of class
