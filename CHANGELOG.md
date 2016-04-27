@@ -1,6 +1,11 @@
 Crux by Fizzed
 ==============
 
+#### 0.4.0 - 2016-04-27
+
+ - New util SecureCode and SecureCodes class for generating various sizes of
+   secure random codes.
+
 #### 0.3.2 - 2016-04-02
 
  - VagrantClients.emptyOrCaching works when vagrant not installed locally
