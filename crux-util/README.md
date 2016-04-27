@@ -12,6 +12,6 @@ dependencies within this library to zero.
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-util</artifactId>
-    <version>0.3.2</version>
+    <version>0.4.0</version>
 </dependency>
 ```

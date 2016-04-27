@@ -17,7 +17,7 @@ Utility library for working with Vagrant
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-vagrant</artifactId>
-    <version>0.3.2</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 

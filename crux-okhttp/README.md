@@ -21,7 +21,7 @@ Extensions and utilities to Square's [okhttp library](https://github.com/square/
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-okhttp</artifactId>
-    <version>0.3.2</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 
