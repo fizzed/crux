@@ -9,6 +9,7 @@ Various foundational utility libraries for Java 8+.  Everything is published
 to maven central.  All documentation is included within each module.
 
  - [crux-util](crux-util)
+ - [crux-uri](crux-uri)
  - [crux-okhttp](crux-okhttp)
  - [crux-vagrant](crux-vagrant)
  

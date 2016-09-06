@@ -1,6 +1,10 @@
 Crux by Fizzed
 ==============
 
+#### 0.5.0 - 2016-09-06
+
+ - New `crux-uri` module
+
 #### 0.4.0 - 2016-04-27
 
  - New util SecureCode and SecureCodes class for generating various sizes of
