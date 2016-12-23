@@ -1,6 +1,10 @@
 Crux by Fizzed
 ==============
 
+#### 0.6.0 - 2016-12-23
+ 
+ - OkEdge supports connectTimeout and readTimeout
+
 #### 0.5.0 - 2016-09-06
 
  - New `crux-uri` module

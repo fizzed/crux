@@ -16,6 +16,7 @@
 package com.fizzed.crux.okhttp;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,6 +30,8 @@ public class OkEdge {
     private final Request.Builder requestBuilder;
     private Boolean insecure;
     private LoggingLevel loggingLevel;
+    private Long connectTimeout;
+    private Long readTimeout;
     
     public OkEdge() {
         this(null);
@@ -71,6 +74,16 @@ public class OkEdge {
             this.insecure(state.insecure());
         }
         this.requestBuilder.headers(state.headersBuilder().build());
+    }
+    
+    public OkEdge connectTimeout(Long millis) {
+        this.connectTimeout = millis;
+        return this;
+    }
+    
+    public OkEdge readTimeout(Long millis) {
+        this.readTimeout = millis;
+        return this;
     }
     
     public OkEdge followRedirects(boolean followRedirects) {
@@ -211,6 +224,14 @@ public class OkEdge {
         if (insecure != null && insecure) {
             this.clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY);
             this.clientBuilder.hostnameVerifier(OkHttpUtils.TRUST_ALL_HOSTNAME_VERIFIER);
+        }
+        
+        if (this.connectTimeout != null) {
+            this.clientBuilder.connectTimeout(this.connectTimeout, TimeUnit.MILLISECONDS);
+        }
+        
+        if (this.readTimeout != null) {
+            this.clientBuilder.readTimeout(this.readTimeout, TimeUnit.MILLISECONDS);
         }
         
         OkHttpClient client = this.clientBuilder.build();
