@@ -97,6 +97,67 @@ public class MutableUriTest {
     }
     
     @Test
+    public void parseFile() {
+        MutableUri uri;
+        
+        uri = new MutableUri("file:///path/to/file");
+        
+        assertThat(uri.getScheme(), is("file"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("/path/to/file"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+    }
+    
+    @Test
+    public void parseUrisWithAuthority() {
+        MutableUri uri;
+        String s;
+        
+        // puncuation in host is usually in authority, but this lib sets it as host
+        s = "local://./path/to/file";
+        uri = new MutableUri(s);
+        
+        assertThat(uri.getScheme(), is("local"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("."));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("/path/to/file"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is(s));
+        
+        // modify it then make sure its good
+        assertThat(uri.host("localhost").toString(), is("local://localhost/path/to/file"));
+        
+        // with port (special parsing by this lib)
+        s = "local://.:80/path/to/file";
+        uri = new MutableUri(s);
+        
+        assertThat(uri.getScheme(), is("local"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("."));
+        assertThat(uri.getPort(), is(80));
+        assertThat(uri.getPath(), is("/path/to/file"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is(s));
+        
+        // other puncuation
+        uri = new MutableUri("local://joe@c$wd:80/path/to/file");
+        
+        assertThat(uri.getScheme(), is("local"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("joe@c$wd"));
+        assertThat(uri.getPort(), is(80));
+        assertThat(uri.getPath(), is("/path/to/file"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+    }
+    
+    @Test
     public void stringify() {
         String uri;
         

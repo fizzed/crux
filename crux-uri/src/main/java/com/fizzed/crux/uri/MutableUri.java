@@ -156,6 +156,21 @@ public class MutableUri extends Uri {
         if (uri.getPort() >= 0) {
             this.port = uri.getPort();
         }
+
+        // if the uri contains reserved, punctuation, and other chars in the
+        // host section of the uri, then those are actually set as the authority
+        // we're going to make a design decision to try and parse it as the host
+        // and potentially the port
+        if (uri.getHost() == null && uri.getUserInfo() == null && uri.getAuthority() != null) {
+            String authority = uri.getAuthority();
+            int portIndex = authority.indexOf(':');
+            if (portIndex >= 0) {
+                this.host = authority.substring(0, portIndex);
+                this.port = Integer.valueOf(authority.substring(portIndex+1));
+            } else {
+                this.host = authority;
+            }
+        }
         
         String rawPath = uri.getRawPath();
         if (rawPath != null && rawPath.length() > 0) {
