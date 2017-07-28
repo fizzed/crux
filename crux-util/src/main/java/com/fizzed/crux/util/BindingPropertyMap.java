@@ -74,7 +74,7 @@ public class BindingPropertyMap<A> {
         return this;
     }
     
-    public <T> BindingPropertyMap<A> bindType(Class<T> type, String key, BiConsumer<A,T> setter, Function<String,T> converter) {
+    public <T> BindingPropertyMap<A> bindType(String key, BiConsumer<A,T> setter, Class<T> type, Function<String,T> converter) {
         this.map.put(key, new Property<>(type, setter, converter));
         return this;
     }

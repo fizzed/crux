@@ -32,7 +32,7 @@ public class BindingPropertyMapTest {
             .bindString("first_name", Config::setFirstName)
             .bindString("last_name", Config::setLastName)
             .bindInteger("port", Config::setPort)
-            .bindType(URI.class, "uri", Config::setUri, (s) -> URI.create(s));
+            .bindType("uri", Config::setUri, URI.class, (s) -> URI.create(s));
         
         private String firstName;
         private String lastName;
