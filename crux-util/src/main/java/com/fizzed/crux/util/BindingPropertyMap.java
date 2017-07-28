@@ -1,5 +1,11 @@
 package com.fizzed.crux.util;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +54,25 @@ public class BindingPropertyMap<A> {
     static public final Function<String,Long> LONG_CONVERTER = (s) -> {
         return s != null ? Long.valueOf(s) : null;
     };
+    static public final Function<String,Path> PATH_CONVERTER = (s) -> {
+        return s != null ? Paths.get(s) : null;
+    };
+    static public final Function<String,File> FILE_CONVERTER = (s) -> {
+        return s != null ? new File(s) : null;
+    };
+    static public final Function<String,URI> URI_CONVERTER = (s) -> {
+        return s != null ? URI.create(s) : null;
+    };
+    static public final Function<String,URL> URL_CONVERTER = (s) -> {
+        if (s == null) {
+            return null;
+        }
+        try {
+            return new URL(s);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    };
     
     private final Map<String,Property<A,?>> map;
 
@@ -71,6 +96,26 @@ public class BindingPropertyMap<A> {
     
     public BindingPropertyMap<A> bindLong(String key, BiConsumer<A,Long> setter) {
         this.map.put(key, new Property<>(Long.class, setter, LONG_CONVERTER));
+        return this;
+    }
+    
+    public BindingPropertyMap<A> bindPath(String key, BiConsumer<A,Path> setter) {
+        this.map.put(key, new Property<>(Path.class, setter, PATH_CONVERTER));
+        return this;
+    }
+    
+    public BindingPropertyMap<A> bindFile(String key, BiConsumer<A,File> setter) {
+        this.map.put(key, new Property<>(File.class, setter, FILE_CONVERTER));
+        return this;
+    }
+    
+    public BindingPropertyMap<A> bindURI(String key, BiConsumer<A,URI> setter) {
+        this.map.put(key, new Property<>(URI.class, setter, URI_CONVERTER));
+        return this;
+    }
+    
+    public BindingPropertyMap<A> bindURL(String key, BiConsumer<A,URL> setter) {
+        this.map.put(key, new Property<>(URL.class, setter, URL_CONVERTER));
         return this;
     }
     
