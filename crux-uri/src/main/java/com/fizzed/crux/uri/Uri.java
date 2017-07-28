@@ -57,6 +57,10 @@ public class Uri {
         // do nothing
     }
     
+    public Uri(String uri) {
+        this(new MutableUri(uri));
+    }
+    
     public Uri(Uri uri) {
         this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.path, uri.query, uri.fragment);
     }
