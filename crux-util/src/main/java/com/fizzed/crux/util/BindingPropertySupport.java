@@ -16,27 +16,18 @@
 package com.fizzed.crux.util;
 
 import java.util.Map;
-import java.util.Set;
 
-public class BindableOptions<A extends BindableOptions<A>> {
-    
-    private final BindableHandlers handlers;
+public interface BindingPropertySupport<A extends BindingPropertySupport<A>> {
 
-    public BindableOptions(BindableHandlers handlers) {
-        this.handlers = handlers;
-    }
+    BindingPropertyMap<A> getPropertyMap();
     
-    public Set<String> getParameterKeys() {
-        return this.handlers.getKeys();
-    }
-    
-    public A setParameter(String key, String value) {
-        this.handlers.process(this, key, value);
+    default A setProperty(String key, Object value) {
+        this.getPropertyMap().set((A)this, key, value);
         return (A)this;
     }
     
-    public A setParameters(Map<String,String> values) {
-        this.handlers.process(this, values);
+    default A setProperties(Map<String,?> properties) {
+        this.getPropertyMap().setAll((A)this, properties);
         return (A)this;
     }
     

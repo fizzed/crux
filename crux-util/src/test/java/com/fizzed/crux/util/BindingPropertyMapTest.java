@@ -16,23 +16,23 @@
 package com.fizzed.crux.util;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import org.junit.Test;
 
-public class BindableHandlersTest {
+public class BindingPropertyMapTest {
 
-    static public class Config extends BindableOptions<Config> {
+    static public class Config implements BindingPropertySupport<Config> {
         
-        static private final BindableHandlers<Config> HANDLERS = new BindableHandlers<Config>()
+        static private final BindingPropertyMap<Config> HANDLERS = new BindingPropertyMap<Config>()
             .bindString("first_name", Config::setFirstName)
             .bindString("last_name", Config::setLastName)
             .bindInteger("port", Config::setPort)
-            .bindType("uri", Config::setUri, (s) -> URI.create(s));
+            .bindType(URI.class, "uri", Config::setUri, (s) -> URI.create(s));
         
         private String firstName;
         private String lastName;
@@ -40,9 +40,13 @@ public class BindableHandlersTest {
         private URI uri;
 
         public Config() {
-            super(HANDLERS);
         }
 
+        @Override
+        public BindingPropertyMap<Config> getPropertyMap() {
+            return HANDLERS;
+        }
+        
         public String getFirstName() {
             return firstName;
         }
@@ -81,9 +85,9 @@ public class BindableHandlersTest {
     public void bind() {
         Config config = new Config();
         
-        config.setParameter("first_name", "Joe");
-        config.setParameter("port", "80");
-        config.setParameter("uri", "http://localhost");
+        config.setProperty("first_name", "Joe");
+        config.setProperty("port", 80);
+        config.setProperty("uri", "http://localhost");
         
         assertThat(config.getFirstName(), is("Joe"));
         assertThat(config.getPort(), is(80));
@@ -93,21 +97,55 @@ public class BindableHandlersTest {
         values.put("first_name", "Dude");
         values.put("last_name", "Lauer");
         
-        config.setParameters(values)
-            .setParameter("port", "81");
+        config.setProperties(values)
+            .setProperty("port", "81");
         
         assertThat(config.getFirstName(), is("Dude"));
         assertThat(config.getLastName(), is("Lauer"));
         assertThat(config.getPort(), is(81));
         
-        assertThat(config.getParameterKeys(), hasItem("first_name"));
+        assertThat(config.getPropertyMap().getKeys(), hasItem("first_name"));
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void setInvalidParameter() {
         Config config = new Config();
         
-        config.setParameter("blah", "Joe");
+        config.setProperty("blah", "Joe");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void setInvalidValue() {
+        Config config = new Config();
+        
+        config.setProperty("port", "Joe");
+    }
+    
+    @Test
+    public void bindNonMatchingTypes() throws Exception {
+        Config config = new Config();
+        
+        config.setProperty("first_name", "Joe");
+        config.setProperty("port", 80L);
+        config.setProperty("uri", new URL("https://localhost"));
+        
+        // match the actual properties...
+        assertThat(config.getFirstName(), is("Joe"));
+        assertThat(config.getPort(), is(80));
+        assertThat(config.getUri(), is(URI.create("https://localhost")));
+        
+        Map<String,Object> values = new HashMap<>();
+        values.put("first_name", "Dude");
+        values.put("last_name", "Lauer");
+        
+        config.setProperties(values)
+            .setProperty("port", "81");
+        
+        assertThat(config.getFirstName(), is("Dude"));
+        assertThat(config.getLastName(), is("Lauer"));
+        assertThat(config.getPort(), is(81));
+        
+        assertThat(config.getPropertyMap().getKeys(), hasItem("first_name"));
     }
     
 }
