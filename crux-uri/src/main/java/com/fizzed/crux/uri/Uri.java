@@ -147,4 +147,74 @@ public class Uri {
         return copy;
     }
     
+    protected String encodedQueryString() {
+        if (this.query == null || this.query.isEmpty()) {
+            return null;
+        }
+        
+        StringBuilder s = new StringBuilder();
+        
+        this.query.forEach((key, values) -> {
+            values.forEach((value) -> {
+                if (s.length() != 0) {
+                    s.append("&");
+                }
+                s.append(key);
+                if (value != null) {
+                    s.append("=");
+                    s.append(MutableUri.encode(value));
+                }
+            });
+        });
+        
+        return s.toString();
+    }
+    
+    @Override
+    public String toString() {
+        // Note this code is essentially a copy of 'java.net.URI.defineString',
+        // which is private. We cannot use the 'new URI( scheme, userInfo, ... )' or
+        // 'new URI( scheme, authority, ... )' constructors because they double
+        // encode the query string using 'java.net.URI.quote'
+        StringBuilder uri = new StringBuilder();
+        
+        if (this.scheme != null) {
+            uri.append(this.scheme);
+            uri.append(':');
+        }
+        
+        if (this.host != null) {
+            uri.append("//");
+            
+            if (this.userInfo != null) {
+                uri.append(MutableUri.encode(this.userInfo));
+                uri.append('@');
+            }
+            
+            uri.append(this.host);
+            
+            if (this.port != null) {
+                uri.append(':');
+                uri.append(this.port);
+            }
+            
+        }
+        
+        if (this.path != null) {
+            uri.append(this.path);
+        }
+
+        if (this.query != null && !this.query.isEmpty()) {
+            uri.append('?');
+            uri.append(encodedQueryString());
+        }
+        
+        if (this.fragment != null) {
+            uri.append('#');
+            uri.append(MutableUri.encode(this.fragment));
+        }
+       
+        return uri.toString();
+    }
+    
 }

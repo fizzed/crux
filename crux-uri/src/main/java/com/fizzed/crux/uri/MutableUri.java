@@ -169,29 +169,6 @@ public class MutableUri extends Uri {
         return this;
     }
     
-    private String encodedQueryString() {
-        if (this.query == null || this.query.isEmpty()) {
-            return null;
-        }
-        
-        StringBuilder s = new StringBuilder();
-        
-        this.query.forEach((key, values) -> {
-            values.forEach((value) -> {
-                if (s.length() != 0) {
-                    s.append("&");
-                }
-                s.append(key);
-                if (value != null) {
-                    s.append("=");
-                    s.append(encode(value));
-                }
-            });
-        });
-        
-        return s.toString();
-    }
-    
     private MutableUri apply(URI uri) {
         if (uri.getScheme() != null) {
             this.scheme = uri.getScheme();
@@ -258,52 +235,7 @@ public class MutableUri extends Uri {
         return this;
     }
     
-    @Override
-    public String toString() {
-        // Note this code is essentially a copy of 'java.net.URI.defineString',
-        // which is private. We cannot use the 'new URI( scheme, userInfo, ... )' or
-        // 'new URI( scheme, authority, ... )' constructors because they double
-        // encode the query string using 'java.net.URI.quote'
-        StringBuilder uri = new StringBuilder();
-        
-        if (this.scheme != null) {
-            uri.append(this.scheme);
-            uri.append(':');
-        }
-        
-        if (this.host != null) {
-            uri.append("//");
-            
-            if (this.userInfo != null) {
-                uri.append(encode(this.userInfo));
-                uri.append('@');
-            }
-            
-            uri.append(this.host);
-            
-            if (this.port != null) {
-                uri.append(':');
-                uri.append(this.port);
-            }
-            
-        }
-        
-        if (this.path != null) {
-            uri.append(this.path);
-        }
-
-        if (this.query != null && !this.query.isEmpty()) {
-            uri.append('?');
-            uri.append(encodedQueryString());
-        }
-        
-        if (this.fragment != null) {
-            uri.append('#');
-            uri.append(encode(this.fragment));
-        }
-       
-        return uri.toString();
-    }
+    
     
     /*
     static public MutableUri of(String uri, Object... parameters) {
@@ -317,7 +249,7 @@ public class MutableUri extends Uri {
     }
     */
     
-    static private String encode(String value) {
+    static String encode(String value) {
         try {
             return java.net.URLEncoder.encode(value, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -325,7 +257,7 @@ public class MutableUri extends Uri {
         }
     }
     
-    static private String decode(String value) {
+    static String decode(String value) {
         try {
             return java.net.URLDecoder.decode(value, "UTF-8");
         } catch (UnsupportedEncodingException e) {
