@@ -16,8 +16,10 @@
 package com.fizzed.crux.uri;
 
 import java.util.Arrays;
+import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
@@ -293,6 +295,57 @@ public class MutableUriTest {
             .toString();
         
         assertThat(uri, is("https://localhost?b=2&a=1&c=3"));
+    }
+    
+    @Test
+    public void getQueryFirstMap() {
+        MutableUri uri;
+        
+        uri = new MutableUri("http://localhost?a=1&a=2&b=2&b=1&c=1");
+        
+        Map<String,String> map = uri.getQueryFirstMap();
+        
+        // only first entries
+        assertThat(map, hasEntry("a","1"));
+        assertThat(map, hasEntry("b","2"));
+        assertThat(map, hasEntry("c","1"));
+    }
+    
+    @Test
+    public void fixIncorrectRelativePath() {
+        MutableUri uri;
+        
+        uri = new MutableUri("http://localhost?a=1");
+        
+        assertThat(uri.getPath(), is(nullValue()));
+        
+        uri.path("test");
+        
+        assertThat(uri.toString(), is("http://localhost/test?a=1"));
+    }
+    
+    @Test
+    public void addPath() {
+        MutableUri uri;
+        
+        uri = new MutableUri("http://localhost");
+        
+        uri.addPath("a");
+        
+        assertThat(uri.getPath(), is("/a"));
+        
+        uri.addPath("b");
+        
+        assertThat(uri.getPath(), is("/a/b"));
+        
+        assertThat(uri.toString(), is("http://localhost/a/b"));
+        
+        // special entities
+        uri = new MutableUri("http://localhost/base/path/")
+            .addPath("v1")
+            .addPath("@/", "more");
+        
+        assertThat(uri.toString(), is("http://localhost/base/path/v1/%40%2F/more"));
     }
     
 }

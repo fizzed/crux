@@ -16,6 +16,7 @@
 package com.fizzed.crux.uri;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,19 @@ public class Uri {
         }
         
         return values.get(0);
+    }
+    
+    public Map<String,String> getQueryFirstMap() {
+        if (this.query == null) {
+            return null;
+        }
+        
+        Map<String,String> flatMap = new HashMap<>();
+        this.query.forEach((key, values) -> {
+            flatMap.put(key, values.get(0));
+        });
+        
+        return flatMap;
     }
     
     public String getFragment() {

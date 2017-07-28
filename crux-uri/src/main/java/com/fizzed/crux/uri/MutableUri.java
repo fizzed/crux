@@ -80,10 +80,62 @@ public class MutableUri extends Uri {
         return this;
     }
     
+    /**
+     * Sets the path to an entirely new one.
+     * @param path The path to set such as "
+     * @return 
+     */
     public MutableUri path(String path) {
+        // a path must start with a '/'
+        if (path != null && path.charAt(0) != '/') {
+            this.path = '/' + path;
+        } else {
+            this.path = path;
+        }
+        return this;
+    }
+    
+    private String joinPaths(String a, String b) {
+        if (a == null) {
+            return b;
+        }
+        
+        if (b == null) {
+            return a;
+        }
+        
+        // do we need to add a '/' separator?
+        if (a.charAt(a.length()-1) == '/' || b.charAt(0) == '/') {
+            return a + b;
+        } else {
+            return a + '/' + b;
+        }
+    }
+    
+    /**
+     * Appends a new path component to the existing path.  The value is url
+     * encoded so that an exsting path of "/a/b" with a value of "@" would
+     * result in a new path of "/a/b/%40".
+     * @param addPath The path component to append
+     * @return 
+     */
+    public MutableUri addPath(String... addPath) {
+        if (addPath != null) {
+            for (String p : addPath) {
+                this.path(joinPaths(this.path, encode(p)));
+            }
+        }
+        return this;
+    }
+    
+    /**
+    
+    
+    public MutableUri paths(String... paths) {
         this.path = path;
         return this;
     }
+    */
     
     public MutableUri query(String name, String value) {
         List<String> values = getQueryValues(name);
