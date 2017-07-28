@@ -16,15 +16,19 @@
 package com.fizzed.crux.util;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import org.junit.Test;
 
-public class BindableOptionsTest {
+public class BindableHandlersTest {
 
-    static public class Config {
+    static public class Config extends BindableOptions<Config> {
         
-        static private final BindableOptions<Config> OPTIONS = new BindableOptions<Config>()
+        static private final BindableHandlers<Config> HANDLERS = new BindableHandlers<Config>()
             .bindString("first_name", Config::setFirstName)
             .bindString("last_name", Config::setLastName)
             .bindInteger("port", Config::setPort)
@@ -34,6 +38,10 @@ public class BindableOptionsTest {
         private String lastName;
         private Integer port;
         private URI uri;
+
+        public Config() {
+            super(HANDLERS);
+        }
 
         public String getFirstName() {
             return firstName;
@@ -66,10 +74,6 @@ public class BindableOptionsTest {
         public void setUri(URI uri) {
             this.uri = uri;
         }
-
-        public void setParameter(String key, String value) {
-            OPTIONS.process(this, key, value);
-        }
         
     }
     
@@ -84,6 +88,26 @@ public class BindableOptionsTest {
         assertThat(config.getFirstName(), is("Joe"));
         assertThat(config.getPort(), is(80));
         assertThat(config.getUri(), is(URI.create("http://localhost")));
+        
+        Map<String,String> values = new HashMap<>();
+        values.put("first_name", "Dude");
+        values.put("last_name", "Lauer");
+        
+        config.setParameters(values)
+            .setParameter("port", "81");
+        
+        assertThat(config.getFirstName(), is("Dude"));
+        assertThat(config.getLastName(), is("Lauer"));
+        assertThat(config.getPort(), is(81));
+        
+        assertThat(config.getParameterKeys(), hasItem("first_name"));
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void setInvalidParameter() {
+        Config config = new Config();
+        
+        config.setParameter("blah", "Joe");
     }
     
 }

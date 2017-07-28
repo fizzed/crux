@@ -1,70 +1,43 @@
+/*
+ * Copyright 2017 Fizzed, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.fizzed.crux.util;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.Set;
 
-public class BindableOptions<A> {
+public class BindableOptions<A extends BindableOptions<A>> {
+    
+    private final BindableHandlers handlers;
 
-    public class Handler<A,Object> {
-
-        private final BiConsumer<A,Object> consumer;
-        private final Function<String,Object> converter;
-
-        public Handler(BiConsumer<A,Object> consumer, Function<String,Object> converter) {
-            this.consumer = consumer;
-            this.converter = converter;
-        }
-        
+    public BindableOptions(BindableHandlers handlers) {
+        this.handlers = handlers;
     }
     
-    static public final Function<String,String> STRING_CONVERTER = (s) -> {
-        return s;
-    };
-    static public final Function<String,Integer> INTEGER_CONVERTER = (s) -> {
-        return s != null ? Integer.valueOf(s) : null;
-    };
-    static public final Function<String,Long> LONG_CONVERTER = (s) -> {
-        return s != null ? Long.valueOf(s) : null;
-    };
-    
-    private final Map<String,Handler<A,?>> handlers;
-
-    public BindableOptions() {
-        this.handlers = new LinkedHashMap<>();      // insertion order important
+    public Set<String> getParameterKeys() {
+        return this.handlers.getKeys();
     }
     
-    public BindableOptions<A> bindString(String key, BiConsumer<A,String> consumer) {
-        this.handlers.put(key, new Handler<>(consumer, STRING_CONVERTER));
-        return this;
+    public A setParameter(String key, String value) {
+        this.handlers.process(this, key, value);
+        return (A)this;
     }
     
-    public BindableOptions<A> bindInteger(String key, BiConsumer<A,Integer> consumer) {
-        this.handlers.put(key, new Handler<>(consumer, INTEGER_CONVERTER));
-        return this;
-    }
-    
-    public BindableOptions<A> bindLong(String key, BiConsumer<A,Long> consumer) {
-        this.handlers.put(key, new Handler<>(consumer, LONG_CONVERTER));
-        return this;
-    }
-    
-    public <T> BindableOptions<A> bindType(String key, BiConsumer<A,T> consumer, Function<String,T> converter) {
-        this.handlers.put(key, new Handler<>(consumer, converter));
-        return this;
-    }
-    
-    public void process(A instance, String key, String value) {
-        Handler<A,Object> handler = (Handler<A,Object>)this.handlers.get(key);
-        
-        if (handler == null) {
-            throw new IllegalArgumentException("Option " + key + " is not supported");
-        }
-        
-        Object converted = handler.converter.apply(value);
-        
-        handler.consumer.accept(instance, converted);
+    public A setParameters(Map<String,String> values) {
+        this.handlers.process(this, values);
+        return (A)this;
     }
     
 }
