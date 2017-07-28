@@ -131,7 +131,9 @@ public class BindingPropertyMap<A> {
         Property<A,Object> property = (Property<A,Object>)this.map.get(key);
         
         if (property == null) {
-            throw new IllegalArgumentException("Property '" + key + "' is not recognized (available are " + this.map.keySet() + ")");
+            throw new IllegalArgumentException("Property '" + key + "' is not recognized for "
+                + instance.getClass().getCanonicalName()
+                + " (available are " + this.map.keySet() + ")");
         }
         
         try {
