@@ -57,6 +57,10 @@ public class Uri {
         // do nothing
     }
     
+    public Uri(Uri uri) {
+        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.path, uri.query, uri.fragment);
+    }
+    
     public Uri(String scheme, String userInfo, String host, Integer port, String path, Map<String, List<String>> query, String fragment) {
         this.scheme = scheme;
         this.userInfo = userInfo;
