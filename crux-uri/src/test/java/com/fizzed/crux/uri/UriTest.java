@@ -34,7 +34,7 @@ public class UriTest {
         
         MutableUri muri = new MutableUri(uri);
         
-        muri.rel("c/d");
+        muri.relPath("c/d");
         
         Uri uri2 = muri.toImmutable();
         

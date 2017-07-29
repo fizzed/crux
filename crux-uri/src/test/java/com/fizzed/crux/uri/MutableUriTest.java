@@ -336,6 +336,51 @@ public class MutableUriTest {
     }
     
     @Test
+    public void relPath() {
+        MutableUri uri;
+        
+        uri = new MutableUri("t://l")
+            .relPath("");
+        
+        assertThat(uri.toString(), is("t://l/"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("/");
+        
+        assertThat(uri.toString(), is("t://l/"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("a").relPath("b");
+        
+        assertThat(uri.toString(), is("t://l/a/b"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("a/b");
+        
+        assertThat(uri.toString(), is("t://l/a/b"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("a/b").relPath("c/d");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("a/b").relPath("c/d/");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
+        
+        uri = new MutableUri("t://l")
+            .relPath("a/b").relPath("c/d").relPath("");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
+        
+        uri = new MutableUri("t://l/api/v1")
+            .relPath("test");
+        
+        assertThat(uri.toString(), is("t://l/api/v1/test"));
+    }
+    
+    @Test
     public void rel() {
         MutableUri uri;
         
@@ -347,7 +392,7 @@ public class MutableUriTest {
         uri = new MutableUri("t://l")
             .rel("/");
         
-        assertThat(uri.toString(), is("t://l/"));
+        assertThat(uri.toString(), is("t://l/%2F"));
         
         uri = new MutableUri("t://l")
             .rel("a").rel("b");
@@ -355,62 +400,17 @@ public class MutableUriTest {
         assertThat(uri.toString(), is("t://l/a/b"));
         
         uri = new MutableUri("t://l")
-            .rel("a/b");
-        
-        assertThat(uri.toString(), is("t://l/a/b"));
-        
-        uri = new MutableUri("t://l")
-            .rel("a/b").rel("c/d");
-        
-        assertThat(uri.toString(), is("t://l/a/b/c/d"));
-        
-        uri = new MutableUri("t://l")
-            .rel("a/b").rel("c/d/");
-        
-        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
-        
-        uri = new MutableUri("t://l")
-            .rel("a/b").rel("c/d").rel("");
-        
-        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
-        
-        uri = new MutableUri("t://l/api/v1")
-            .rel("test");
-        
-        assertThat(uri.toString(), is("t://l/api/v1/test"));
-    }
-    
-    @Test
-    public void fs() {
-        MutableUri uri;
-        
-        uri = new MutableUri("t://l")
-            .fs("");
-        
-        assertThat(uri.toString(), is("t://l/"));
-        
-        uri = new MutableUri("t://l")
-            .fs("/");
-        
-        assertThat(uri.toString(), is("t://l/%2F"));
-        
-        uri = new MutableUri("t://l")
-            .fs("a").fs("b");
-        
-        assertThat(uri.toString(), is("t://l/a/b"));
-        
-        uri = new MutableUri("t://l")
-            .fs("a@b");
+            .rel("a@b");
         
         assertThat(uri.toString(), is("t://l/a%40b"));
         
         uri = new MutableUri("t://l")
-            .fs("a@b", "c");
+            .rel("a@b", "c");
         
         assertThat(uri.toString(), is("t://l/a%40b/c"));
         
         uri = new MutableUri("t://l")
-            .fs("a@b", 80);
+            .rel("a@b", 80);
         
         assertThat(uri.toString(), is("t://l/a%40b/80"));
     }

@@ -94,8 +94,8 @@ public class MutableUri extends Uri {
      * 
      * @param path The path to set such as "/a/b/c"
      * @return This insance
-     * @see #rel(java.lang.String) 
-     * @see #fs(java.lang.String...) 
+     * @see #relPath(java.lang.String) 
+     * @see #rel(java.lang.String[]) 
      */
     public MutableUri path(String path) {
         // clear it?
@@ -121,7 +121,7 @@ public class MutableUri extends Uri {
      * @param path
      * @return 
      */
-    public MutableUri rel(String path) {
+    public MutableUri relPath(String path) {
         // if current path is null or empty then this is simply path
         if (this.paths == null || this.paths.isEmpty()) {
             return this.path(path);
@@ -139,7 +139,7 @@ public class MutableUri extends Uri {
      * @param paths
      * @return 
      */
-    public MutableUri fs(Object... paths) {
+    public MutableUri rel(Object... paths) {
         if (paths == null || paths.length == 0) {
             return this;
         }
@@ -150,7 +150,7 @@ public class MutableUri extends Uri {
             strings[i] = Objects.toString(paths[i]);
         }
         
-        return fs(strings);
+        return rel(strings);
     }
     
     /**
@@ -159,7 +159,7 @@ public class MutableUri extends Uri {
      * @param paths
      * @return 
      */
-    public MutableUri fs(String... paths) {
+    public MutableUri rel(String... paths) {
         if (paths == null || paths.length == 0) {
             return this;    // nothing to do
         }
