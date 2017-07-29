@@ -41,18 +41,24 @@ public class MutableUri extends Uri {
         this.apply(uri);
     }
     
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public MutableUri(Uri uri) {
         this.scheme = uri.scheme;
         this.userInfo = uri.userInfo;
         this.host = uri.host;
         this.port = uri.port;
-        this.path = uri.path;
-        this.query = uri.query;
+        this.paths = copy(uri.paths);
+        this.query = copy(uri.query);
         this.fragment = uri.fragment;
     }
     
+    @Deprecated
     public Uri toImmutable() {
-        return new Uri(this.scheme, this.userInfo, this.host, this.port, this.path, copy(this.query), this.fragment);
+        return this.immutable();
+    }
+    
+    public Uri immutable() {
+        return new Uri(this.scheme, this.userInfo, this.host, this.port, this.paths, this.query, this.fragment);
     }
     
     public URI toURI() {
@@ -81,63 +87,103 @@ public class MutableUri extends Uri {
     }
     
     /**
-     * Sets the path to an entirely new one.
-     * @param path The path to set such as "
-     * @return 
+     * Sets the url-encoded path. Note that it will be split into components
+     * based on the '/' char so make sure its url-encoded.  If you need to
+     * set the path as relative to the existing then use rel(). If you need to
+     * set a value in the path that may need url-encoding then use fs().
+     * 
+     * @param path The path to set such as "/a/b/c"
+     * @return This insance
+     * @see #rel(java.lang.String) 
+     * @see #fs(java.lang.String...) 
      */
     public MutableUri path(String path) {
-        // a path must start with a '/'
-        if (path != null && path.charAt(0) != '/') {
-            this.path = '/' + path;
-        } else {
-            this.path = path;
+        // clear it?
+        if (path == null) {
+            this.paths = null;
+            return this;
         }
+        
+        // add leading '/' if its missing
+        if (path.length() == 0 || path.charAt(0) != '/') {
+            path = '/' + path;
+        }
+        
+        // split + decode the path
+        this.paths = splitPath(path, true);
+        
         return this;
     }
     
-    private String joinPaths(String a, String b) {
-        if (a == null) {
-            return b;
-        }
-        
-        if (b == null) {
-            return a;
-        }
-        
-        // do we need to add a '/' separator?
-        if (a.charAt(a.length()-1) == '/' || b.charAt(0) == '/') {
-            return a + b;
-        } else {
-            return a + '/' + b;
-        }
-    }
-    
     /**
-     * Appends a new path component to the existing path.  The value is url
-     * encoded so that an exsting path of "/a/b" with a value of "@" would
-     * result in a new path of "/a/b/%40".
-     * @param addPath The path component to append
+     * Sets (adds) a relative url-encoded path to the existing path.  The path will be
+     * split
+     * @param path
      * @return 
      */
-    public MutableUri addPath(String... addPath) {
-        if (addPath != null) {
-            for (String p : addPath) {
-                this.path(joinPaths(this.path, encode(p)));
-            }
+    public MutableUri rel(String path) {
+        // if current path is null or empty then this is simply path
+        if (this.paths == null || this.paths.isEmpty()) {
+            return this.path(path);
         }
+        
+        // split + decode the path
+        splitPath(path, this.paths, true);
+        
         return this;
     }
     
     /**
+     * Adds one or more relative path components that are NOT url-encoded. This
+     * is the ideal method to use for building urls.
+     * @param paths
+     * @return 
+     */
+    public MutableUri fs(Object... paths) {
+        if (paths == null || paths.length == 0) {
+            return this;
+        }
+        
+        String[] strings = new String[paths.length];
+        
+        for (int i = 0; i < paths.length; i++) {
+            strings[i] = Objects.toString(paths[i]);
+        }
+        
+        return fs(strings);
+    }
     
-    
-    public MutableUri paths(String... paths) {
-        this.path = path;
+    /**
+     * Adds one or more relative path components that are NOT url-encoded. This
+     * is the ideal method to use for building urls.
+     * @param paths
+     * @return 
+     */
+    public MutableUri fs(String... paths) {
+        if (paths == null || paths.length == 0) {
+            return this;    // nothing to do
+        }
+        
+        for (String path : paths) {
+            if (this.paths == null) {
+                this.paths = new ArrayList<>();
+                this.paths.add(""); // since its first we need to add this
+            }
+            // do not decode
+            this.paths.add(path);
+        }
+        
         return this;
     }
-    */
+    
+    public MutableUri query(String name, Object value) {
+        Objects.requireNonNull(name, "name was null");
+        return this.query(name, Objects.toString(value));
+    }
     
     public MutableUri query(String name, String value) {
+        Objects.requireNonNull(name, "name was null");
+        
         List<String> values = getQueryValues(name);
         
         values.add(value);
@@ -145,7 +191,16 @@ public class MutableUri extends Uri {
         return this;
     }
     
+    public MutableUri setQuery(String name, Object value) {
+        Objects.requireNonNull(name, "name was null");
+        Objects.requireNonNull(value, "value was null");
+        return this.setQuery(name, Objects.toString(value));
+    }
+    
     public MutableUri setQuery(String name, String value) {
+        Objects.requireNonNull(name, "name was null");
+        Objects.requireNonNull(value, "value was null");
+        
         List<String> values = getQueryValues(name);
         
         values.clear();
@@ -164,6 +219,11 @@ public class MutableUri extends Uri {
         return this.query.computeIfAbsent(name, (key) -> new ArrayList<>());
     }
     
+    /**
+     * Sets the non url-encoded fragment.
+     * @param fragment Non url-encoded fragment.
+     * @return 
+     */
     public MutableUri fragment(String fragment) {
         this.fragment = fragment;
         return this;
@@ -203,8 +263,7 @@ public class MutableUri extends Uri {
         
         String rawPath = uri.getRawPath();
         if (rawPath != null && rawPath.length() > 0) {
-            // TODO: should we decode it here?
-            this.path = uri.getRawPath();
+            this.path(uri.getRawPath());
         }
         
         if (uri.getRawQuery() != null) {
@@ -248,6 +307,32 @@ public class MutableUri extends Uri {
         return new MutableUri(s).toURI();
     }
     */
+    
+    static public List<String> splitPath(String path, boolean decode) {
+        List<String> paths = new ArrayList<>();
+        splitPath(path, paths, decode);
+        return paths;
+    }
+    
+    static public void splitPath(String path, List<String> paths, boolean decode) {
+        int pos = 0;
+        for (int i = 0; i < path.length(); i++) {
+            // found slash or on last char?
+            if (path.charAt(i) == '/') {
+                String p = path.substring(pos, i);
+                paths.add((decode ? decode(p) : p));
+                pos = i+1;
+            }
+        }
+        // add last token?
+        if (pos < path.length()) {
+            String p = path.substring(pos);
+            paths.add((decode ? decode(p) : p));
+        } else if (pos == path.length()) {
+            // add an empty string at end
+            paths.add("");
+        }
+    }
     
     static String encode(String value) {
         try {

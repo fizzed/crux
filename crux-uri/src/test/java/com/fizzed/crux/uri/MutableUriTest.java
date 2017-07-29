@@ -16,6 +16,7 @@
 package com.fizzed.crux.uri;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -26,6 +27,29 @@ import org.junit.Test;
 
 public class MutableUriTest {
 
+    @Test
+    public void splitPath() {
+        List<String> paths;
+        
+        paths = MutableUri.splitPath("", true);
+        assertThat(paths, is(Arrays.asList("")));
+        
+        paths = MutableUri.splitPath("/", true);
+        assertThat(paths, is(Arrays.asList("", "")));
+        
+        paths = MutableUri.splitPath("test", true);
+        assertThat(paths, is(Arrays.asList("test")));
+        
+        paths = MutableUri.splitPath("/test", true);
+        assertThat(paths, is(Arrays.asList("", "test")));
+        
+        paths = MutableUri.splitPath("/test/", true);
+        assertThat(paths, is(Arrays.asList("", "test", "")));
+        
+        paths = MutableUri.splitPath("/test/t", true);
+        assertThat(paths, is(Arrays.asList("", "test", "t")));
+    }
+    
     @Test
     public void parse() {
         MutableUri uri;
@@ -262,7 +286,7 @@ public class MutableUriTest {
             .path("/this/is/a/path")
             .query("a", "@")
             .query("a", "2")
-            .query("b", "2")
+            .query("b", 2)
             .query("c", null)
             .fragment("fr@g")
             .toString();
@@ -312,6 +336,86 @@ public class MutableUriTest {
     }
     
     @Test
+    public void rel() {
+        MutableUri uri;
+        
+        uri = new MutableUri("t://l")
+            .rel("");
+        
+        assertThat(uri.toString(), is("t://l/"));
+        
+        uri = new MutableUri("t://l")
+            .rel("/");
+        
+        assertThat(uri.toString(), is("t://l/"));
+        
+        uri = new MutableUri("t://l")
+            .rel("a").rel("b");
+        
+        assertThat(uri.toString(), is("t://l/a/b"));
+        
+        uri = new MutableUri("t://l")
+            .rel("a/b");
+        
+        assertThat(uri.toString(), is("t://l/a/b"));
+        
+        uri = new MutableUri("t://l")
+            .rel("a/b").rel("c/d");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d"));
+        
+        uri = new MutableUri("t://l")
+            .rel("a/b").rel("c/d/");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
+        
+        uri = new MutableUri("t://l")
+            .rel("a/b").rel("c/d").rel("");
+        
+        assertThat(uri.toString(), is("t://l/a/b/c/d/"));
+        
+        uri = new MutableUri("t://l/api/v1")
+            .rel("test");
+        
+        assertThat(uri.toString(), is("t://l/api/v1/test"));
+    }
+    
+    @Test
+    public void fs() {
+        MutableUri uri;
+        
+        uri = new MutableUri("t://l")
+            .fs("");
+        
+        assertThat(uri.toString(), is("t://l/"));
+        
+        uri = new MutableUri("t://l")
+            .fs("/");
+        
+        assertThat(uri.toString(), is("t://l/%2F"));
+        
+        uri = new MutableUri("t://l")
+            .fs("a").fs("b");
+        
+        assertThat(uri.toString(), is("t://l/a/b"));
+        
+        uri = new MutableUri("t://l")
+            .fs("a@b");
+        
+        assertThat(uri.toString(), is("t://l/a%40b"));
+        
+        uri = new MutableUri("t://l")
+            .fs("a@b", "c");
+        
+        assertThat(uri.toString(), is("t://l/a%40b/c"));
+        
+        uri = new MutableUri("t://l")
+            .fs("a@b", 80);
+        
+        assertThat(uri.toString(), is("t://l/a%40b/80"));
+    }
+    
+    @Test
     public void fixIncorrectRelativePath() {
         MutableUri uri;
         
@@ -322,30 +426,6 @@ public class MutableUriTest {
         uri.path("test");
         
         assertThat(uri.toString(), is("http://localhost/test?a=1"));
-    }
-    
-    @Test
-    public void addPath() {
-        MutableUri uri;
-        
-        uri = new MutableUri("http://localhost");
-        
-        uri.addPath("a");
-        
-        assertThat(uri.getPath(), is("/a"));
-        
-        uri.addPath("b");
-        
-        assertThat(uri.getPath(), is("/a/b"));
-        
-        assertThat(uri.toString(), is("http://localhost/a/b"));
-        
-        // special entities
-        uri = new MutableUri("http://localhost/base/path/")
-            .addPath("v1")
-            .addPath("@/", "more");
-        
-        assertThat(uri.toString(), is("http://localhost/base/path/v1/%40%2F/more"));
     }
     
 }

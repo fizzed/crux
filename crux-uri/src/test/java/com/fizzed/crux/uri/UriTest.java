@@ -28,4 +28,31 @@ public class UriTest {
         assertThat(uri.toString(), is("http://www.fizzed.com"));
     }
     
+    @Test
+    public void mutableToImmutablePath() {
+        Uri uri = new Uri("http://www.fizzed.com/a/b");
+        
+        MutableUri muri = new MutableUri(uri);
+        
+        muri.rel("c/d");
+        
+        Uri uri2 = muri.toImmutable();
+        
+        assertThat(uri.toString(), is("http://www.fizzed.com/a/b"));
+    }
+    
+    @Test
+    public void mutableToImmutableQuery() {
+        Uri uri = new Uri("http://www.fizzed.com?a=1&b=2");
+        
+        MutableUri muri = new MutableUri(uri);
+        
+        muri.query("c", 3);
+        muri.query("d", 4);
+        
+        Uri uri2 = muri.toImmutable();
+        
+        assertThat(uri.toString(), is("http://www.fizzed.com?a=1&b=2"));
+    }
+    
 }

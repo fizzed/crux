@@ -49,7 +49,7 @@ public class Uri {
     protected String userInfo;
     protected String host;
     protected Integer port;
-    protected String path;
+    protected List<String> paths;
     protected Map<String,List<String>> query;
     protected String fragment;
 
@@ -62,17 +62,21 @@ public class Uri {
     }
     
     public Uri(Uri uri) {
-        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.path, uri.query, uri.fragment);
+        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.paths, uri.query, uri.fragment);
     }
     
-    public Uri(String scheme, String userInfo, String host, Integer port, String path, Map<String, List<String>> query, String fragment) {
+    protected Uri(String scheme, String userInfo, String host, Integer port, List<String> paths, Map<String,List<String>> query, String fragment) {
         this.scheme = scheme;
         this.userInfo = userInfo;
         this.host = host;
         this.port = port;
-        this.path = path;
-        this.query = query;
+        this.paths = copy(paths);
+        this.query = copy(query);
         this.fragment = fragment;
+    }
+    
+    public MutableUri mutable() {
+        return new MutableUri(this);
     }
     
     public String getScheme() {
@@ -92,7 +96,11 @@ public class Uri {
     }
     
     public String getPath() {
-        return this.path;
+        return this.encodedPath();
+    }
+    
+    public List<String> getPaths() {
+        return this.paths;
     }
     
     public Map<String,List<String>> getQuery() {
@@ -133,7 +141,7 @@ public class Uri {
         return this.fragment;
     }
     
-    protected Map<String,List<String>> copy(Map<String,List<String>> map) {
+    protected final Map<String,List<String>> copy(Map<String,List<String>> map) {
         if (map == null) {
             return null;
         }
@@ -145,6 +153,32 @@ public class Uri {
         });
         
         return copy;
+    }
+    
+    protected final List<String> copy(List<String> list) {
+        if (list == null) {
+            return null;
+        }
+        
+        return new ArrayList<>(list);
+    }
+    
+    protected String encodedPath() {
+        if (this.paths == null || this.paths.isEmpty()) {
+            return null;
+        }
+        
+        StringBuilder s = new StringBuilder();
+        
+        for (int i = 0; i < this.paths.size(); i++) {
+            String path = this.paths.get(i);
+            if (i != 0) {
+                s.append('/');
+            }
+            s.append(MutableUri.encode(path));
+        }
+        
+        return s.toString();
     }
     
     protected String encodedQueryString() {
@@ -200,13 +234,13 @@ public class Uri {
             
         }
         
-        if (this.path != null) {
-            uri.append(this.path);
+        if (this.paths != null && !this.paths.isEmpty()) {
+            uri.append(this.encodedPath());
         }
 
         if (this.query != null && !this.query.isEmpty()) {
             uri.append('?');
-            uri.append(encodedQueryString());
+            uri.append(this.encodedQueryString());
         }
         
         if (this.fragment != null) {
