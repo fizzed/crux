@@ -61,6 +61,8 @@ public class TemporaryPath implements Closeable {
     
     static public TemporaryPath tempFile(Path baseDir, String prefix, String suffix) {
         try {
+            // baseDir must exist for this to work
+            Files.createDirectories(baseDir);
             Path path = Files.createTempFile(baseDir, prefix, suffix);
             return new TemporaryPath(path);
         } catch (IOException e) {
@@ -87,6 +89,8 @@ public class TemporaryPath implements Closeable {
     
     static public TemporaryPath tempDirectory(Path baseDir, String prefix) {
         try {
+            // baseDir must exist for this to work
+            Files.createDirectories(baseDir);
             Path path = Files.createTempDirectory(baseDir, prefix);
             return new TemporaryPath(path);
         } catch (IOException e) {
