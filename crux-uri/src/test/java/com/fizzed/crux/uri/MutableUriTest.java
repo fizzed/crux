@@ -431,15 +431,16 @@ public class MutableUriTest {
     public void relWithNull() {
         MutableUri uri;
         
-        uri = new MutableUri("t://l")
-            .rel(null);
+        uri = new MutableUri("t://l/test");
         
-        assertThat(uri.toString(), is("t://l"));
+        try {
+            uri.rel((String)null);
+            fail();
+        } catch (NullPointerException e) {
+            // expected
+        }
         
-        uri = new MutableUri("t://l")
-            .rel(null, null, null);
-        
-        assertThat(uri.toString(), is("t://l"));
+        assertThat(uri.toString(), is("t://l/test"));
     }
     
     @Test

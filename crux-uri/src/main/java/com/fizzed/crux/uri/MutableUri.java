@@ -127,6 +127,11 @@ public class MutableUri extends Uri {
         return this;
     }
     
+    /**
+     * Only adds the relative path if the value is present in the optional.
+     * @param rels One or more optionals.
+     * @return 
+     */
     public MutableUri relIfPresent(Optional<?>... rels) {
         if (rels == null || rels.length == 0) {
             return this;
