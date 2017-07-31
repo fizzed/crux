@@ -16,8 +16,10 @@
 package com.fizzed.crux.uri;
 
 import java.util.Arrays;
+import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
@@ -87,6 +89,18 @@ public class UriTest {
         assertThat(uri.getRels(), is(Arrays.asList("test")));
         assertThat(uri.getRel(0), is("test"));
         assertThat(uri.getRel(1), is(nullValue()));
+    }
+    
+    @Test
+    public void getQueryFirstMap() {
+        Uri uri = new Uri("http://localhost?a=1&a=2&b=2&b=1&c=1");
+        
+        Map<String,String> map = uri.getQueryFirstMap();
+        
+        // only first entries
+        assertThat(map, hasEntry("a","1"));
+        assertThat(map, hasEntry("b","2"));
+        assertThat(map, hasEntry("c","1"));
     }
     
 }

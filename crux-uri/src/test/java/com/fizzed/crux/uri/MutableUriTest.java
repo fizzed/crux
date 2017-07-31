@@ -16,6 +16,7 @@
 package com.fizzed.crux.uri;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -359,17 +360,35 @@ public class MutableUriTest {
     }
     
     @Test
-    public void getQueryFirstMap() {
+    public void queryWithMap() {
         MutableUri uri;
         
-        uri = new MutableUri("http://localhost?a=1&a=2&b=2&b=1&c=1");
+        uri = new MutableUri("http://localhost?a=1&b=2");
         
-        Map<String,String> map = uri.getQueryFirstMap();
+        Map<String,String> query = new LinkedHashMap<>();
+        query.put("a", "2");
+        query.put("b", "3");
         
-        // only first entries
-        assertThat(map, hasEntry("a","1"));
-        assertThat(map, hasEntry("b","2"));
-        assertThat(map, hasEntry("c","1"));
+        uri.query(query);
+        
+        // order within each name is only retained
+        assertThat(uri.toString(), is("http://localhost?a=1&a=2&b=2&b=3"));
+    }
+    
+    @Test
+    public void setQueryWithMap() {
+        MutableUri uri;
+        
+        uri = new MutableUri("http://localhost?a=1&b=2");
+        
+        Map<String,String> query = new LinkedHashMap<>();
+        query.put("a", "2");
+        query.put("b", "3");
+        
+        uri.setQuery(query);
+        
+        // order within each name is only retained
+        assertThat(uri.toString(), is("http://localhost?a=2&b=3"));
     }
     
     @Test

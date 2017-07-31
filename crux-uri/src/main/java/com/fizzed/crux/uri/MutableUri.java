@@ -15,12 +15,11 @@
  */
 package com.fizzed.crux.uri;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -108,11 +107,11 @@ public class MutableUri extends Uri {
             return this;
         }
 
-        List<String> rels = splitPath(path, true);
+        List<String> newRels = splitPath(path, true);
         
         // if absolute then normalize it (chop off leading empty rel)
         if (path.length() > 0 && path.charAt(0) == '/') {
-            rels = normalizeRootPath(rels);
+            newRels = normalizeRootPath(newRels);
             this.rels = null;
         }
         
@@ -122,7 +121,7 @@ public class MutableUri extends Uri {
         }
         
         // append everything
-        this.rels.addAll(rels);
+        this.rels.addAll(newRels);
 
         return this;
     }
@@ -224,6 +223,16 @@ public class MutableUri extends Uri {
         return this;
     }
     
+    /**
+     * Adds the entire map as query values.
+     * @param queryMap The map to add
+     * @return 
+     */
+    public MutableUri query(Map<String,?> queryMap) {
+        queryMap.forEach((name, value) -> this.query(name, value));
+        return this;
+    }
+    
     public MutableUri setQueryIfPresent(String name, Optional<?> value) {
         Objects.requireNonNull(name, "name was null");
         Objects.requireNonNull(name, "value was null");
@@ -248,6 +257,16 @@ public class MutableUri extends Uri {
         values.clear();
         values.add(value);
 
+        return this;
+    }
+    
+    /**
+     * Adds the entire map as query values.
+     * @param queryMap The map to add
+     * @return 
+     */
+    public MutableUri setQuery(Map<String,?> queryMap) {
+        queryMap.forEach((name, value) -> this.setQuery(name, value));
         return this;
     }
     
@@ -277,7 +296,7 @@ public class MutableUri extends Uri {
         }
         
         if (uri.getRawUserInfo() != null) {
-            this.userInfo = decode(uri.getRawUserInfo());
+            this.userInfo = urlDecode(uri.getRawUserInfo());
         }
         
         if (uri.getHost() != null) {
@@ -318,10 +337,10 @@ public class MutableUri extends Uri {
                 String[] nv = pair.split("=");
                 switch (nv.length) {
                     case 1:
-                        this.query(decode(nv[0]), null);
+                        this.query(urlDecode(nv[0]), null);
                         break;
                     case 2:
-                        this.query(decode(nv[0]), decode(nv[1]));
+                        this.query(urlDecode(nv[0]), urlDecode(nv[1]));
                         break;
                     default:
                         throw new IllegalArgumentException("Name value pair [" + pair + "] in query [" + uri.getRawQuery() + "] missing = char");
@@ -330,13 +349,13 @@ public class MutableUri extends Uri {
         }
         
         if (uri.getRawFragment() != null) {
-            this.fragment = decode(uri.getRawFragment());
+            this.fragment = urlDecode(uri.getRawFragment());
         }
         
         return this;
     }
     
-    static public List<String> normalizeRootPath(List<String> rels) {
+    static private List<String> normalizeRootPath(List<String> rels) {
         if (rels.size() < 2) {
             // no path at all
             return null;
@@ -346,45 +365,31 @@ public class MutableUri extends Uri {
         }
     }
     
-    static public List<String> splitPath(String path, boolean decode) {
+    // not sure we want this public (so package-level for now)
+    static List<String> splitPath(String path, boolean decode) {
         List<String> paths = new ArrayList<>();
         splitPath(path, paths, decode);
         return paths;
     }
     
-    static public void splitPath(String path, List<String> paths, boolean decode) {
+    // not sure we want this public (so package-level for now)
+    static void splitPath(String path, List<String> paths, boolean decode) {
         int pos = 0;
         for (int i = 0; i < path.length(); i++) {
             // found slash or on last char?
             if (path.charAt(i) == '/') {
                 String p = path.substring(pos, i);
-                paths.add((decode ? decode(p) : p));
+                paths.add((decode ? urlDecode(p) : p));
                 pos = i+1;
             }
         }
         // add last token?
         if (pos < path.length()) {
             String p = path.substring(pos);
-            paths.add((decode ? decode(p) : p));
+            paths.add((decode ? urlDecode(p) : p));
         } else if (pos == path.length()) {
             // add an empty string at end
             paths.add("");
-        }
-    }
-    
-    static String encode(String value) {
-        try {
-            return java.net.URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        }
-    }
-    
-    static String decode(String value) {
-        try {
-            return java.net.URLDecoder.decode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(e.getMessage());
         }
     }
 }

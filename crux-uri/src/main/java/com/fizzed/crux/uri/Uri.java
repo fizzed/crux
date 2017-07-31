@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.uri;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,6 +140,14 @@ public class Uri {
         return this.rels.get(index);
     }
     
+    /**
+     * Gets the url-encoded query string or null if no query values exist.
+     * @return The url-encoded query string
+     */
+    public String getQueryString() {
+        return this.encodedQueryString();
+    }
+    
     public Map<String,List<String>> getQuery() {
         return this.query;
     }
@@ -209,7 +218,7 @@ public class Uri {
         for (int i = 0; i < this.rels.size(); i++) {
             String path = this.rels.get(i);
             s.append('/');
-            s.append(MutableUri.encode(path));
+            s.append(MutableUri.urlEncode(path));
         }
         
         return s.toString();
@@ -230,7 +239,7 @@ public class Uri {
                 s.append(key);
                 if (value != null) {
                     s.append("=");
-                    s.append(MutableUri.encode(value));
+                    s.append(MutableUri.urlEncode(value));
                 }
             });
         });
@@ -243,7 +252,7 @@ public class Uri {
         // Note this code is essentially a copy of 'java.net.URI.defineString',
         // which is private. We cannot use the 'new URI( scheme, userInfo, ... )' or
         // 'new URI( scheme, authority, ... )' constructors because they double
-        // encode the query string using 'java.net.URI.quote'
+        // urlEncode the query string using 'java.net.URI.quote'
         StringBuilder uri = new StringBuilder();
         
         if (this.scheme != null) {
@@ -255,7 +264,7 @@ public class Uri {
             uri.append("//");
             
             if (this.userInfo != null) {
-                uri.append(MutableUri.encode(this.userInfo));
+                uri.append(MutableUri.urlEncode(this.userInfo));
                 uri.append('@');
             }
             
@@ -279,10 +288,26 @@ public class Uri {
         
         if (this.fragment != null) {
             uri.append('#');
-            uri.append(MutableUri.encode(this.fragment));
+            uri.append(MutableUri.urlEncode(this.fragment));
         }
        
         return uri.toString();
+    }
+    
+    static String urlEncode(String value) {
+        try {
+            return java.net.URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+    
+    static String urlDecode(String value) {
+        try {
+            return java.net.URLDecoder.decode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
     
 }
