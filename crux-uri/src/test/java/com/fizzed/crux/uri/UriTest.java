@@ -15,7 +15,9 @@
  */
 package com.fizzed.crux.uri;
 
+import java.util.Arrays;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
@@ -34,10 +36,12 @@ public class UriTest {
         
         MutableUri muri = new MutableUri(uri);
         
-        muri.relPath("c/d");
+        // modify it
+        muri.path("c/d");
         
-        Uri uri2 = muri.toImmutable();
+        Uri uri2 = muri.immutable();
         
+        // verify original is not modified
         assertThat(uri.toString(), is("http://www.fizzed.com/a/b"));
     }
     
@@ -47,12 +51,42 @@ public class UriTest {
         
         MutableUri muri = new MutableUri(uri);
         
+        // modify it
         muri.query("c", 3);
         muri.query("d", 4);
         
-        Uri uri2 = muri.toImmutable();
+        Uri uri2 = muri.immutable();
         
+        // verify original is not modified
         assertThat(uri.toString(), is("http://www.fizzed.com?a=1&b=2"));
+    }
+    
+    @Test
+    public void rels() {
+        Uri uri;
+        
+        uri = new Uri("http://www.fizzed.com");
+        
+        assertThat(uri.getRels(), is(nullValue()));
+        
+        // empty path, but then set it to empty string
+        uri = new MutableUri("http://www.fizzed.com")
+            .path("")
+            .toUri();
+        
+        assertThat(uri.getRels(), is(Arrays.asList("")));
+        assertThat(uri.getRel(0), is(""));
+        assertThat(uri.getRel(1), is(nullValue()));
+        
+        uri = new Uri("http://www.fizzed.com/");
+        
+        assertThat(uri.getRels(), is(Arrays.asList("")));
+        
+        uri = new Uri("http://www.fizzed.com/test");
+        
+        assertThat(uri.getRels(), is(Arrays.asList("test")));
+        assertThat(uri.getRel(0), is("test"));
+        assertThat(uri.getRel(1), is(nullValue()));
     }
     
 }

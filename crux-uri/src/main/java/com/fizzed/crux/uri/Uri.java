@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.uri;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,7 +50,8 @@ public class Uri {
     protected String userInfo;
     protected String host;
     protected Integer port;
-    protected List<String> paths;
+    // path consists of 0+ relative path components
+    protected List<String> rels;
     protected Map<String,List<String>> query;
     protected String fragment;
 
@@ -61,22 +63,35 @@ public class Uri {
         this(new MutableUri(uri));
     }
     
-    public Uri(Uri uri) {
-        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.paths, uri.query, uri.fragment);
+    public Uri(URI uri) {
+        this(new MutableUri(uri));
     }
     
-    protected Uri(String scheme, String userInfo, String host, Integer port, List<String> paths, Map<String,List<String>> query, String fragment) {
+    public Uri(Uri uri) {
+        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.rels, uri.query, uri.fragment);
+    }
+    
+    protected Uri(String scheme, String userInfo, String host, Integer port, List<String> rels, Map<String,List<String>> query, String fragment) {
         this.scheme = scheme;
         this.userInfo = userInfo;
         this.host = host;
         this.port = port;
-        this.paths = copy(paths);
+        this.rels = copy(rels);
         this.query = copy(query);
         this.fragment = fragment;
     }
     
     public MutableUri mutable() {
         return new MutableUri(this);
+    }
+    
+    public MutableUri toMutableUri() {
+        return this.mutable();
+    }
+    
+    public URI toURI() {
+        // only way to correctly set query string
+        return URI.create(toString());
     }
     
     public String getScheme() {
@@ -95,12 +110,33 @@ public class Uri {
         return this.port;
     }
     
+    /**
+     * Gets the url-encoded path.
+     * @return The url-encoded path.
+     * @see #getRels()
+     */
     public String getPath() {
         return this.encodedPath();
     }
     
-    public List<String> getPaths() {
-        return this.paths;
+    /**
+     * Gets the raw path components that will be used to build the url-encoded
+     * path.
+     * @return Null if no path is set or one ore more relative path components.
+     *      The root path will always be an empty string.
+     */
+    public List<String> getRels() {
+        return this.rels;
+    }
+    
+    public String getRel(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException("Invalid index (< 0)");
+        }
+        if (rels == null || index >= this.rels.size()) {
+            return null;
+        }
+        return this.rels.get(index);
     }
     
     public Map<String,List<String>> getQuery() {
@@ -164,17 +200,15 @@ public class Uri {
     }
     
     protected String encodedPath() {
-        if (this.paths == null || this.paths.isEmpty()) {
+        if (this.rels == null || this.rels.isEmpty()) {
             return null;
         }
         
         StringBuilder s = new StringBuilder();
         
-        for (int i = 0; i < this.paths.size(); i++) {
-            String path = this.paths.get(i);
-            if (i != 0) {
-                s.append('/');
-            }
+        for (int i = 0; i < this.rels.size(); i++) {
+            String path = this.rels.get(i);
+            s.append('/');
             s.append(MutableUri.encode(path));
         }
         
@@ -234,7 +268,7 @@ public class Uri {
             
         }
         
-        if (this.paths != null && !this.paths.isEmpty()) {
+        if (this.rels != null && !this.rels.isEmpty()) {
             uri.append(this.encodedPath());
         }
 

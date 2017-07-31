@@ -18,9 +18,11 @@ package com.fizzed.crux.uri;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Helps to build a URI.  Why another one?  Unlike Java's URI this one allows
@@ -47,7 +49,7 @@ public class MutableUri extends Uri {
         this.userInfo = uri.userInfo;
         this.host = uri.host;
         this.port = uri.port;
-        this.paths = copy(uri.paths);
+        this.rels = copy(uri.rels);
         this.query = copy(uri.query);
         this.fragment = uri.fragment;
     }
@@ -58,12 +60,11 @@ public class MutableUri extends Uri {
     }
     
     public Uri immutable() {
-        return new Uri(this.scheme, this.userInfo, this.host, this.port, this.paths, this.query, this.fragment);
+        return new Uri(this.scheme, this.userInfo, this.host, this.port, this.rels, this.query, this.fragment);
     }
     
-    public URI toURI() {
-        // only way to correctly set query string
-        return URI.create(toString());
+    public Uri toUri() {
+        return this.immutable();
     }
     
     public MutableUri scheme(String scheme) {
@@ -87,90 +88,117 @@ public class MutableUri extends Uri {
     }
     
     /**
-     * Sets the url-encoded path. Note that it will be split into components
-     * based on the '/' char so make sure its url-encoded.  If you need to
-     * set the path as relative to the existing then use rel(). If you need to
-     * set a value in the path that may need url-encoding then use fs().
+     * Either sets an absolute or relative path.  The path MUST be url-encoded. If
+     * the path starts with "/" then it will set the entire path, otherwise it will be
+     * considered relative to the current path. If you want
+     * to safely build a path and have this library do the url-encoding for you
+     * then take a look at the rel() method as an alternative.
      * 
-     * @param path The path to set such as "/a/b/c"
-     * @return This insance
+     * @param path The path to set such as "/a/b/c" if absolute or if the current
+     *      path is "/a/b" and you call this method with "c" then the final
+     *      path would be "/a/b/c".
+     * @return This instance
      * @see #relPath(java.lang.String) 
      * @see #rel(java.lang.String[]) 
      */
     public MutableUri path(String path) {
         // clear it?
         if (path == null) {
-            this.paths = null;
+            this.rels = null;
+            return this;
+        }
+
+        List<String> rels = splitPath(path, true);
+        
+        // if absolute then normalize it (chop off leading empty rel)
+        if (path.length() > 0 && path.charAt(0) == '/') {
+            rels = normalizeRootPath(rels);
+            this.rels = null;
+        }
+        
+        // create array if its missing
+        if (this.rels == null) {
+            this.rels = new ArrayList<>();
+        }
+        
+        // append everything
+        this.rels.addAll(rels);
+
+        return this;
+    }
+    
+    public MutableUri relIfPresent(Optional<?>... rels) {
+        if (rels == null || rels.length == 0) {
             return this;
         }
         
-        // add leading '/' if its missing
-        if (path.length() == 0 || path.charAt(0) != '/') {
-            path = '/' + path;
+        for (Optional<?> rel : rels) {
+            // optionals should always be non-null
+            Objects.requireNonNull(rel, "rel was null");
+            if (rel.isPresent()) {
+                this.rel(rel.get());
+            }
         }
-        
-        // split + decode the path
-        this.paths = splitPath(path, true);
         
         return this;
     }
     
-    /**
-     * Sets (adds) a relative url-encoded path to the existing path.  The path will be
-     * split
-     * @param path
-     * @return 
-     */
-    public MutableUri relPath(String path) {
-        // if current path is null or empty then this is simply path
-        if (this.paths == null || this.paths.isEmpty()) {
-            return this.path(path);
-        }
-        
-        // split + decode the path
-        splitPath(path, this.paths, true);
-        
-        return this;
-    }
     
     /**
-     * Adds one or more relative path components that are NOT url-encoded. This
-     * is the ideal method to use for building urls.
-     * @param paths
-     * @return 
+     * Adds one or more relative path components as-is. If the existing path
+     * is "/a/b" and you supply "c@/d" to this method then the underlying
+     * path would be "/a/b/c%40%2fd". This is the recommended method to safely
+     * build a path in a url.
+     * @param rels One or more relative path components to add
+     * @return This instance
      */
-    public MutableUri rel(Object... paths) {
-        if (paths == null || paths.length == 0) {
+    public MutableUri rel(Object... rels) {
+        if (rels == null || rels.length == 0) {
             return this;
         }
         
-        String[] strings = new String[paths.length];
+        String[] strings = new String[rels.length];
         
-        for (int i = 0; i < paths.length; i++) {
-            strings[i] = Objects.toString(paths[i]);
+        for (int i = 0; i < rels.length; i++) {
+            Object rel = rels[i];
+            Objects.requireNonNull(rel, "rel was null");
+            strings[i] = Objects.toString(rel);
         }
         
         return rel(strings);
     }
     
     /**
-     * Adds one or more relative path components that are NOT url-encoded. This
-     * is the ideal method to use for building urls.
-     * @param paths
-     * @return 
+     * Adds one or more relative path components as-is. If the existing path
+     * is "/a/b" and you supply "c@/d" to this method then the underlying
+     * path would be "/a/b/c%40%2fd". This is the recommended method to safely
+     * build a path in a url.
+     * @param rels One or more relative path components to add
+     * @return This instance
      */
-    public MutableUri rel(String... paths) {
-        if (paths == null || paths.length == 0) {
+    public MutableUri rel(String... rels) {
+        if (rels == null || rels.length == 0) {
             return this;    // nothing to do
         }
         
-        for (String path : paths) {
-            if (this.paths == null) {
-                this.paths = new ArrayList<>();
-                this.paths.add(""); // since its first we need to add this
-            }
-            // do not decode
-            this.paths.add(path);
+        if (this.rels == null) {
+            this.rels = new ArrayList<>();
+        }
+        
+        for (String rel : rels) {
+            Objects.requireNonNull(rel, "rel was null");
+            this.rels.add(rel);
+        }
+        
+        return this;
+    }
+    
+    public MutableUri queryIfPresent(String name, Optional<?> value) {
+        Objects.requireNonNull(name, "name was null");
+        Objects.requireNonNull(name, "value was null");
+        
+        if (value.isPresent()) {
+            this.query(name, value.get());
         }
         
         return this;
@@ -178,7 +206,7 @@ public class MutableUri extends Uri {
     
     public MutableUri query(String name, Object value) {
         Objects.requireNonNull(name, "name was null");
-        return this.query(name, Objects.toString(value));
+        return this.query(name, Objects.toString(value, null));
     }
     
     public MutableUri query(String name, String value) {
@@ -191,15 +219,24 @@ public class MutableUri extends Uri {
         return this;
     }
     
+    public MutableUri setQueryIfPresent(String name, Optional<?> value) {
+        Objects.requireNonNull(name, "name was null");
+        Objects.requireNonNull(name, "value was null");
+        
+        if (value.isPresent()) {
+            this.setQuery(name, value.get());
+        }
+        
+        return this;
+    }
+    
     public MutableUri setQuery(String name, Object value) {
         Objects.requireNonNull(name, "name was null");
-        Objects.requireNonNull(value, "value was null");
-        return this.setQuery(name, Objects.toString(value));
+        return this.setQuery(name, Objects.toString(value, null));
     }
     
     public MutableUri setQuery(String name, String value) {
         Objects.requireNonNull(name, "name was null");
-        Objects.requireNonNull(value, "value was null");
         
         List<String> values = getQueryValues(name);
         
@@ -294,19 +331,15 @@ public class MutableUri extends Uri {
         return this;
     }
     
-    
-    
-    /*
-    static public MutableUri of(String uri, Object... parameters) {
-        String s = format(uri, parameters);
-        return new MutableUri(s);
+    static public List<String> normalizeRootPath(List<String> rels) {
+        if (rels.size() < 2) {
+            // no path at all
+            return null;
+        } else {
+            // drop off the empty root
+            return rels.subList(1, rels.size());
+        }
     }
-    
-    static public URI uri(String uri, Object... parameters) {
-        String s = format(uri, parameters);
-        return new MutableUri(s).toURI();
-    }
-    */
     
     static public List<String> splitPath(String path, boolean decode) {
         List<String> paths = new ArrayList<>();
@@ -349,67 +382,4 @@ public class MutableUri extends Uri {
             throw new IllegalArgumentException(e.getMessage());
         }
     }
-    
-    /**
-     * Builds a String that accepts place holders and replaces them with URL encoded
-     * values.
-     * @param uri A string with place holders (e.g. "http://localhost:{}/path?a={}&b={}", 80, "valForA", "valForB")
-     * @param parameters
-     * @return 
-     */
-    /*
-    static private String format(String uri, Object... parameters) {
-        if (parameters == null || parameters.length == 0 || !uri.contains("{}")) {
-            return uri;
-        }
-        
-        List<String> tokens = splitter(uri, "{}");
-        
-        // there should be tokens.length - 1 parameters supplied
-        if (tokens.size() - 1 != parameters.length) {
-            throw new IllegalArgumentException("Incorrect number of parameters (expected " + (tokens.size() - 1)
-                + "; actual " + parameters.length + ")");
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        
-        for (int i = 0; i < tokens.size(); i++) {
-            if (i > 0) {
-                String v = parameters[i-1].toString();
-                sb.append(encode(v));
-            }
-            sb.append(tokens.get(i));
-        }
-        
-        return sb.toString();
-    }
-    
-    static private List<String> splitter(String s, String delimiter) {
-        List<String> tokens = new ArrayList<>();
-        
-        int index = 0;
-        int matches = 0;
-        while (index < s.length()) {
-            int pos = s.indexOf(delimiter, index);
-            
-            tokens.add(s.substring(index, (pos < 0 ? s.length() : pos)));
-            
-            if (pos < 0) {
-                break;
-            }
-            
-            matches++;
-            index = pos + delimiter.length();
-        }
-        
-        // add an empty value at end if needed
-        if (matches + 1 != tokens.size()) {
-            tokens.add("");
-        }
-        
-        return tokens;
-    }
-    */
-    
-    
 }

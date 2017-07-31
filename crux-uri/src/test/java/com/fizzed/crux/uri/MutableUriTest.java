@@ -18,11 +18,13 @@ package com.fizzed.crux.uri;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class MutableUriTest {
@@ -295,6 +297,41 @@ public class MutableUriTest {
     }
     
     @Test
+    public void queryIfPresent() {
+        String uri;
+        
+        uri = new MutableUri("http://localhost")
+            .queryIfPresent("a", Optional.of(1L))
+            .toString();
+        
+        assertThat(uri, is("http://localhost?a=1"));
+        
+        uri = new MutableUri("http://localhost")
+            .queryIfPresent("a", Optional.ofNullable(null))
+            .toString();
+        
+        assertThat(uri, is("http://localhost"));
+    }
+    
+    @Test
+    public void setQueryIfPresent() {
+        String uri;
+        
+        uri = new MutableUri("http://localhost")
+            .setQueryIfPresent("a", Optional.of(1L))
+            .toString();
+        
+        assertThat(uri, is("http://localhost?a=1"));
+        
+        uri = new MutableUri("http://localhost")
+            .query("a", "2")
+            .setQueryIfPresent("a", Optional.ofNullable("1"))
+            .toString();
+        
+        assertThat(uri, is("http://localhost?a=1"));
+    }
+    
+    @Test
     public void defaultThenOverride() {
         String uri;
         
@@ -336,48 +373,73 @@ public class MutableUriTest {
     }
     
     @Test
-    public void relPath() {
+    public void pathAsRelative() {
         MutableUri uri;
         
         uri = new MutableUri("t://l")
-            .relPath("");
+            .path("");
         
         assertThat(uri.toString(), is("t://l/"));
         
         uri = new MutableUri("t://l")
-            .relPath("/");
+            .path("/");
         
         assertThat(uri.toString(), is("t://l/"));
         
         uri = new MutableUri("t://l")
-            .relPath("a").relPath("b");
+            .path("a").path("b");
         
         assertThat(uri.toString(), is("t://l/a/b"));
         
         uri = new MutableUri("t://l")
-            .relPath("a/b");
+            .path("a/b");
         
         assertThat(uri.toString(), is("t://l/a/b"));
         
         uri = new MutableUri("t://l")
-            .relPath("a/b").relPath("c/d");
+            .path("a/b").path("c/d");
         
         assertThat(uri.toString(), is("t://l/a/b/c/d"));
         
         uri = new MutableUri("t://l")
-            .relPath("a/b").relPath("c/d/");
+            .path("a/b").path("c/d/");
         
         assertThat(uri.toString(), is("t://l/a/b/c/d/"));
         
         uri = new MutableUri("t://l")
-            .relPath("a/b").relPath("c/d").relPath("");
+            .path("a/b").path("c/d").path("");
         
         assertThat(uri.toString(), is("t://l/a/b/c/d/"));
         
         uri = new MutableUri("t://l/api/v1")
-            .relPath("test");
+            .path("test");
         
         assertThat(uri.toString(), is("t://l/api/v1/test"));
+        assertThat(uri.getRels(), is(Arrays.asList("api", "v1", "test")));
+        assertThat(uri.getRel(0), is("api"));
+        assertThat(uri.getRel(4), is(nullValue()));
+        
+        // relative then absolute
+        uri = new MutableUri("t://l/api/v1")
+            .path("test")
+            .path("/a");
+        
+        assertThat(uri.toString(), is("t://l/a"));
+    }
+    
+    @Test
+    public void relWithNull() {
+        MutableUri uri;
+        
+        uri = new MutableUri("t://l")
+            .rel(null);
+        
+        assertThat(uri.toString(), is("t://l"));
+        
+        uri = new MutableUri("t://l")
+            .rel(null, null, null);
+        
+        assertThat(uri.toString(), is("t://l"));
     }
     
     @Test
@@ -403,6 +465,7 @@ public class MutableUriTest {
             .rel("a@b");
         
         assertThat(uri.toString(), is("t://l/a%40b"));
+        assertThat(uri.getRel(0), is("a@b"));
         
         uri = new MutableUri("t://l")
             .rel("a@b", "c");
@@ -416,6 +479,32 @@ public class MutableUriTest {
     }
     
     @Test
+    public void relIfPresent() {
+        MutableUri uri;
+        
+        uri = new MutableUri("t://l");
+        
+        try {
+            uri.relIfPresent((Optional<?>)null);
+            fail();
+        } catch (NullPointerException e) {
+            // expected
+        }
+        
+        assertThat(uri.toString(), is("t://l"));
+        
+        uri = new MutableUri("t://l")
+            .relIfPresent(Optional.ofNullable(null));
+        
+        assertThat(uri.toString(), is("t://l"));
+
+        uri = new MutableUri("t://l")
+            .relIfPresent(Optional.ofNullable(null), Optional.of("test"));
+        
+        assertThat(uri.toString(), is("t://l/test"));
+    }
+    
+    @Test
     public void fixIncorrectRelativePath() {
         MutableUri uri;
         
@@ -426,6 +515,19 @@ public class MutableUriTest {
         uri.path("test");
         
         assertThat(uri.toString(), is("http://localhost/test?a=1"));
+    }
+    
+    @Test
+    public void pathWithNull() {
+        MutableUri uri;
+        
+        uri = new MutableUri("http://localhost/a");
+        
+        assertThat(uri.getPath(), is("/a"));
+        
+        uri.path(null);
+        
+        assertThat(uri.getPath(), is(nullValue()));
     }
     
 }
