@@ -1,6 +1,10 @@
 Crux by Fizzed
 ==============
 
+#### 0.7.0 - 2017-07-31
+
+ - crux-uri: Many new features for Uri and MutableUri
+
 #### 0.6.0 - 2016-12-23
  
  - OkEdge supports connectTimeout and readTimeout
