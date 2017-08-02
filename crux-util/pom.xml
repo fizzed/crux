@@ -16,6 +16,12 @@
         
         <!-- no dependencies!! -->
         
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>3.4.3</version>
+        </dependency>
+        
         <!-- testing -->
 
         <dependency>
