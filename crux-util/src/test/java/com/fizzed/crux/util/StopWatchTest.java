@@ -54,7 +54,7 @@ public class StopWatchTest {
     
     @Test
     public void time() {
-        StopWatch time = StopWatch.time(() -> {
+        StopWatch time = StopWatch.timeMillis(() -> {
             try {
                 Thread.sleep(100L);
             } catch (InterruptedException e) {

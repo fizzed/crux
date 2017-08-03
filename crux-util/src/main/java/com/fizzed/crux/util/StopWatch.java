@@ -63,25 +63,33 @@ public class StopWatch {
         }
         return this;
     }
-
-    static public StopWatch start() {
-        return startMillis();
+    
+    static public StopWatch timeMillis() {
+        return new StopWatch(TimeUnit.MILLISECONDS);
     }
     
-    static public StopWatch startMillis() {
-        return new StopWatch();
+    static public StopWatch timeMillis(Runnable runnable) {
+        return time(TimeUnit.MILLISECONDS, runnable);
     }
     
-    static public StopWatch startNanos() {
+    static public StopWatch timeNanos() {
         return new StopWatch(TimeUnit.NANOSECONDS);
     }
     
-    static public StopWatch startSeconds() {
+    static public StopWatch timeNanos(Runnable runnable) {
+        return time(TimeUnit.NANOSECONDS, runnable);
+    }
+    
+    static public StopWatch timeSeconds() {
         return new StopWatch(TimeUnit.SECONDS);
     }
     
-    static public StopWatch time(Runnable runnable) {
-        StopWatch watch = StopWatch.start();
+    static public StopWatch timeSeconds(Runnable runnable) {
+        return time(TimeUnit.SECONDS, runnable);
+    }
+    
+    static private StopWatch time(TimeUnit tu, Runnable runnable) {
+        StopWatch watch = new StopWatch(tu);
         try {
             runnable.run();
         } finally {
@@ -98,20 +106,20 @@ public class StopWatch {
     }
     
     /**
-     * Returns the total time elapsed in milliseconds. If running this is
-     * the running elapsed time otherwise its the stop-start time.
+     * Returns the total timeMillis elapsed in milliseconds. If running this is
+ the running elapsed timeMillis otherwise its the stop-start timeMillis.
      *
-     * @return The total time elapsed (in ms)
+     * @return The total timeMillis elapsed (in ms)
      */
     public double elapsedMillis() {
         return (double)elapsedNanos() / 1000000.0d;
     }
     
     /**
-     * Returns the total time elapsed in milliseconds. If running this is
-     * the running elapsed time otherwise its the stop-start time.
+     * Returns the total timeMillis elapsed in milliseconds. If running this is
+ the running elapsed timeMillis otherwise its the stop-start timeMillis.
      *
-     * @return The total time elapsed (in ms)
+     * @return The total timeMillis elapsed (in ms)
      */
     public double elapsedSeconds() {
         return this.elapsedMillis() / 1000.0d;
