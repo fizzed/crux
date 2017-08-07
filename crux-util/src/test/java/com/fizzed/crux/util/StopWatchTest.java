@@ -15,7 +15,10 @@
  */
 package com.fizzed.crux.util;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -53,12 +56,12 @@ public class StopWatchTest {
     }
     
     @Test
-    public void time() {
+    public void time() throws Exception {
         StopWatch time = StopWatch.timeMillis(() -> {
             try {
                 Thread.sleep(100L);
             } catch (InterruptedException e) {
-                
+                // do nothing
             }
         });
         
