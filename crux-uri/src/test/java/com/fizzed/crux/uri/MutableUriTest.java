@@ -15,6 +15,10 @@
  */
 package com.fizzed.crux.uri;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -548,6 +551,29 @@ public class MutableUriTest {
         uri.path(null);
         
         assertThat(uri.getPath(), is(nullValue()));
+    }
+    
+    @Test
+    public void buildProgrammatically() throws URISyntaxException {
+        MutableUri uri;
+        
+        Path baseDir = Paths.get("/tmp/pronto");
+        
+        uri = new MutableUri()
+            .scheme("local")
+            .host(baseDir.isAbsolute() ? null : ".")
+            .path(baseDir.toString());
+        
+        // this is identical to how java.net.URI would construct it
+        assertThat(uri.toString(), is("local:/tmp/pronto"));
+        
+        uri = new MutableUri()
+            .scheme("local")
+            .host(baseDir.isAbsolute() ? "" : ".")
+            .path(baseDir.toString());
+        
+        // this is identical to how java.net.URI would construct it
+        assertThat(uri.toString(), is("local:///tmp/pronto"));
     }
     
 }
