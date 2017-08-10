@@ -29,6 +29,18 @@ public class TemporaryPath implements Closeable {
         Files.deleteIfExists(this.path);
     }
     
+    /**
+     * Closes (deletes) the temporary file and suppresses any IO exception that
+     * may or may not occur.
+     */
+    public void safeClose() {
+        try {
+            this.close();
+        } catch (IOException e) {
+            // ignore it
+        }
+    }
+    
     @Override
     public String toString() {
         return this.path.toString();
