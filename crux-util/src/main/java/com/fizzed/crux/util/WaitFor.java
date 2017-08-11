@@ -17,6 +17,7 @@ package com.fizzed.crux.util;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
@@ -28,14 +29,36 @@ import java.util.function.Supplier;
  */
 public class WaitFor {
 
-    private final Supplier<Boolean> function;
+    private final Supplier<Boolean> condition;
 
-    public WaitFor(Supplier<Boolean> function) {
-        this.function = function;
+    public WaitFor(Supplier<Boolean> condition) {
+        this.condition = condition;
     }
     
-    static public WaitFor of(Supplier<Boolean> function) {
-        return new WaitFor(function);
+    static public WaitFor of(Supplier<Boolean> condition) {
+        return new WaitFor(condition);
+    }
+    
+    static public void requireMillis(Supplier<Boolean> condition, long timeout, long every) throws InterruptedException, TimeoutException {
+        new WaitFor(condition).requireMillis(timeout, every);
+    }
+    
+    static public void require(Supplier<Boolean> condition, long timeout, long every, TimeUnit tu) throws InterruptedException, TimeoutException {
+        new WaitFor(condition).require(timeout, every, tu);
+    }
+    
+    public void requireMillis(long timeout, long every) throws InterruptedException, TimeoutException {
+        this.require(timeout, every, TimeUnit.MILLISECONDS);
+    }
+    
+    public void require(long timeout, long every, TimeUnit tu) throws InterruptedException, TimeoutException {
+        if (!this.await(timeout, every, tu)) {
+            throw new TimeoutException("condition failed within " + timeout + " " + tu);
+        }
+    }
+    
+    public boolean awaitMillis(long timeout, long every) throws InterruptedException {
+        return this.await(timeout, every, TimeUnit.MILLISECONDS);
     }
     
     @SuppressWarnings("SleepWhileInLoop")
@@ -46,7 +69,7 @@ public class WaitFor {
         }
         StopWatch timer = StopWatch.time(tu);
         while (timer.lt(timeout)) {
-            if (!function.get()) {
+            if (!condition.get()) {
                 Thread.sleep(tu.toMillis(every));
             } else {
                 return true;
