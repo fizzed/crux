@@ -15,10 +15,7 @@
  */
 package com.fizzed.crux.util;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -32,7 +29,7 @@ public class StopWatchTest {
         long elapsedMillis = 1100L;
         long elapsedNanos = TimeUnit.MILLISECONDS.toNanos(elapsedMillis);
         
-        StopWatch sw = new StopWatch(TimeUnit.MILLISECONDS, start, start+elapsedNanos);
+        StopWatch sw = new StopWatch(TimeUnit.MILLISECONDS, start, start+elapsedNanos, true);
         
         assertThat(sw.isRunning(), is(false));
         assertThat(sw.elapsedNanos(), is(elapsedNanos));
@@ -42,17 +39,55 @@ public class StopWatchTest {
     }
     
     @Test
+    public void elapsed() {
+        long start = System.nanoTime();
+        long elapsedMillis = 1100L;
+        long elapsedNanos = TimeUnit.MILLISECONDS.toNanos(elapsedMillis);
+        
+        StopWatch sw = new StopWatch(TimeUnit.MILLISECONDS, start, start+elapsedNanos, true);
+        
+        assertThat(sw.elapsed(), is(1100d));
+        assertThat(sw.gt(1100), is(false));
+        assertThat(sw.gt(1099), is(true));
+        assertThat(sw.gte(1100), is(true));
+        assertThat(sw.lt(1100), is(false));
+        assertThat(sw.lt(1101), is(true));
+        assertThat(sw.lte(1100), is(true));
+        assertThat(sw.eq(1100), is(true));
+        assertThat(sw.eq(1101), is(false));
+    }
+    
+    @Test
     public void format() {
         long start = System.nanoTime();
         long elapsedMillis = 1102L;
         long elapsedNanos = TimeUnit.MILLISECONDS.toNanos(elapsedMillis);
         
-        StopWatch sw = new StopWatch(TimeUnit.SECONDS, start, start+elapsedNanos);
+        StopWatch sw = new StopWatch(TimeUnit.SECONDS, start, start+elapsedNanos, true);
         
         assertThat(sw.isRunning(), is(false));
         assertThat(sw.elapsedNanos(), is(elapsedNanos));
         assertThat(sw.elapsedMillis(), is((double)elapsedMillis));
         assertThat(sw.toString(), is("1.10 s"));
+        assertThat(sw.toString(TimeUnit.NANOSECONDS), is("1102000000 ns"));
+        assertThat(sw.toString(TimeUnit.MICROSECONDS), is("1102000 mu"));
+        assertThat(sw.toString(TimeUnit.MILLISECONDS), is("1102.0 ms"));
+        assertThat(sw.toString(TimeUnit.SECONDS), is("1.10 s"));
+        assertThat(sw.toString(TimeUnit.MINUTES), is("0.02 m"));
+        assertThat(sw.toString(TimeUnit.HOURS), is("0.00 h"));
+        assertThat(sw.toString(TimeUnit.DAYS), is("0.00 d"));
+        
+        // something more useful for days
+        start = System.nanoTime();
+        elapsedNanos = TimeUnit.DAYS.toNanos(3);
+        
+        sw = new StopWatch(TimeUnit.SECONDS, start, start+elapsedNanos, true);
+        
+        assertThat(sw.toString(TimeUnit.SECONDS), is("259200.00 s"));
+        assertThat(sw.toString(TimeUnit.MINUTES), is("4320.00 m"));
+        assertThat(sw.toString(TimeUnit.HOURS), is("72.00 h"));
+        assertThat(sw.toString(TimeUnit.DAYS), is("3.00 d"));
+        
     }
     
     @Test
