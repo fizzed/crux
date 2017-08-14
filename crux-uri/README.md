@@ -4,9 +4,9 @@ crux-uri
 ## Overview
 
 A lightweight, zero-dependency library for building and using URIs.  Supports
-builder-style syntax and accepts objects in um  In its own
-project so you can avoid pulling in larger libraries (e.g. okhttp or apache http)
-just for their URIs libs.
+builder-style syntax. Accepts objects in various methods to simplify building
+valid REST uris. Designed in its own project so you can avoid pulling in larger
+libraries (e.g. okhttp or apache http) just for their URI class.
 
 ## Usage
 
@@ -30,6 +30,7 @@ Uri uri = new MutableUri()
     .scheme("https")
     .host("fizzed.com")
     .path("/contact")
-    .query("a", 1);
+    .query("a", 1)
+    .immutable();
 
 ```
