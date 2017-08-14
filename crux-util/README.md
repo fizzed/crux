@@ -3,8 +3,8 @@ crux-util
 
 ## Overview
 
-Utilities reusable across a wide variety of projects.  We plan on keeping
-dependencies within this library to zero.
+Utilities reusable across a wide variety of projects.  This lib will always
+require zero external dependencies.
 
 ## Usage
 
@@ -12,6 +12,6 @@ dependencies within this library to zero.
 <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-util</artifactId>
-    <version>0.4.0</version>
+    <version><!-- latest version --></version>
 </dependency>
 ```

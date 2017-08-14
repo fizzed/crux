@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.uri;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -574,6 +573,18 @@ public class MutableUriTest {
         
         // this is identical to how java.net.URI would construct it
         assertThat(uri.toString(), is("local:///tmp/pronto"));
+    }
+    
+    @Test
+    public void programmatic2() throws URISyntaxException {
+        Uri uri = new MutableUri()
+            .scheme("https")
+            .host("fizzed.com")
+            .path("/contact")
+            .query("a", 1);
+        
+        // this is identical to how java.net.URI would construct it
+        assertThat(uri.toString(), is("https://fizzed.com/contact?a=1"));
     }
     
 }
