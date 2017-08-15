@@ -22,7 +22,7 @@ import com.fizzed.crux.util.BindingPropertySupport;
 /**
  * Options for building an OkHttp client.
  */
-public class OkHttpOptions implements BindingPropertySupport {
+public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
     
     static private final BindingPropertyMap<OkHttpOptions> PROP_MAP
         = new BindingPropertyMap<OkHttpOptions>()
@@ -47,7 +47,7 @@ public class OkHttpOptions implements BindingPropertySupport {
     private OkLoggingLevel loggingLevel;
     
     @Override
-    public BindingPropertyMap getPropertyMap() {
+    public BindingPropertyMap<OkHttpOptions> getPropertyMap() {
         return PROP_MAP;
     }
     
@@ -100,7 +100,8 @@ public class OkHttpOptions implements BindingPropertySupport {
     }
 
     public void setUri(Uri uri) {
-        
+        // set properties via a uri
+        this.setProperties(uri.getQueryFirstMap(), true);
     }
 
 }
