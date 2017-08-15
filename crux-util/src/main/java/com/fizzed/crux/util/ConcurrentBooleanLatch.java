@@ -1,5 +1,6 @@
 package com.fizzed.crux.util;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,21 +59,29 @@ public class ConcurrentBooleanLatch {
     }
     
     /**
-     * Will either proceed immediately or wait until this latch is true.
+     * Will either proceed immediately or wait until the value is set.
      * 
+     * @param value The value we expect
      * @throws InterruptedException 
      */
-    public void awaitTrue() throws InterruptedException {
-        this.awaitTrue(null);
+    public void await(boolean value) throws InterruptedException {
+        this.await(value, null);
     }
     
-    public void awaitTrue(Runnable willWait) throws InterruptedException {
+    /**
+     * Will either proceed immediately or wait until the value is set.
+     * 
+     * @param value The value we expect
+     * @param willWait Will be run only if waiting will be required
+     * @throws InterruptedException 
+     */
+    public void await(boolean value, Runnable willWait) throws InterruptedException {
         this.lock.lockInterruptibly();
         try {
-            // if false then wait till its true
-            while (!this.value) {
+            final Condition condition = (value ? this.trueCondition : this.falseCondition);
+            while (value != this.value) {
                 if (willWait != null) { willWait.run(); }
-                this.trueCondition.await();
+                condition.await();
             }
         } finally {
             this.lock.unlock();
@@ -80,22 +89,39 @@ public class ConcurrentBooleanLatch {
     }
     
     /**
-     * Will either proceed immediately or wait until this latch is closed.
+     * Will either proceed immediately or wait until the value is set.
      * 
+     * @param value The value we expect
+     * @param timeout Amount of time to wait
+     * @param tu The unit for the timeout
+     * @return True is the expected value was met or false if the timeout occurred
      * @throws InterruptedException 
      */
-    public void awaitFalse() throws InterruptedException {
-        this.awaitFalse(null);
+    public boolean await(boolean value, long timeout, TimeUnit tu) throws InterruptedException {
+        return this.await(value, timeout, tu, null);
     }
     
-    public void awaitFalse(Runnable willWait) throws InterruptedException {
+    /**
+     * Will either proceed immediately or wait until the value is set.
+     * 
+     * @param value The value we expect
+     * @param timeout Amount of time to wait
+     * @param tu The unit for the timeout
+     * @param willWait Will be run only if waiting will be required
+     * @return True is the expected value was met or false if the timeout occurred
+     * @throws InterruptedException 
+     */
+    public boolean await(boolean value, long timeout, TimeUnit tu, Runnable willWait) throws InterruptedException {
         this.lock.lockInterruptibly();
         try {
-            // if true then wait till its false
-            while (this.value) {
+            final Condition condition = (value ? this.trueCondition : this.falseCondition);
+            while (value != this.value) {
                 if (willWait != null) { willWait.run(); }
-                this.falseCondition.await();
+                if (!condition.await(timeout, tu)) {
+                    return false;
+                }
             }
+            return true;
         } finally {
             this.lock.unlock();
         }
