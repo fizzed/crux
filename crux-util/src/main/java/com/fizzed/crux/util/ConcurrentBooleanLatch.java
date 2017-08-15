@@ -16,10 +16,17 @@ public class ConcurrentBooleanLatch {
     private final Condition closed;
     private boolean open;
 
+    /**
+     * Creates a new instance in the "opened" initial state.
+     */
     public ConcurrentBooleanLatch() {
         this(true);
     }
     
+    /**
+     * Creates a new instance in the specified initial state
+     * @param open The initial open state
+     */
     public ConcurrentBooleanLatch(boolean open) {
         this.lock = new ReentrantLock();
         this.opened = this.lock.newCondition();
