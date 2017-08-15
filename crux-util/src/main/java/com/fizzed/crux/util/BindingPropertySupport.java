@@ -21,13 +21,27 @@ public interface BindingPropertySupport<A extends BindingPropertySupport<A>> {
 
     BindingPropertyMap<A> getPropertyMap();
     
+    default boolean hasProperty(String key) {
+        return this.getPropertyMap().hasKey(key);
+    }
+    
     default A setProperty(String key, Object value) {
         this.getPropertyMap().set((A)this, key, value);
         return (A)this;
     }
     
+    default A setProperty(String key, Object value, boolean skipUnknownKeys) {
+        this.getPropertyMap().set((A)this, key, value, skipUnknownKeys);
+        return (A)this;
+    }
+    
     default A setProperties(Map<String,?> properties) {
         this.getPropertyMap().setAll((A)this, properties);
+        return (A)this;
+    }
+    
+    default A setProperties(Map<String,?> properties, boolean skipUnknownKeys) {
+        this.getPropertyMap().setAll((A)this, properties, skipUnknownKeys);
         return (A)this;
     }
     

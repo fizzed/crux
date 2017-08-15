@@ -15,7 +15,7 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.okhttp.OkEdge.LoggingLevel;
+import com.fizzed.crux.okhttp.OkLoggingLevel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class DemoMain {
         OkEdgeState state = new OkEdgeState()
             .cookies(true)
             .insecure(true)
-            .logging(LoggingLevel.BODY);
+            .logging(OkLoggingLevel.BODY);
         
         Response response;
         

@@ -29,7 +29,7 @@ public class OkEdge {
     private final OkHttpClient.Builder clientBuilder;
     private final Request.Builder requestBuilder;
     private Boolean insecure;
-    private LoggingLevel loggingLevel;
+    private OkLoggingLevel loggingLevel;
     private Long connectTimeout;
     private Long readTimeout;
     
@@ -97,9 +97,6 @@ public class OkEdge {
         return this;
     }
     
-    static public enum LoggingLevel {
-        NONE, BASIC, HEADERS, BODY
-    }
     
     /**
      * Logs nothing, basic, to headers, or to the body. Please note that logging
@@ -108,7 +105,7 @@ public class OkEdge {
      * @param loggingLevel The level got log to
      * @return This instance
      */
-    public OkEdge logging(LoggingLevel loggingLevel) {
+    public OkEdge logging(OkLoggingLevel loggingLevel) {
         this.loggingLevel = loggingLevel;
         
         if (loggingLevel == null) {
@@ -239,7 +236,7 @@ public class OkEdge {
         Response response = client.newCall(request).execute();
         
         // network-level logging interceptor won't log encoded bodies
-        if (this.loggingLevel != null && this.loggingLevel == LoggingLevel.BODY) {
+        if (this.loggingLevel != null && this.loggingLevel == OkLoggingLevel.BODY) {
             ResponseBodyLogger.log(response, response.body());
         }
         

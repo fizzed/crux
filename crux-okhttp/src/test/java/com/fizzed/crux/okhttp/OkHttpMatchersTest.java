@@ -43,6 +43,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(200)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .build();
         
         assertThat(response, hasStatusCode(200));
@@ -54,6 +55,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(200)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .build();
         
         assertThat(response, hasAnyStatusCode(201, 202, 200));
@@ -65,6 +67,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(200)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .header("content-type", "application/json")
             .build();
         
@@ -79,6 +82,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(200)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .header("content-type", "application/json; charset=utf-8")
             .build();
         
@@ -91,6 +95,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(200)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .header("content-type", "application/json; charset=utf-8")
             .header("transfer-encoding", "chunked")
             .build();
@@ -106,6 +111,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(302)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .header("Location", "/go/here")
             .build();
         
@@ -117,6 +123,7 @@ public class OkHttpMatchersTest {
         Response response = new Response.Builder().request(request)
             .code(302)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .build();
         
         assertThat(response, hasEmptyBody());
@@ -124,6 +131,7 @@ public class OkHttpMatchersTest {
         response = new Response.Builder().request(request)
             .code(302)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .body(ResponseBody.create(null, ""))
             .build();
         
@@ -132,6 +140,7 @@ public class OkHttpMatchersTest {
         response = new Response.Builder().request(request)
             .code(302)
             .protocol(Protocol.HTTP_1_1)
+            .message("Test")
             .body(ResponseBody.create(null, "1"))
             .build();
         

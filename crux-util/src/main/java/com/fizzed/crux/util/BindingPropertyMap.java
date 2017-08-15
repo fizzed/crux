@@ -48,6 +48,18 @@ public class BindingPropertyMap<A> {
     static public final Function<String,String> STRING_CONVERTER = (s) -> {
         return s;
     };
+    static public final Function<String,Boolean> BOOLEAN_CONVERTER = (s) -> {
+        if (s == null) {
+            return null;
+        }
+        if (s.equalsIgnoreCase("true")) {
+            return Boolean.TRUE;
+        } else if (s.equalsIgnoreCase("false")) {
+            return Boolean.FALSE;
+        } else {
+            throw new IllegalArgumentException("Invalid boolean (only true or false)");
+        }
+    };
     static public final Function<String,Integer> INTEGER_CONVERTER = (s) -> {
         return s != null ? Integer.valueOf(s) : null;
     };
@@ -80,12 +92,13 @@ public class BindingPropertyMap<A> {
         this.map = new LinkedHashMap<>();      // insertion order important
     }
     
-    public Set<String> getKeys() {
-        return this.map.keySet();
-    }
-    
     public BindingPropertyMap<A> bindString(String key, BiConsumer<A,String> setter) {
         this.map.put(key, new Property<>(String.class, setter, STRING_CONVERTER));
+        return this;
+    }
+    
+    public BindingPropertyMap<A> bindBoolean(String key, BiConsumer<A,Boolean> setter) {
+        this.map.put(key, new Property<>(Boolean.class, setter, BOOLEAN_CONVERTER));
         return this;
     }
     
@@ -124,16 +137,32 @@ public class BindingPropertyMap<A> {
         return this;
     }
     
+    public Set<String> getKeys() {
+        return this.map.keySet();
+    }
+    
+    public boolean hasKey(String key) {
+        return this.map.containsKey(key);
+    }
+    
     public void set(A instance, String key, Object value) {
+        this.set(instance, key, value, false);
+    }
+    
+    public void set(A instance, String key, Object value, boolean skipUnknownKeys) {
         Objects.requireNonNull(instance, "instance was null");
         Objects.requireNonNull(key, "key was null");
         
         Property<A,Object> property = (Property<A,Object>)this.map.get(key);
         
         if (property == null) {
-            throw new IllegalArgumentException("Property '" + key + "' is not recognized for "
-                + instance.getClass().getCanonicalName()
-                + " (available are " + this.map.keySet() + ")");
+            if (skipUnknownKeys) {
+                return;
+            } else {
+                throw new IllegalArgumentException("Property '" + key + "' is not recognized for "
+                    + instance.getClass().getCanonicalName()
+                    + " (available are " + this.map.keySet() + ")");
+            }
         }
         
         try {
@@ -145,10 +174,14 @@ public class BindingPropertyMap<A> {
     }
     
     public void setAll(A instance, Map<String,?> values) {
+        this.setAll(instance, values, false);
+    }
+    
+    public void setAll(A instance, Map<String,?> values, boolean skipUnknownKeys) {
         if (values == null) {
             return;
         }
-        values.forEach((key, value) -> this.set(instance, key, value));
+        values.forEach((key, value) -> this.set(instance, key, value, skipUnknownKeys));
     }
     
 }

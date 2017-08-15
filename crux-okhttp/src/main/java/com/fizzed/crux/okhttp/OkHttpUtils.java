@@ -16,8 +16,11 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class OkHttpUtils {
     
@@ -26,5 +29,72 @@ public class OkHttpUtils {
     
     static public final HostnameVerifier TRUST_ALL_HOSTNAME_VERIFIER
         = SecureUtil.createTrustAllHostnameVerifier();
+    
+    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel) {
+        if (loggingLevel == null) {
+            return null;
+        }
+        
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        
+        switch (loggingLevel) {
+            case NONE:
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+                break;
+            case BASIC:
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+                break;
+            case HEADERS:
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+                break;
+            case BODY:
+                // NOTE: okhttp doesn't do a great job at body logging
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+                break;
+        }
+        
+        return loggingInterceptor;
+    }
+    
+    static public OkHttpClient buildClient(OkHttpOptions options) {
+        return createBuilder(options).build();
+    }
+    
+    static public OkHttpClient.Builder createBuilder(OkHttpOptions options) {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        
+        configureBuilder(clientBuilder, options);
+        
+        return clientBuilder;
+    }
+    
+    static public void configureBuilder(OkHttpClient.Builder clientBuilder, OkHttpOptions options) {
+        if (options.getInsecure() != null && options.getInsecure()) {
+            clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY);
+            clientBuilder.hostnameVerifier(OkHttpUtils.TRUST_ALL_HOSTNAME_VERIFIER);
+        }
+        
+        if (options.getConnectTimeout() != null) {
+            clientBuilder.connectTimeout(options.getConnectTimeout(), TimeUnit.MILLISECONDS);
+        }
+        
+        if (options.getWriteTimeout() != null) {
+            clientBuilder.writeTimeout(options.getWriteTimeout(), TimeUnit.MILLISECONDS);
+        }
+        
+        if (options.getReadTimeout() != null) {
+            clientBuilder.readTimeout(options.getReadTimeout(), TimeUnit.MILLISECONDS);
+        }
+        
+        if (options.getFollowRedirects() != null) {
+            clientBuilder.followRedirects(options.getFollowRedirects());
+            clientBuilder.followSslRedirects(options.getFollowRedirects());
+        }
+        
+        HttpLoggingInterceptor loggingInterceptor = createLoggingInterceptor(options.getLoggingLevel());
+        if (loggingInterceptor != null) {
+            clientBuilder.addNetworkInterceptor(loggingInterceptor);
+        }
+    }
     
 }

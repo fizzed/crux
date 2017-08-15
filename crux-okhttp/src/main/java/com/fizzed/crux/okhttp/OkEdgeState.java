@@ -15,7 +15,7 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.okhttp.OkEdge.LoggingLevel;
+import com.fizzed.crux.okhttp.OkLoggingLevel;
 import okhttp3.CookieJar;
 import okhttp3.Credentials;
 import okhttp3.Headers;
@@ -27,7 +27,7 @@ public class OkEdgeState {
     
     static public final OkEdgeState DEFAULT_INSTANCE = new OkEdgeState();
     
-    private LoggingLevel loggingLevel;
+    private OkLoggingLevel loggingLevel;
     private Boolean followRedirects;
     private Boolean insecure;
     private CookieJar cookieJar;
@@ -38,11 +38,11 @@ public class OkEdgeState {
         this.cookieJar = null;
     }
     
-    LoggingLevel logging() {
+    OkLoggingLevel logging() {
         return this.loggingLevel;
     }
     
-    public OkEdgeState logging(LoggingLevel loggingLevel) {
+    public OkEdgeState logging(OkLoggingLevel loggingLevel) {
         this.loggingLevel = loggingLevel;
         return this;
     }
