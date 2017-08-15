@@ -12,9 +12,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConcurrentBooleanLatch {
  
     private final ReentrantLock lock;
-    private final Condition opened;
-    private final Condition closed;
-    private boolean open;
+    private final Condition trueCondition;
+    private final Condition falseCondition;
+    private boolean value;
 
     /**
      * Creates a new instance in the "opened" initial state.
@@ -25,44 +25,54 @@ public class ConcurrentBooleanLatch {
     
     /**
      * Creates a new instance in the specified initial state
-     * @param open The initial open state
+     * @param initialValue The initial state
      */
-    public ConcurrentBooleanLatch(boolean open) {
+    public ConcurrentBooleanLatch(boolean initialValue) {
         this.lock = new ReentrantLock();
-        this.opened = this.lock.newCondition();
-        this.closed = this.lock.newCondition();
-        this.open = open;
+        this.trueCondition = this.lock.newCondition();
+        this.falseCondition = this.lock.newCondition();
+        this.value = initialValue;
     }
-    
-    public boolean isOpened() {
+
+    public boolean get() {
         this.lock.lock();
         try {
-            return this.open;
+            return this.value;
         } finally {
             this.lock.unlock();
         }
     }
     
-    public boolean isClosed() {
-        return !this.isOpened();
+    public void set(boolean newValue) {
+        this.lock.lock();
+        try {
+            this.value = newValue;
+            if (this.value) {
+                this.trueCondition.signal();
+            } else {
+                this.falseCondition.signal();
+            }
+        } finally {
+            this.lock.unlock();
+        }
     }
     
     /**
-     * Waits forever for the latch to be open(ed).
+     * Will either proceed immediately or wait until this latch is true.
      * 
      * @throws InterruptedException 
      */
-    public void awaitOpened() throws InterruptedException {
-        this.awaitOpened(null);
+    public void awaitTrue() throws InterruptedException {
+        this.awaitTrue(null);
     }
     
-    public void awaitOpened(Runnable willWait) throws InterruptedException {
+    public void awaitTrue(Runnable willWait) throws InterruptedException {
         this.lock.lockInterruptibly();
         try {
-            // if closed then wait till its opened
-            while (!this.open) {
+            // if false then wait till its true
+            while (!this.value) {
                 if (willWait != null) { willWait.run(); }
-                this.opened.await();
+                this.trueCondition.await();
             }
         } finally {
             this.lock.unlock();
@@ -74,38 +84,18 @@ public class ConcurrentBooleanLatch {
      * 
      * @throws InterruptedException 
      */
-    public void awaitClosed() throws InterruptedException {
-        this.awaitClosed(null);
+    public void awaitFalse() throws InterruptedException {
+        this.awaitFalse(null);
     }
     
-    public void awaitClosed(Runnable willWait) throws InterruptedException {
+    public void awaitFalse(Runnable willWait) throws InterruptedException {
         this.lock.lockInterruptibly();
         try {
-            // if open then wait till its closed
-            while (this.open) {
+            // if true then wait till its false
+            while (this.value) {
                 if (willWait != null) { willWait.run(); }
-                this.closed.await();
+                this.falseCondition.await();
             }
-        } finally {
-            this.lock.unlock();
-        }
-    }
-    
-    public void open() {
-        this.lock.lock();
-        try {
-            this.open = true;
-            this.opened.signal();
-        } finally {
-            this.lock.unlock();
-        }
-    }
-    
-    public void close() {
-        this.lock.lock();
-        try {
-            this.open = false;
-            this.closed.signal();
         } finally {
             this.lock.unlock();
         }
