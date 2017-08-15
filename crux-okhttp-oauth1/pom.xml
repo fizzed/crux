@@ -2,8 +2,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.fizzed</groupId>
-    <artifactId>crux-okhttp</artifactId>
-    <name>crux-okhttp</name>
+    <artifactId>crux-okhttp-oauth1</artifactId>
+    <name>crux-okhttp-oauth1</name>
     <packaging>jar</packaging>
     
     <parent>
@@ -15,30 +15,15 @@
     <dependencies>
         
         <dependency>
-            <groupId>com.fizzed</groupId>
-            <artifactId>crux-util</artifactId>
+            <groupId>oauth.signpost</groupId>
+            <artifactId>signpost-core</artifactId>
+            <version>1.2.1.2</version>
         </dependency>
         
         <dependency>
-            <groupId>com.fizzed</groupId>
-            <artifactId>crux-uri</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>logging-interceptor</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>java-hamcrest</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
+            <groupId>se.akerfeldt</groupId>
+            <artifactId>okhttp-signpost</artifactId>
+            <version>1.1.0</version>
         </dependency>
         
         <!-- testing -->

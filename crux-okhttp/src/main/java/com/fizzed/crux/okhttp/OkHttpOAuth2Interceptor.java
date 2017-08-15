@@ -15,7 +15,7 @@ public class OkHttpOAuth2Interceptor implements Interceptor {
     }
     
     public OkHttpOAuth2Interceptor(String tokenType, String accessToken) {
-        Objects.requireNonNull(accessToken);
+        Objects.requireNonNull(accessToken, "accessToken was null");
         this.authorizationHeader = (tokenType == null ? "Bearer" : tokenType)
             + " " + accessToken;
     }
