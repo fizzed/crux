@@ -26,7 +26,8 @@ public class TemporaryPath implements Closeable {
     
     @Override
     public void close() throws IOException {
-        Files.deleteIfExists(this.path);
+        // this deletes a file OR dir (recursively)
+        MoreFiles.deleteDirectoryIfExists(this.path);
     }
     
     /**
