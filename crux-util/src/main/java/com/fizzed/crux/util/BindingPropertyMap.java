@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -171,6 +172,18 @@ public class BindingPropertyMap<A> {
             // unwrap conversion exception, add message, but also return its cause
             throw new IllegalArgumentException("Property '" + key + "' could not be converted. " + e.getMessage(), e.getCause());
         }
+    }
+    
+    public void setAll(A instance, Properties properties) {
+        this.setAll(instance, properties, false);
+    }
+    
+    public void setAll(A instance, Properties properties, boolean skipUnknownKeys) {
+        if (properties == null) {
+            return;
+        }
+        // process each property
+        properties.forEach((key, value) -> this.set(instance, key.toString(), value, skipUnknownKeys));
     }
     
     public void setAll(A instance, Map<String,?> values) {

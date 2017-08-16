@@ -16,6 +16,7 @@
 package com.fizzed.crux.util;
 
 import java.util.Map;
+import java.util.Properties;
 
 public interface BindingPropertySupport<A extends BindingPropertySupport<A>> {
 
@@ -32,6 +33,16 @@ public interface BindingPropertySupport<A extends BindingPropertySupport<A>> {
     
     default A setProperty(String key, Object value, boolean skipUnknownKeys) {
         this.getPropertyMap().set((A)this, key, value, skipUnknownKeys);
+        return (A)this;
+    }
+    
+    default A setProperties(Properties properties) {
+        this.getPropertyMap().setAll((A)this, properties);
+        return (A)this;
+    }
+    
+    default A setProperties(Properties properties, boolean skipUnknownKeys) {
+        this.getPropertyMap().setAll((A)this, properties, skipUnknownKeys);
         return (A)this;
     }
     
