@@ -16,25 +16,21 @@
 package com.fizzed.crux.vagrant;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import org.zeroturnaround.exec.InvalidExitValueException;
-import org.zeroturnaround.exec.ProcessExecutor;
-import org.zeroturnaround.exec.ProcessResult;
 
 public class VagrantClients {
 
     static public boolean isVagrantInstalled() {
         try {
-            ProcessResult result
-                = new ProcessExecutor()
-                    // "vagrant version" verifies you have latest version, while "vagrant -v"
-                    // quickly prints version and then exits
-                    .command(VagrantUtil.COMMAND, "-v")
-                    .readOutput(true)
-                    .exitValueNormal()
-                    .execute();
-            return true;
-        } catch (IOException | InterruptedException | TimeoutException | InvalidExitValueException e) {
+            // do not use zt-exec since they log something to slf4j that 
+            // inadvertently prints out if vagrant is missing
+            Process process = new ProcessBuilder(VagrantUtil.COMMAND, "-v")
+                .start();
+            process.waitFor(3000L, TimeUnit.MILLISECONDS);
+            int exitValue = process.exitValue();
+            return exitValue == 0;
+        } catch (IOException | InterruptedException | InvalidExitValueException e) {
             return false;
         }
     }
