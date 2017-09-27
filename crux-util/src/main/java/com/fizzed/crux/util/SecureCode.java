@@ -19,7 +19,8 @@ import java.util.Arrays;
 
 /**
  * Immutable, secure, random code internally stored as a byte array but externally
- * safe to use in a URI.
+ * safe to use in a URI.  The bytes will be base64 encoded using URL-safe
+ * chars and the padding chars will also be dropped off (RFC 7515).
  */
 public class SecureCode {
     
@@ -29,7 +30,12 @@ public class SecureCode {
         this.bytes = bytes;
     }
     
-    public SecureCode(String value) {
+    /**
+     * 
+     * @param value 
+     * @throws IllegalArgumentException
+     */
+    public SecureCode(String value) throws IllegalArgumentException {
         this.bytes = SecureCodes.decode(value);
     }
 

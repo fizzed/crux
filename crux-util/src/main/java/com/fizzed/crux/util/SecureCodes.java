@@ -20,7 +20,8 @@ import java.util.Base64;
 
 /**
  * Utility class for generating and handling SecureCodes.  A SecureCode is
- * efficiently stored as bytes with an external URL-safe string representation.
+ * efficiently stored as bytes with an external base64, URL-safe string
+ * representation.  The base64 padding chars will be removed too.
  */
 public class SecureCodes {
     
@@ -141,10 +142,25 @@ public class SecureCodes {
     }
     
     static public String encode(byte[] bytes) {
-        return encoder.encodeToString(bytes);
+        String encoded = encoder.encodeToString(bytes);
+        
+        // remove any trailing padding (up to 2 equals chars)
+        if (encoded.charAt(encoded.length()-2) == '=') {
+            return encoded.substring(0, encoded.length()-2);
+        } else if (encoded.charAt(encoded.length()-1) == '=') {
+            return encoded.substring(0, encoded.length()-1);
+        } else {
+            return encoded;
+        }
     }
     
-    static public byte[] decode(String string) {
+    /**
+     * Decodes a secure code external representation.
+     * @param string The external string
+     * @return The byte array
+     * @throws IllegalArgumentException If the value is detected to be invalid
+     */
+    static public byte[] decode(String string) throws IllegalArgumentException {
         return decoder.decode(string);
     }
     
