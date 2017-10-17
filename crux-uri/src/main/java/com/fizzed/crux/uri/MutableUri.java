@@ -17,6 +17,7 @@ package com.fizzed.crux.uri;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -225,11 +226,21 @@ public class MutableUri extends Uri {
     
     /**
      * Adds the entire map as query values.
-     * @param queryMap The map to add
+     * @param queryMap The map to add.  Must not be a null map.
      * @return 
      */
     public MutableUri query(Map<String,?> queryMap) {
-        queryMap.forEach((name, value) -> this.query(name, value));
+        Objects.requireNonNull(queryMap, "queryMap was null");
+        queryMap.forEach((name, value) -> {
+            if (value instanceof Iterable) {
+                Iterable it = (Iterable)value;
+                it.forEach(v -> {
+                    this.query(name, v);
+                });
+            } else {
+                this.query(name, value);
+            }
+        });
         return this;
     }
     
@@ -262,11 +273,28 @@ public class MutableUri extends Uri {
     
     /**
      * Adds the entire map as query values.
-     * @param queryMap The map to add
+     * @param queryMap The map to add or null to clear.  The value can either be
+     *      a value or an Iterable of values.
      * @return 
      */
     public MutableUri setQuery(Map<String,?> queryMap) {
-        queryMap.forEach((name, value) -> this.setQuery(name, value));
+        if (this.query != null) {
+            this.query.clear();
+        }
+        
+        if (queryMap != null) {
+            queryMap.forEach((name, value) -> {
+                if (value instanceof Iterable) {
+                    Iterable it = (Iterable)value;
+                    it.forEach(v -> {
+                        this.setQuery(name, v);
+                    });
+                } else {
+                    this.setQuery(name, value);
+                }
+            });
+        }
+        
         return this;
     }
     
@@ -282,7 +310,7 @@ public class MutableUri extends Uri {
     
     /**
      * Sets the non url-encoded fragment.
-     * @param fragment Non url-encoded fragment.
+     * @param fragment Non url-encoded fragment or null to clear.
      * @return 
      */
     public MutableUri fragment(String fragment) {

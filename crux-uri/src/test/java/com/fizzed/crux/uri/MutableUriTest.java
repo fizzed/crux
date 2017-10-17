@@ -367,9 +367,10 @@ public class MutableUriTest {
         
         uri = new MutableUri("http://localhost?a=1&b=2");
         
-        Map<String,String> query = new LinkedHashMap<>();
+        // either single value OR iterable :-)
+        Map<String,Object> query = new LinkedHashMap<>();
         query.put("a", "2");
-        query.put("b", "3");
+        query.put("b", Arrays.asList("3"));
         
         uri.query(query);
         
@@ -381,11 +382,11 @@ public class MutableUriTest {
     public void setQueryWithMap() {
         MutableUri uri;
         
-        uri = new MutableUri("http://localhost?a=1&b=2");
+        uri = new MutableUri("http://localhost?a=1&b=2&c=3");
         
-        Map<String,String> query = new LinkedHashMap<>();
+        Map<String,Object> query = new LinkedHashMap<>();
         query.put("a", "2");
-        query.put("b", "3");
+        query.put("b", Arrays.asList("3"));
         
         uri.setQuery(query);
         
@@ -576,7 +577,7 @@ public class MutableUriTest {
     }
     
     @Test
-    public void programmatic2() throws URISyntaxException {
+    public void buildProgrammatically2() throws URISyntaxException {
         Uri uri = new MutableUri()
             .scheme("https")
             .host("fizzed.com")

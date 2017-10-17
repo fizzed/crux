@@ -186,6 +186,40 @@ public class Uri {
         return this.fragment;
     }
     
+    public boolean isAbsolute() {
+        return this.scheme != null && this.host != null;
+    }
+    
+    public Uri resolve(String otherUrl) {
+        if (otherUrl == null) {
+            return null;
+        }
+        
+        String v = otherUrl.trim();
+        
+        if (v.length() == 0) {
+            return null;
+        }
+        
+        // same scheme as us?
+        if (otherUrl.startsWith("//")) {
+            return new Uri(this.getScheme() + ":" + otherUrl);
+        }
+        
+        // time to parse the other url
+        Uri otherUri = new Uri(otherUrl);
+        
+        if (otherUri.isAbsolute()) {
+            return otherUri;
+        }
+        
+        // otherwise resolve it against us...
+        return this.toMutableUri()
+            .path(otherUri.getPath())
+            .setQuery(otherUri.getQuery())
+            .fragment(otherUri.getFragment());
+    }
+    
     protected final Map<String,List<String>> copy(Map<String,List<String>> map) {
         if (map == null) {
             return null;

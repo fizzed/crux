@@ -30,6 +30,10 @@ public class UriTest {
         Uri uri = new Uri("http://www.fizzed.com");
         
         assertThat(uri.toString(), is("http://www.fizzed.com"));
+        
+        uri = new Uri("/");
+        
+        assertThat(uri.toString(), is("/"));
     }
     
     @Test
@@ -101,6 +105,52 @@ public class UriTest {
         assertThat(map, hasEntry("a","1"));
         assertThat(map, hasEntry("b","2"));
         assertThat(map, hasEntry("c","1"));
+    }
+    
+    @Test
+    public void isAbsolute() {
+        Uri uri;
+        
+        uri = new Uri("http://www.fizzed.com");
+        
+        assertThat(uri.isAbsolute(), is(true));
+        
+        uri = new Uri("/");
+        
+        assertThat(uri.isAbsolute(), is(false));
+        assertThat(uri.getHost(), is(nullValue()));
+    }
+    
+    @Test
+    public void resolve() {
+        Uri a;
+        Uri b;
+        
+        a = new Uri("http://www.fizzed.com");
+        
+        b = a.resolve("/dude");
+        
+        assertThat(b.toString(), is("http://www.fizzed.com/dude"));
+        
+        b = a.resolve("/dude?a=1");
+        
+        assertThat(b.toString(), is("http://www.fizzed.com/dude?a=1"));
+        
+        b = a.resolve("//www.example.com?a=1");
+        
+        assertThat(b.toString(), is("http://www.example.com?a=1"));
+        
+        b = a.resolve("//www.example.com/a?a=1");
+        
+        assertThat(b.toString(), is("http://www.example.com/a?a=1"));
+        
+        b = a.resolve("https://www.example.com?a=1");
+        
+        assertThat(b.toString(), is("https://www.example.com?a=1"));
+        
+        b = a.resolve("https://www.example.com/a?a=1");
+        
+        assertThat(b.toString(), is("https://www.example.com/a?a=1"));
     }
     
 }
