@@ -18,6 +18,7 @@ package com.fizzed.crux.uri;
 import java.util.Arrays;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -151,6 +152,21 @@ public class UriTest {
         b = a.resolve("https://www.example.com/a?a=1");
         
         assertThat(b.toString(), is("https://www.example.com/a?a=1"));
+    }
+    
+    @Test
+    public void realWorldLinks() {
+        Uri uri = new Uri("mailto:info@example.com");
+        
+        assertThat(uri.getScheme(), is("mailto"));
+        assertThat(uri.toString(), is("mailto:info@example.com"));
+        
+        // real-world links that chrome handles :-(
+        // https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,500italic|Open+Sans:400&subset=latin
+        
+        //Uri uri = new Uri("https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,500italic|Open+Sans:400&subset=latin");
+        
+        //assertThat(uri, is(not(nullValue())));
     }
     
 }
