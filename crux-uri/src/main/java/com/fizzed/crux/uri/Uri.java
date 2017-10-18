@@ -219,11 +219,16 @@ public class Uri {
             return otherUri;
         }
         
-        // otherwise resolve it against us...
-        return this.toMutableUri()
+        MutableUri resolvedUri = this.toMutableUri()
             .path(otherUri.getPath())
             .setQuery(otherUri.getQuery())
             .fragment(otherUri.getFragment());
+        
+        // paths can be tricky if any ".." or "." are included
+//        List<String> rels = this.getRels();
+//        List<String> otherRels = otherUri.getRels();
+        
+        return resolvedUri.immutable();
     }
     
     protected final Map<String,List<String>> copy(Map<String,List<String>> map) {

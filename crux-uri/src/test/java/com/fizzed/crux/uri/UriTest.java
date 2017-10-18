@@ -134,32 +134,41 @@ public class UriTest {
         a = new Uri("http://www.fizzed.com");
         
         b = a.resolve("/dude");
-        
         assertThat(b.toString(), is("http://www.fizzed.com/dude"));
         
         b = a.resolve("/dude?a=1");
-        
         assertThat(b.toString(), is("http://www.fizzed.com/dude?a=1"));
         
         b = a.resolve("//www.example.com?a=1");
-        
         assertThat(b.toString(), is("http://www.example.com?a=1"));
         
         b = a.resolve("//www.example.com/a?a=1");
-        
         assertThat(b.toString(), is("http://www.example.com/a?a=1"));
         
         b = a.resolve("https://www.example.com?a=1");
-        
         assertThat(b.toString(), is("https://www.example.com?a=1"));
         
         b = a.resolve("https://www.example.com/a?a=1");
-        
         assertThat(b.toString(), is("https://www.example.com/a?a=1"));
         
         b = a.resolve("mailto:joe@example.com");
-        
         assertThat(b.toString(), is("mailto:joe@example.com"));
+        
+        // relative urls...
+        // need to fix this
+//        a = new Uri("http://www.fizzed.com/a/b/c");
+//        
+//        b = a.resolve("d");
+//        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
+//        
+//        b = a.resolve("./d");
+//        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
+//        
+//        b = a.resolve("../d");
+//        assertThat(b.toString(), is("http://www.fizzed.com/a/d"));
+//        
+//        b = a.resolve("../../d");
+//        assertThat(b.toString(), is("http://www.fizzed.com/a/d"));
     }
     
     @Test
