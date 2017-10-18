@@ -48,6 +48,7 @@ import java.util.Map;
 public class Uri {
 
     protected String scheme;
+    protected String schemeSpecificPart;
     protected String userInfo;
     protected String host;
     protected Integer port;
@@ -69,11 +70,12 @@ public class Uri {
     }
     
     public Uri(Uri uri) {
-        this(uri.scheme, uri.userInfo, uri.host, uri.port, uri.rels, uri.query, uri.fragment);
+        this(uri.scheme, uri.schemeSpecificPart, uri.userInfo, uri.host, uri.port, uri.rels, uri.query, uri.fragment);
     }
     
-    protected Uri(String scheme, String userInfo, String host, Integer port, List<String> rels, Map<String,List<String>> query, String fragment) {
+    protected Uri(String scheme, String schemeSpecificPart, String userInfo, String host, Integer port, List<String> rels, Map<String,List<String>> query, String fragment) {
         this.scheme = scheme;
+        this.schemeSpecificPart = schemeSpecificPart;
         this.userInfo = userInfo;
         this.host = host;
         this.port = port;
@@ -97,6 +99,10 @@ public class Uri {
     
     public String getScheme() {
         return this.scheme;
+    }
+    
+    public String getSchemeSpecificPart() {
+        return this.schemeSpecificPart;
     }
     
     public String getUserInfo() {
@@ -288,13 +294,24 @@ public class Uri {
         // 'new URI( scheme, authority, ... )' constructors because they double
         // urlEncode the query string using 'java.net.URI.quote'
         StringBuilder uri = new StringBuilder();
+        boolean afterScheme = false;
         
         if (this.scheme != null) {
             uri.append(this.scheme);
-            uri.append(':');
+            if (this.schemeSpecificPart != null) {
+                uri.append(':');
+                uri.append(this.schemeSpecificPart);
+            }
+        } else {
+            afterScheme = true;
         }
         
         if (this.host != null) {
+            if (!afterScheme) {
+                uri.append(':');
+                afterScheme = true;
+            }
+            
             uri.append("//");
             
             if (this.userInfo != null) {
@@ -312,10 +329,18 @@ public class Uri {
         }
         
         if (this.rels != null && !this.rels.isEmpty()) {
+            if (!afterScheme) {
+                uri.append(':');
+                afterScheme = true;
+            }
             uri.append(this.encodedPath());
         }
 
         if (this.query != null && !this.query.isEmpty()) {
+            if (!afterScheme) {
+                uri.append(':');
+                afterScheme = true;
+            }
             uri.append('?');
             uri.append(this.encodedQueryString());
         }

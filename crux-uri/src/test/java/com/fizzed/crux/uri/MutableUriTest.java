@@ -62,6 +62,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://localhost");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(nullValue()));
@@ -72,6 +73,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://localhost:8080?a=1&b=2");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -83,6 +85,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://localhost:8080/?a=1&b=2");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -94,6 +97,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://localhost:8080/?a=1&b=2#frag");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -105,6 +109,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://user1@localhost:8080/this/is/a/path?a=1&b=2#frag");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is("user1"));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -116,6 +121,7 @@ public class MutableUriTest {
         uri = new MutableUri("http://user1@localhost:8080/this/is/a/path?a=1&a=2&b=2&c#frag");
         
         assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is("user1"));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -134,6 +140,7 @@ public class MutableUriTest {
         uri = new MutableUri("file:///path/to/file");
         
         assertThat(uri.getScheme(), is("file"));
+        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is(nullValue()));
         assertThat(uri.getPort(), is(nullValue()));

@@ -17,7 +17,6 @@ package com.fizzed.crux.uri;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,7 @@ public class MutableUri extends Uri {
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public MutableUri(Uri uri) {
         this.scheme = uri.scheme;
+        this.schemeSpecificPart = uri.schemeSpecificPart;
         this.userInfo = uri.userInfo;
         this.host = uri.host;
         this.port = uri.port;
@@ -60,7 +60,7 @@ public class MutableUri extends Uri {
     }
     
     public Uri immutable() {
-        return new Uri(this.scheme, this.userInfo, this.host, this.port, this.rels, this.query, this.fragment);
+        return new Uri(this.scheme, this.schemeSpecificPart, this.userInfo, this.host, this.port, this.rels, this.query, this.fragment);
     }
     
     public Uri toUri() {
@@ -321,6 +321,12 @@ public class MutableUri extends Uri {
     private MutableUri apply(URI uri) {
         if (uri.getScheme() != null) {
             this.scheme = uri.getScheme();
+        }
+        
+        if (uri.getSchemeSpecificPart() != null
+                && uri.getSchemeSpecificPart().length() > 0
+                && !uri.getSchemeSpecificPart().startsWith("//")) {
+            this.schemeSpecificPart = uri.getSchemeSpecificPart();
         }
         
         if (uri.getRawUserInfo() != null) {
