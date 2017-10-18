@@ -193,7 +193,7 @@ public class Uri {
     }
     
     public boolean isAbsolute() {
-        return this.scheme != null && this.host != null;
+        return this.scheme != null;
     }
     
     public Uri resolve(String otherUrl) {

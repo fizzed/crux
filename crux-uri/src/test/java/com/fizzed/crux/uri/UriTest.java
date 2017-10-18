@@ -120,6 +120,10 @@ public class UriTest {
         
         assertThat(uri.isAbsolute(), is(false));
         assertThat(uri.getHost(), is(nullValue()));
+        
+        uri = new Uri("mailto:joe@example.com");
+        
+        assertThat(uri.isAbsolute(), is(true));
     }
     
     @Test
@@ -152,6 +156,10 @@ public class UriTest {
         b = a.resolve("https://www.example.com/a?a=1");
         
         assertThat(b.toString(), is("https://www.example.com/a?a=1"));
+        
+        b = a.resolve("mailto:joe@example.com");
+        
+        assertThat(b.toString(), is("mailto:joe@example.com"));
     }
     
     @Test
