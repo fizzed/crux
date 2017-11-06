@@ -16,21 +16,18 @@
 package com.fizzed.crux.util;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Similar to a Java 8 optional, but this version is mutable, non-final, and
  * will return a null if empty (Java 8's throws an exception by default).
- * Useful for simplified non-final variable access in lambdas.
+ * Useful for simplified non-final variable access in lambdas or subclassing.
  * 
  * @author jjlauer
  */
 public class Maybe<T> {
     
     private T value;
-    
-    public Maybe() {
-        this(null);
-    }
     
     public Maybe(T value) {
         this.value = value;
@@ -44,6 +41,10 @@ public class Maybe<T> {
         this.value = value;
     }
     
+    public T orElse(T defaultValue) {
+        return this.isPresent() ? value : defaultValue;
+    }
+    
     public boolean isPresent() {
         return this.value != null;
     }
@@ -52,12 +53,24 @@ public class Maybe<T> {
         return this.value == null;
     }
     
+    public void ifPresent(Consumer<? super T> consumer) {
+        if (value != null) {
+            consumer.accept(value);
+        }
+    }
+    
+    public void ifAbsent(Runnable runnable) {
+        if (value == null) {
+            runnable.run();
+        }
+    }
+    
     public Optional<T> toOptional() {
         return Optional.ofNullable(value);
     }
     
     static public <T> Maybe<T> empty() {
-        return new Maybe<>();
+        return new Maybe<>(null);
     }
     
     static public <T> Maybe<T> of(T value) {

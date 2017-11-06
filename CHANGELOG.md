@@ -1,6 +1,10 @@
 Crux by Fizzed
 ==============
 
+#### 0.15.0 - 2017-11-06
+
+ - crux-util: New Maybe class
+
 #### 0.7.0 - 2017-07-31
 
  - crux-uri: Many new features for Uri and MutableUri
