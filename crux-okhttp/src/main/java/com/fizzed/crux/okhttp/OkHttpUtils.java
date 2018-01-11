@@ -16,11 +16,15 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
+import static java.util.Optional.ofNullable;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.hamcrest.Description;
 
 public class OkHttpUtils {
     
@@ -96,5 +100,24 @@ public class OkHttpUtils {
             clientBuilder.addNetworkInterceptor(loggingInterceptor);
         }
     }
+    
+//    static public boolean hasContentType(Response response, String contentType) {
+//        MediaType actualMediaType = ofNullable(response.header("Content-Type"))
+//            .map(v -> MediaType.parse(v))
+//            .orElse(null);
+//
+//        MediaType expectedMediaType = MediaType.parse(contentType);
+//
+//        if (actualMediaType == null || actualMediaType.type() == null) {
+//            return false;
+//        }
+//        
+//        if (!actualMediaType.type().equalsIgnoreCase(expectedMediaType.type())) {
+//            return false;
+//        }
+//
+//        return !(expectedMediaType.charset() != null &&
+//                !expectedMediaType.charset().equals(actualMediaType.charset()));
+//    }
     
 }
