@@ -26,6 +26,7 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
     
     static private final BindingPropertyMap<OkHttpOptions> PROP_MAP
         = new BindingPropertyMap<OkHttpOptions>()
+            .bindString("base_uri", OkHttpOptions::setBaseUri)
             .bindBoolean("insecure", OkHttpOptions::setInsecure)
             .bindLong("connect_timeout", OkHttpOptions::setConnectTimeout)
             .bindLong("write_timeout", OkHttpOptions::setWriteTimeout)
@@ -39,16 +40,47 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
                 return level;
             });
     
+    private String baseUri;
     private Boolean insecure;
     private Long connectTimeout;
     private Long writeTimeout;
     private Long readTimeout;
     private Boolean followRedirects;
     private OkLoggingLevel loggingLevel;
+
+    public OkHttpOptions() {
+    }
+    
+    @SuppressWarnings("OverridableMethodCallInConstructor")
+    public OkHttpOptions(String uri) {
+        this.setUri(new Uri(uri));
+    }
     
     @Override
     public BindingPropertyMap<OkHttpOptions> getPropertyMap() {
         return PROP_MAP;
+    }
+
+    public void setUri(Uri uri) {
+        // set properties via query parameters in a uri
+        this.setProperties(uri.getQueryFirstMap(), true);
+        // strip out query parameters to set base uri
+        this.baseUri = uri.mutable()
+            .setQuery(null)
+            .fragment(null)
+            .toString();
+    }
+    
+    public String getBaseUri() {
+        return baseUri;
+    }
+
+    public void setBaseUri(String baseUri) {
+        this.baseUri = baseUri;
+    }
+    
+    public void setBaseUri(Uri baseUri) {
+        this.baseUri = baseUri.toString();
     }
     
     public Boolean getInsecure() {
@@ -97,11 +129,6 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
 
     public void setFollowRedirects(Boolean followRedirects) {
         this.followRedirects = followRedirects;
-    }
-
-    public void setUri(Uri uri) {
-        // set properties via a uri
-        this.setProperties(uri.getQueryFirstMap(), true);
     }
 
 }

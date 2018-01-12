@@ -34,9 +34,9 @@ public class OkHttpMatchers {
             }
 
             @Override
-            protected boolean matchesSafely(final Response item, final Description mismatchDescription) {
-                mismatchDescription.appendText(" was ").appendValue(item.code());
-                return statusCode == item.code();
+            protected boolean matchesSafely(final Response response, final Description mismatchDescription) {
+                mismatchDescription.appendText(" was ").appendValue(response.code());
+                return OkHttpUtils.hasStatusCode(response, statusCode);
             }
         };
     }
@@ -45,12 +45,7 @@ public class OkHttpMatchers {
         return new TypeSafeMatcher<Response>() {
             @Override
             protected boolean matchesSafely(Response response) {
-                for (int statusCode : statusCodes) {
-                    if (statusCode == response.code()) {
-                        return true;
-                    }
-                }
-                return false;
+                return OkHttpUtils.hasStatusCode(response, statusCodes);
             }
 
             @Override
@@ -76,17 +71,7 @@ public class OkHttpMatchers {
             protected boolean matchesSafely(final Response response, final Description mismatchDescription) {
                 mismatchDescription.appendText(" was ").appendValue(contentType);
                 
-                String responseContentType = response.header("Content-Type");
-                MediaType responseMediaType = MediaType.parse(responseContentType);
-                
-                MediaType expectedMediaType = MediaType.parse(contentType);
-                
-                if (!expectedMediaType.type().equalsIgnoreCase(responseMediaType.type())) {
-                    return false;
-                }
-                
-                return !(expectedMediaType.charset() != null &&
-                        !expectedMediaType.charset().equals(responseMediaType.charset()));
+                return OkHttpUtils.hasContentType(response, contentType);
             }
         };
     }

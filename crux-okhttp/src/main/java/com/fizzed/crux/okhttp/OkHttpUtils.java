@@ -16,15 +16,18 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
+import java.io.IOException;
 import static java.util.Optional.ofNullable;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
-import org.hamcrest.Description;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OkHttpUtils {
     
@@ -39,7 +42,13 @@ public class OkHttpUtils {
             return null;
         }
         
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            private final Logger log = LoggerFactory.getLogger("okhttp");
+            @Override
+            public void log(String message) {
+                log.debug("{}", message);
+            }
+        });
         
         switch (loggingLevel) {
             case NONE:
@@ -101,23 +110,61 @@ public class OkHttpUtils {
         }
     }
     
-//    static public boolean hasContentType(Response response, String contentType) {
-//        MediaType actualMediaType = ofNullable(response.header("Content-Type"))
-//            .map(v -> MediaType.parse(v))
-//            .orElse(null);
-//
-//        MediaType expectedMediaType = MediaType.parse(contentType);
-//
-//        if (actualMediaType == null || actualMediaType.type() == null) {
-//            return false;
-//        }
-//        
-//        if (!actualMediaType.type().equalsIgnoreCase(expectedMediaType.type())) {
-//            return false;
-//        }
-//
-//        return !(expectedMediaType.charset() != null &&
-//                !expectedMediaType.charset().equals(actualMediaType.charset()));
-//    }
+    static public boolean hasStatusCode(Response response, int... statusCodes) {
+        final int actualStatusCode = response.code();
+        for (int statusCode : statusCodes) {
+            if (statusCode == actualStatusCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Does the response have a status code between min (inclusive) and max (exclusive)?
+     * @param response The response
+     * @param minStatusCode Min status code (inclusive)
+     * @param maxStatusCode Max status code (exclusive)
+     * @return True if in between range or otherwise false
+     */
+    static public boolean hasStatusCodeRange(Response response, int minStatusCode, int maxStatusCode) {
+        final int actualStatusCode = response.code();
+        return actualStatusCode >= minStatusCode && actualStatusCode < maxStatusCode;
+    }
+    
+    static public boolean hasContentType(Request request, String expectedContentType) {
+        return hasContentType(request.header("Content-Type"), expectedContentType);
+    }
+    
+    static public boolean hasContentType(Response response, String expectedContentType) {
+        return hasContentType(response.header("Content-Type"), expectedContentType);
+    }
+    
+    static public boolean hasContentType(String actualContentType, String expectedContentType) {
+        MediaType actualMediaType = ofNullable(actualContentType)
+            .map(v -> MediaType.parse(v))
+            .orElse(null);
+
+        MediaType expectedMediaType = MediaType.parse(expectedContentType);
+
+        if (actualMediaType == null || actualMediaType.type() == null) {
+            return false;
+        }
+        
+        if (!actualMediaType.type().equalsIgnoreCase(expectedMediaType.type())) {
+            return false;
+        }
+
+        return !(expectedMediaType.charset() != null &&
+                !expectedMediaType.charset().equals(actualMediaType.charset()));
+    }
+    
+    static public void verifyContentType(Response response, String expectedContentType) throws IOException {
+        if (!hasContentType(response, expectedContentType)) {
+            throw new IOException("Unexpected response content type (" +
+                "expected " + expectedContentType + " but was "
+                + response.header("Content-Type") + ")");
+        }
+    }
     
 }
