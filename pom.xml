@@ -3,7 +3,7 @@
 
     <groupId>com.fizzed</groupId>
     <artifactId>crux</artifactId>
-    <version>0.15.1-SNAPSHOT</version>
+    <version>0.16.0</version>
     <packaging>pom</packaging>
     
     <parent>
@@ -19,7 +19,7 @@
     <scm>
         <url>https://github.com/fizzed/crux</url>
         <connection>scm:git:git@github.com:fizzed/crux.git</connection>
-      <tag>HEAD</tag>
+      <tag>v0.16.0</tag>
   </scm>
 
     <modules>
