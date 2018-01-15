@@ -38,7 +38,8 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
                     throw new IllegalArgumentException("Invalid logging level " + s);
                 }
                 return level;
-            });
+            })
+            .bindString("logger_name", OkHttpOptions::setLoggerName);
     
     private String baseUri;
     private Boolean insecure;
@@ -47,6 +48,7 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
     private Long readTimeout;
     private Boolean followRedirects;
     private OkLoggingLevel loggingLevel;
+    private String loggerName;
 
     public OkHttpOptions() {
     }
@@ -115,14 +117,6 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
         this.readTimeout = readTimeout;
     }
 
-    public OkLoggingLevel getLoggingLevel() {
-        return loggingLevel;
-    }
-
-    public void setLoggingLevel(OkLoggingLevel loggingLevel) {
-        this.loggingLevel = loggingLevel;
-    }
-
     public Boolean getFollowRedirects() {
         return followRedirects;
     }
@@ -131,4 +125,20 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
         this.followRedirects = followRedirects;
     }
 
+    public OkLoggingLevel getLoggingLevel() {
+        return loggingLevel;
+    }
+
+    public void setLoggingLevel(OkLoggingLevel loggingLevel) {
+        this.loggingLevel = loggingLevel;
+    }
+
+    public String getLoggerName() {
+        return loggerName;
+    }
+
+    public void setLoggerName(String loggerName) {
+        this.loggerName = loggerName;
+    }
+    
 }

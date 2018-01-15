@@ -38,12 +38,16 @@ public class OkHttpUtils {
         = SecureUtil.createTrustAllHostnameVerifier();
     
     static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel) {
-        if (loggingLevel == null) {
+        return createLoggingInterceptor(loggingLevel, null);
+    }
+    
+    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName) {
+        if (loggingLevel == null || loggingLevel == OkLoggingLevel.NONE) {
             return null;
         }
         
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            private final Logger log = LoggerFactory.getLogger("okhttp");
+            private final Logger log = LoggerFactory.getLogger(loggerName != null ? loggerName : "okhttp");
             @Override
             public void log(String message) {
                 log.debug("{}", message);
@@ -104,7 +108,9 @@ public class OkHttpUtils {
             clientBuilder.followSslRedirects(options.getFollowRedirects());
         }
         
-        HttpLoggingInterceptor loggingInterceptor = createLoggingInterceptor(options.getLoggingLevel());
+        HttpLoggingInterceptor loggingInterceptor = createLoggingInterceptor(
+            options.getLoggingLevel(), options.getLoggerName());
+        
         if (loggingInterceptor != null) {
             clientBuilder.addNetworkInterceptor(loggingInterceptor);
         }
