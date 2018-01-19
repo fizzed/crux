@@ -25,9 +25,11 @@ import java.util.UUID;
 public class UUIDs {
     
     static public UUID fromBytes(byte[] bytes) {
-        // copied directly from private constructor of UUID from JDK code
+        if (bytes == null) {
+            return null;
+        }
         if (bytes.length != 16) {
-            throw new IllegalArgumentException("data must be 16 bytes in length");
+            throw new IllegalArgumentException("must be 16 bytes in length");
         }
         long msb = 0;
         long lsb = 0;
@@ -41,6 +43,9 @@ public class UUIDs {
     }
     
     static public byte[] toBytes(UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
         long msb = uuid.getMostSignificantBits();
         long lsb = uuid.getLeastSignificantBits();
         byte[] bytes = new byte[16];
@@ -55,20 +60,23 @@ public class UUIDs {
         return bytes;
     }
  
+    /**
+     * Creates a byte array of a time-based UUID that is suitable for sorting
+     * and lexigraphical ordering.  Matches the algorithm in MySQL 8.0's 
+     * uuid_to_bin() method.  https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin
+     * For example, 6ccd780c-babb-1026-9564-5b8c656024db will return a byte
+     * array as 1026babb-6ccd-780c-9564-5b8c656024db.  The embedded timestamp
+     * is moved to the front.
+     * @param uuid The time-based UUID
+     * @return A byte array representation
+     */
     static public byte[] toTimeBytes(UUID uuid) {
-        // https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin
-        // for example: 6ccd-780c-baba-1026 9564-5b8c-6560-24db
-        // in mysql swap returns: 1026-BABA-6CCD-780C-9564-5B8C656024DB
-        // If swap_flag is 1, the format of the return value differs: The time-low and time-high parts
-        // (the first and third groups of hexadecimal digits, respectively) are swapped. This moves the
-        // more rapidly varying part to the right and can improve indexing efficiency if the result is
-        // stored in an indexed column.
-        
-        // unix: 1516317940686
-        //   dt: 2018-01-18 18:25:40.686
-        // uuid: e5b75fb3-fca6-11e7-9f59-3138381d5321
-        //   ts: 137356107406860211
-        // tshx: 1e7fca6e5b75fb3
+        if (uuid == null) {
+            return null;
+        }
+        if (uuid.version() != 1) {
+            throw new IllegalArgumentException("not a time-based uuid");
+        }
         
         // move the 6 & 7 octet of msb to front
         // move the 4 & 5 octet of msg to next
@@ -91,6 +99,37 @@ public class UUIDs {
             lsb >>= 8;
         }
         return bytes;
+    }
+    
+    static public UUID fromTimeBytes(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        if (bytes.length != 16) {
+            throw new IllegalArgumentException("must be 16 bytes in length");
+        }
+
+        // most significant nibble MUST be 1
+        int version = (bytes[0] >> 4) & 0x0F;
+        if (version != 1) {
+            throw new IllegalArgumentException("not a time-based byte array");
+        }
+        
+        //  in: 1026-babb-6ccd-780c 9564-5b8c-6560-24db
+        // out: 6ccd-780c-babb-1026 9564-5b8c-6560-24db
+        long msb = 0;
+        long lsb = 0;
+        for (int i = 4; i < 8; i++) {
+            msb = (msb << 8) | (bytes[i] & 0xff);
+        }
+        msb = (msb << 8) | (bytes[2] & 0xff);
+        msb = (msb << 8) | (bytes[3] & 0xff);
+        msb = (msb << 8) | (bytes[0] & 0xff);
+        msb = (msb << 8) | (bytes[1] & 0xff);
+        for (int i = 8; i < 16; i++) {
+            lsb = (lsb << 8) | (bytes[i] & 0xff);
+        }
+        return new UUID(msb, lsb);
     }
     
     static public void main(String[] args) {
