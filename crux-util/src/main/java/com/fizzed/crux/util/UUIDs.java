@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.util;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -130,6 +131,25 @@ public class UUIDs {
             lsb = (lsb << 8) | (bytes[i] & 0xff);
         }
         return new UUID(msb, lsb);
+    }
+    
+    // millis at 00:00:00.000 15 Oct 1582
+    private static final long START_EPOCH = -12219292800000L;
+    
+    /**
+     * Extracts the timestamp embedded within a Type 1 time-based UUID and
+     * converts it to "unix time" as the number of milliseconds that have elapsed
+     * since 00:00:00 Coordinated Universal Time (UTC), Thursday, 1 January 1970.
+     * The same kind of value that System.currentTimeMillis() returns.
+     * @param uuid The time-based uuid
+     * @return The number of epoch milliseconds
+     */
+    static public long epochMillis(UUID uuid) {
+        Objects.requireNonNull(uuid, "uuid was null");
+        if (uuid.version() != 1) {
+            throw new IllegalArgumentException("not a time-based uuid");
+        }
+        return (uuid.timestamp() / 10000L) + START_EPOCH;
     }
     
     static public void main(String[] args) {

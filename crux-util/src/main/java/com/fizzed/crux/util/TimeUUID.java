@@ -21,7 +21,9 @@ import java.util.UUID;
 
 /**
  * A time-based UUID that is internally stored in a sortable/lexigraphical
- * byte ordering.
+ * byte ordering.  It's outside appearance (e.g. toString()) is identical as
+ * java.util.UUID, but you can access its underlying byte array, and its 
+ * natural ordering will be time ascending.
  * 
  * @author jjlauer
  */
@@ -35,6 +37,10 @@ public class TimeUUID implements Serializable, Comparable<TimeUUID> {
     
     public byte[] getBytes() {
         return this.timeBytes;
+    }
+    
+    public long getEpochMillis() {
+        return UUIDs.epochMillis(this.toUUID());
     }
     
     public UUID toUUID() {
@@ -78,8 +84,8 @@ public class TimeUUID implements Serializable, Comparable<TimeUUID> {
     
     /**
      * Compares this TimeUUID with the specified TimeUUID.  Since a TimeUUID
- is already arranged in a sortable byte-order, this method simply compares
- timeBytes left to right.
+     * is already arranged in a sortable byte-order, this method simply compares
+     * timeBytes left to right.
      * @param  val {@code TimeUUID} to which this {@code TimeUUID} is to be compared
      * @return  -1, 0 or 1 as this {@code TimeUUID} is less than, equal to, or
      *          greater than {@code val}

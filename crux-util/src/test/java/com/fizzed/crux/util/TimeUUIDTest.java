@@ -15,8 +15,11 @@
  */
 package com.fizzed.crux.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import org.junit.Test;
 
 public class TimeUUIDTest {
@@ -36,6 +39,35 @@ public class TimeUUIDTest {
         TimeUUID timeuuid2 = TimeUUID.fromString("e6b75fb3-fca6-11e7-9f59-3138381d5321");
         
         assertThat(timeuuid.compareTo(timeuuid2), is(-1));
+    }
+    
+    @Test
+    public void compareTo() {
+        TimeUUID timeuuid1 = TimeUUID.fromString("e5b75fb3-fca6-11e7-9f59-3138381d5321");
+        
+        TimeUUID timeuuid1Same = TimeUUID.fromString("e5b75fb3-fca6-11e7-9f59-3138381d5321");
+        assertThat(timeuuid1, equalTo(timeuuid1Same));
+        
+        TimeUUID timeuuid2 = TimeUUID.fromString("e5b75fb3-fca6-1fe7-9f59-3138381d5321");
+        assertThat(timeuuid1, lessThan(timeuuid2));
+        
+        TimeUUID timeuuid3 = TimeUUID.fromString("e5b75fb3-fca6-1ff7-9f59-3138381d5321");
+        assertThat(timeuuid1, lessThan(timeuuid3));
+        
+        TimeUUID timeuuid4 = TimeUUID.fromString("ffffffff-ffff-1fff-9f59-3138381d5321");
+        assertThat(timeuuid1, lessThan(timeuuid4));
+        
+        TimeUUID timeuuid5 = TimeUUID.fromString("ffffffff-ffff-1fff-ffff-ffffffffffff");
+        assertThat(timeuuid1, lessThan(timeuuid5));
+        
+        TimeUUID timeuuid6 = TimeUUID.fromString("00000000-0000-1000-0000-000000000000");
+        assertThat(timeuuid1, greaterThan(timeuuid6));
+        
+        TimeUUID timeuuid7 = TimeUUID.fromString("d5b75fb3-fca6-11e7-9f59-3138381d5321");
+        assertThat(timeuuid1, greaterThan(timeuuid7));
+        
+        TimeUUID timeuuid8 = TimeUUID.fromString("e5b75fb3-fca6-11d7-9f59-3138381d5321");
+        assertThat(timeuuid1, greaterThan(timeuuid8));
     }
     
 }

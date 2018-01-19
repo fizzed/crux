@@ -34,6 +34,13 @@ public class UUIDsTest {
     // tshx: 1e7fca6e5b75fb3
     
     @Test
+    public void epochMillis() {
+        UUID uuid = UUID.fromString("e5b75fb3-fca6-11e7-9f59-3138381d5321");
+        
+        assertThat(UUIDs.epochMillis(uuid), is(1516317940686L));
+    }
+    
+    @Test
     public void toAndFromBytes() {
         UUID expected = UUID.fromString("e5b75fb3-fca6-11e7-9f59-3138381d5321");
         byte[] bytes = UUIDs.toBytes(expected);
