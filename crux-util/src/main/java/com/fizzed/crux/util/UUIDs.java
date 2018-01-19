@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.util;
 
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 /**
@@ -26,7 +25,7 @@ import java.util.UUID;
 public class UUIDs {
     
     static public UUID fromBytes(byte[] bytes) {
-        // copied directly from private constructor in JDK
+        // copied directly from private constructor of UUID from JDK code
         if (bytes.length != 16) {
             throw new IllegalArgumentException("data must be 16 bytes in length");
         }
@@ -44,20 +43,22 @@ public class UUIDs {
     static public byte[] toBytes(UUID uuid) {
         long msb = uuid.getMostSignificantBits();
         long lsb = uuid.getLeastSignificantBits();
-        byte[] result = new byte[16];
+        byte[] bytes = new byte[16];
         for (int i = 7; i >= 0; i--) {
-            result[i] = (byte)(msb & 0xFF);
+            bytes[i] = (byte)(msb & 0xFF);
             msb >>= 8;
-            result[i+8] = (byte)(lsb & 0xFF);
+        }
+        for (int i = 15; i >= 8; i--) {
+            bytes[i] = (byte)(lsb & 0xFF);
             lsb >>= 8;
         }
-        return result;
+        return bytes;
     }
  
-    static public byte[] toLexographicBytes(UUID uuid) {
+    static public byte[] toTimeBytes(UUID uuid) {
         // https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_uuid-to-bin
-        // for example: 6ccd780c-baba-1026-9564-5b8c656024db
-        // in mysql swap returns: 1026-BABA-6CCD780C-9564-5B8C656024DB
+        // for example: 6ccd-780c-baba-1026 9564-5b8c-6560-24db
+        // in mysql swap returns: 1026-BABA-6CCD-780C-9564-5B8C656024DB
         // If swap_flag is 1, the format of the return value differs: The time-low and time-high parts
         // (the first and third groups of hexadecimal digits, respectively) are swapped. This moves the
         // more rapidly varying part to the right and can improve indexing efficiency if the result is
@@ -69,11 +70,27 @@ public class UUIDs {
         //   ts: 137356107406860211
         // tshx: 1e7fca6e5b75fb3
         
-        byte[] bytes = toBytes(uuid);
-        
-        
-        
-        return null;
+        // move the 6 & 7 octet of msb to front
+        // move the 4 & 5 octet of msg to next
+        // then move 0-3 to the back
+        //  in: 6ccd-780c-babb-1026-9564-5b8c-6560-24db
+        // out: 1026-babb-6ccd-780c-9564-5b8c-6560-24db
+        long msb = uuid.getMostSignificantBits();
+        long lsb = uuid.getLeastSignificantBits();
+        byte[] bytes = new byte[16];
+        bytes[1] = (byte)(msb & 0xFF); msb >>= 8;
+        bytes[0] = (byte)(msb & 0xFF); msb >>= 8;
+        bytes[3] = (byte)(msb & 0xFF); msb >>= 8;
+        bytes[2] = (byte)(msb & 0xFF); msb >>= 8;
+        for (int i = 7; i >= 4; i--) {
+            bytes[i] = (byte)(msb & 0xFF);
+            msb >>= 8;
+        }
+        for (int i = 15; i >= 8; i--) {
+            bytes[i] = (byte)(lsb & 0xFF);
+            lsb >>= 8;
+        }
+        return bytes;
     }
     
     static public void main(String[] args) {
@@ -81,7 +98,7 @@ public class UUIDs {
         
         System.out.println("before: " + uuid);
         
-        byte[] bytes = toBytes(uuid);
+        byte[] bytes = toTimeBytes(uuid);
         
         UUID uuid2 = fromBytes(bytes);
         
