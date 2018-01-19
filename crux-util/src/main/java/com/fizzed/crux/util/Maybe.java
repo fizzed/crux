@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Fizzed, Inc.
+ * Copyright 2018 Fizzed, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,20 @@
  */
 package com.fizzed.crux.util;
 
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * Similar to a Java 8 optional, but this version is mutable, non-final, and
- * will return a null if empty (Java 8's throws an exception by default).
- * Useful for simplified non-final variable access in lambdas or subclassing.
+ * Similar to a Java 8 optional, but this version allows the value to be changed
+ * (mutable) and is non-final (so it can be subclassed). Useful for simplified non-final
+ * variable access in lambdas or subclassing.  Behavior is similiar to Java 8's
+ * Optional, but with a few differences.  Here are the reasons why we like it:
  * 
  * @author jjlauer
+ * @param <T> The type of Maybe
  */
 public class Maybe<T> {
     
@@ -34,6 +39,9 @@ public class Maybe<T> {
     }
 
     public T get() {
+        if (value == null) {
+            throw new NoSuchElementException("No value present");
+        }
         return value;
     }
 
@@ -43,6 +51,11 @@ public class Maybe<T> {
     
     public T orElse(T defaultValue) {
         return this.isPresent() ? value : defaultValue;
+    }
+    
+    public T orElse(Supplier<T> defaultValueSupplier) {
+        Objects.requireNonNull(defaultValueSupplier, "supplier was null");
+        return this.isPresent() ? value : defaultValueSupplier.get();
     }
     
     public boolean isPresent() {
