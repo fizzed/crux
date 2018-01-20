@@ -20,10 +20,11 @@ import java.util.Arrays;
 import java.util.UUID;
 
 /**
- * A time-based UUID that is internally stored in a sortable/lexigraphical
+ * A time-based UUID that is internally stored in a sortable/lexicographical
  * byte ordering.  It's outside appearance (e.g. toString()) is identical as
  * java.util.UUID, but you can access its underlying byte array, and its 
- * natural ordering will be time ascending.
+ * natural ordering will be time ascending.  Very useful for storing in databases
+ * as binary and then have it ordered as time ascending if in an indexed column.
  * 
  * @author jjlauer
  */
