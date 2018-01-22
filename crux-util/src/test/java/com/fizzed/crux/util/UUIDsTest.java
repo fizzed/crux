@@ -34,10 +34,29 @@ public class UUIDsTest {
     // tshx: 1e7fca6e5b75fb3
     
     @Test
-    public void epochMillis() {
+    public void getEpochMillis() {
         UUID uuid = UUID.fromString("e5b75fb3-fca6-11e7-9f59-3138381d5321");
         
-        assertThat(UUIDs.epochMillis(uuid), is(1516317940686L));
+        assertThat(UUIDs.getEpochMillis(uuid), is(1516317940686L));
+    }
+    
+    @Test
+    public void setEpochMillis() {
+        UUID uuid = UUID.fromString("ffffffff-fca6-11e7-9f59-3138381d5321");
+        
+        UUID uuid2 = UUIDs.setEpochMillis(uuid, 1516317940686L);
+        
+        // slightly less precise than original due to conversions to/from unix time
+        assertThat(uuid2.toString(), is("e5b75ee0-fca6-11e7-9f59-3138381d5321"));
+    }
+    
+    @Test
+    public void setTimestamp() {
+        UUID uuid = UUID.fromString("ffffffff-fca6-11e7-9f59-3138381d5321");
+        
+        UUID uuid2 = UUIDs.setTimestamp(uuid, 137356107406860211L);
+
+        assertThat(uuid2.toString(), is("e5b75fb3-fca6-11e7-9f59-3138381d5321"));
     }
     
     @Test

@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Utilities for working with UUIDs.
+ * Utilities for working with UUIDs, especially time-based UUIDs.
  * 
  * @author jjlauer
  */
@@ -144,7 +144,7 @@ public class UUIDs {
      * @param uuid The time-based uuid
      * @return The number of epoch milliseconds
      */
-    static public long epochMillis(UUID uuid) {
+    static public long getEpochMillis(UUID uuid) {
         Objects.requireNonNull(uuid, "uuid was null");
         if (uuid.version() != 1) {
             throw new IllegalArgumentException("not a time-based uuid");
@@ -152,16 +152,58 @@ public class UUIDs {
         return (uuid.timestamp() / 10000L) + START_EPOCH;
     }
     
-    static public void main(String[] args) {
-        UUID uuid = UUID.randomUUID();
-        
-        System.out.println("before: " + uuid);
-        
-        byte[] bytes = toTimeBytes(uuid);
-        
-        UUID uuid2 = fromBytes(bytes);
-        
-        System.out.println("after: " + uuid2);
+    /**
+     * Creates a new time-based UUID based on the one provided and sets its
+     * embedded timestamp to the supplied one.  This method does not guarantee
+     * uniqueness since the caller is supplying a timestamp -- so you should only
+     * use this method if you will externally verify uniqueness in some other way.
+     * @param uuid The uuid to use as base
+     * @param epochMillis The timestamp to use based on "unix time"
+     * @return A new UUID
+     */
+    static public UUID setEpochMillis(UUID uuid, long epochMillis) {
+        Objects.requireNonNull(uuid, "uuid was null");
+        if (uuid.version() != 1) {
+            throw new IllegalArgumentException("not a time-based uuid");
+        }
+        // convert unix time to type 1 timestamp
+        // note: some granularity will be lost since unix time is less precise
+        long type1Timestamp = (epochMillis - START_EPOCH) * 10000L;
+        long msb = buildMSBWithType1Timestamp(type1Timestamp);
+        return new UUID(msb, uuid.getLeastSignificantBits());
+    }
+    
+    /**
+     * Creates a new time-based UUID based on the one provided and sets its
+     * embedded timestamp to the supplied one. This method does not guarantee
+     * uniqueness since the caller is supplying a timestamp -- so you should only
+     * use this method if you will externally verify uniqueness in some other way.
+     * @param uuid The uuid to use as a base
+     * @param type1Timestamp The type-1 timestamp to use. Type 1 timestamps
+     *      are NOT epoch time!
+     * @return A new UUID
+     */
+    static public UUID setTimestamp(UUID uuid, long type1Timestamp) {
+        Objects.requireNonNull(uuid, "uuid was null");
+        if (uuid.version() != 1) {
+            throw new IllegalArgumentException("not a time-based uuid");
+        }
+        long msb = buildMSBWithType1Timestamp(type1Timestamp);
+        return new UUID(msb, uuid.getLeastSignificantBits());
+    }
+    
+    //
+    // methods below copied from Apache-licensed code here:
+    // https://github.com/tfredrich/cassandra-java-driver/blob/master/driver-core/src/main/java/com/datastax/driver/core/utils/UUIDs.java
+    //
+    
+    static private long buildMSBWithType1Timestamp(long type1Timestamp) {
+        long msb = 0L;
+        msb |= (0x00000000ffffffffL & type1Timestamp) << 32;
+        msb |= (0x0000ffff00000000L & type1Timestamp) >>> 16;
+        msb |= (0x0fff000000000000L & type1Timestamp) >>> 48;
+        msb |= 0x0000000000001000L; // sets the version to 1.
+        return msb;
     }
     
 }

@@ -41,7 +41,7 @@ public class TimeUUID implements Serializable, Comparable<TimeUUID> {
     }
     
     public long getEpochMillis() {
-        return UUIDs.epochMillis(this.toUUID());
+        return UUIDs.getEpochMillis(this.toUUID());
     }
     
     public UUID toUUID() {
