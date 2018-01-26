@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
  * Copyright 2018 Fizzed, Inc.
  *
@@ -16,6 +15,7 @@
  */
 package com.fizzed.crux.util;
 
+import static com.fizzed.crux.util.Maybe.maybe;
 import java.util.NoSuchElementException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -75,6 +75,15 @@ public class MaybeTest {
         } catch (NoSuchElementException e) {
             // expected
         }
+    }
+    
+    @Test
+    public void orElse() {
+        Maybe<String> s = maybe("dude");
+        
+        assertThat(s.orElse("yo"), is("dude"));
+        assertThat(Maybe.empty().orElse("yo"), is("yo"));
+        assertThat(Maybe.empty().orElse(() -> "yo"), is("yo"));
     }
 
 }

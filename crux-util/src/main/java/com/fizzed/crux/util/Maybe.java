@@ -20,13 +20,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Similar to a Java 8 optional, but this version allows the value to be changed
- * (mutable) and is non-final (so it can be subclassed). Useful for simplified non-final
- * variable access in lambdas or subclassing.  Behavior is similiar to Java 8's
- * Optional, but with a few differences.  Here are the reasons why we like it:
+ * Similar to a Java 8 optional, but this version is different in the following
+ * ways:
+ * <ul>
+ *  <li>Nulls are accepted in constructor (no need for of() vs. ofNullable())
+ *  <li>Value is mutable (useful to get around lambda & final variables restriction)
+ *  <li>Non-final and can be subclassed
+ *  <li>toString() returns the .toString() of the value rather than Optional[value]
+ * </ul>
  * 
  * @author jjlauer
  * @param <T> The type of Maybe
@@ -54,9 +59,16 @@ public class Maybe<T> {
         return this.isPresent() ? value : defaultValue;
     }
     
-    public T orElse(Supplier<T> defaultValueSupplier) {
-        Objects.requireNonNull(defaultValueSupplier, "supplier was null");
-        return this.isPresent() ? value : defaultValueSupplier.get();
+    public T orElse(Supplier<T> defaultSupplier) {
+        Objects.requireNonNull(defaultSupplier, "supplier was null");
+        return this.isPresent() ? value : defaultSupplier.get();
+    }
+    
+    public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
+        if (this.value == null) {
+            throw exceptionSupplier.get();
+        }
+        return this.value;
     }
     
     public boolean isPresent() {
@@ -79,9 +91,28 @@ public class Maybe<T> {
         }
     }
     
-    public <U> Maybe<U> map(Function<T,U> mapper) {
+    public Maybe<T> filter(Predicate<? super T> predicate) {
+        if (value != null) {
+            if (predicate.test(value)) {
+                return this;
+            } else {
+                return Maybe.empty();
+            }
+        }
+        return this;
+    }
+    
+    public <U> Maybe<U> map(Function<? super T, ? extends U> mapper) {
         if (value != null) {
             return Maybe.of(mapper.apply(value));
+        } else {
+            return Maybe.empty();
+        }
+    }
+    
+    public <U> Maybe<U> flatMap(Function<? super T, Maybe<U>> mapper) {
+        if (value != null) {
+            return mapper.apply(value);
         } else {
             return Maybe.empty();
         }
@@ -99,4 +130,38 @@ public class Maybe<T> {
         return new Maybe<>(value);
     }
     
+    static public <T> Maybe<T> maybe(T value) {
+        return new Maybe<>(value);
+    }
+
+    @Override
+    public String toString() {
+        return this.value != null ? this.value.toString() : null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof Maybe)) {
+            return false;
+        }
+
+        Maybe<?> other = (Maybe<?>) obj;
+        return Objects.equals(value, other.value);
+    }
+
+    /**
+     * Returns the hash code of the value, if present, otherwise {@code 0}
+     * (zero) if no value is present.
+     *
+     * @return hash code value of the present value or {@code 0} if no value is
+     *         present
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
+    }
 }
