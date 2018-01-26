@@ -44,4 +44,10 @@ public class MoreObjectsTest {
         assertThat(MoreObjects.in("c", set), is(false));
     }
     
+    @Test
+    public void isEmpty() {
+        assertThat(MoreObjects.isEmpty((Object[])null), is(true));
+        assertThat(MoreObjects.isEmpty(new HashSet<>()), is(true));
+    }
+    
 }

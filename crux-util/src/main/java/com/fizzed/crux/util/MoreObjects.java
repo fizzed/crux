@@ -15,7 +15,7 @@
  */
 package com.fizzed.crux.util;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -58,6 +58,25 @@ public class MoreObjects {
             }
         }
         return false;
+    }
+    
+    /**
+     * Null-safe evaluation of whether an array is empty.
+     * @param <T>
+     * @param values The array
+     * @return True if array is null or has 0 elements
+     */
+    static public <T> boolean isEmpty(T[] values) {
+        return values == null || values.length == 0;
+    }
+    
+    /**
+     * Null-safe evaluation of whether a collection is empty.
+     * @param values The collection
+     * @return True if the collection is null or has 0 elements.
+     */
+    static public boolean isEmpty(Collection<?> values) {
+        return values == null || values.isEmpty();
     }
     
 }
