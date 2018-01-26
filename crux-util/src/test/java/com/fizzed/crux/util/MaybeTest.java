@@ -46,7 +46,7 @@ public class MaybeTest {
         assertThat(a.isAbsent(), is(true));
         assertThat(a.isPresent(), is(false));
         assertThat(a.orElse("blah"), is("blah"));
-        assertThat(a.orElse(() -> "blah"), is("blah"));
+        assertThat(a.orGet(() -> "blah"), is("blah"));
         a.ifPresent(v -> fail("should fail"));
         
         Maybe<String> b = Maybe.of("dude");
@@ -83,7 +83,7 @@ public class MaybeTest {
         
         assertThat(s.orElse("yo"), is("dude"));
         assertThat(Maybe.empty().orElse("yo"), is("yo"));
-        assertThat(Maybe.empty().orElse(() -> "yo"), is("yo"));
+        assertThat(Maybe.empty().orGet(() -> "yo"), is("yo"));
     }
 
 }

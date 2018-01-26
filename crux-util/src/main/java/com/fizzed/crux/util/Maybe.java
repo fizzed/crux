@@ -59,7 +59,7 @@ public class Maybe<T> {
         return this.isPresent() ? value : defaultValue;
     }
     
-    public T orElse(Supplier<T> defaultSupplier) {
+    public T orGet(Supplier<T> defaultSupplier) {
         Objects.requireNonNull(defaultSupplier, "supplier was null");
         return this.isPresent() ? value : defaultSupplier.get();
     }
