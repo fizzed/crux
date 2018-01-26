@@ -17,6 +17,7 @@ package com.fizzed.crux.util;
 
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Similar to a Java 8 optional, but this version is mutable, non-final, and
@@ -62,6 +63,14 @@ public class Maybe<T> {
     public void ifAbsent(Runnable runnable) {
         if (value == null) {
             runnable.run();
+        }
+    }
+    
+    public <U> Maybe<U> map(Function<T,U> mapper) {
+        if (value != null) {
+            return Maybe.of(mapper.apply(value));
+        } else {
+            return Maybe.empty();
         }
     }
     
