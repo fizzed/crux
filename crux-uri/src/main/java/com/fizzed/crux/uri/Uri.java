@@ -201,9 +201,8 @@ public class Uri {
             return null;
         }
         
-        String v = otherUrl.trim();
-        
-        if (v.length() == 0) {
+        otherUrl = otherUrl.trim();
+        if (otherUrl.length() == 0) {
             return null;
         }
         
@@ -219,16 +218,99 @@ public class Uri {
             return otherUri;
         }
         
+        // calculate new rels by overlying new relative path
+        List<String> newRels = null;
+        
+        if (otherUrl.startsWith("/")) {
+            // new path is absolute
+            newRels = otherUri.getRels();
+        } else {
+            newRels = new ArrayList<>();
+            
+            // copy all rels
+            if (this.getRels() != null) {
+                newRels.addAll(this.getRels());
+            }
+
+            // remove last rel (if it exists) to resolve against current directory
+            if (newRels.size() > 0) {
+                newRels.remove(newRels.size()-1);
+            }
+
+            if (otherUri.getRels() != null) {
+                newRels.addAll(otherUri.getRels());
+            }
+        }
+        
         MutableUri resolvedUri = this.toMutableUri()
-            .path(otherUri.getPath())
             .setQuery(otherUri.getQuery())
             .fragment(otherUri.getFragment());
         
-        // paths can be tricky if any ".." or "." are included
-//        List<String> rels = this.getRels();
-//        List<String> otherRels = otherUri.getRels();
+        // TODO: should we allow users to set rels with a list?
+        resolvedUri.rels = MutableUri.normalizeRels(newRels);
         
         return resolvedUri.immutable();
+    }
+    
+    /**
+     * Attempts to mimic a web browser navigate bar by interpreting the request
+     * differently than as the RFC specs dictate for parsing URIs.  For example,
+     * the RFC specs indicate text of of "www.example.com" would be parsed as
+     * the path of the URI, when a browser would parse that as though the user
+     * typed "http://www.example.com/".  The path is sanitized for http requests
+     * to for empty paths to the root path of "/".
+     * @param maybeUrl The possible url
+     * @return The detected, well-formed Uri
+     */
+    static public Uri navigate(String maybeUrl) {
+        if (maybeUrl == null) {
+            return null;
+        }
+        
+        maybeUrl = maybeUrl.trim();
+        if (maybeUrl.length() == 0) {
+            return null;
+        }
+        
+        // we parse url to see if an absolute url was provided
+        MutableUri maybeUri = null;
+        try {
+            // some case of input may cause a parsing exception, in which case
+            // we'll try to fix it and try parsing again
+            maybeUri = new MutableUri(maybeUrl);
+        } catch (IllegalArgumentException e) {
+            if (!maybeUrl.contains("://")) {
+                maybeUri = new MutableUri("http://" + maybeUrl);
+            } else {
+                throw e;    // rethrow it
+            }
+        }
+     
+        if (!maybeUri.isAbsolute()) {
+            // assume something like www.example.com was entered and the user
+            // really meant to specify the host first (rather than it being
+            // interpreted at the path per the specs of a URL
+            maybeUri = new MutableUri("http://" + maybeUrl);
+        }
+        
+        // edge case: www.example.com:81 would be parsed as simply a scheme
+        // with a schemeSpecificPart -- we'll detect this unique case by 
+        // determining if the scheme contains a period and assume the user
+        // really meant it as a domain name
+        if (maybeUri.getScheme() != null && maybeUri.getSchemeSpecificPart() != null
+                && maybeUri.getHost() == null) {
+            maybeUri = new MutableUri("http://" + maybeUrl);
+        }
+        
+        // if no path was supplied then the default is / for http or https
+        String path = maybeUri.getPath();
+        if (path == null || path.equals("")) {
+            if (maybeUri.getScheme().equalsIgnoreCase("http") || maybeUri.getScheme().equalsIgnoreCase("https")) {
+                maybeUri.path("/");
+            }
+        }
+        
+        return maybeUri.toUri();
     }
     
     protected final Map<String,List<String>> copy(Map<String,List<String>> map) {

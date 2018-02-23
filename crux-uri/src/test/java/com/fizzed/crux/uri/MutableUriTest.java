@@ -56,6 +56,29 @@ public class MutableUriTest {
     }
     
     @Test
+    public void normalizeRels() {
+        List<String> rels;
+        
+        rels = MutableUri.normalizeRels(Arrays.asList());
+        assertThat(rels, is(Arrays.asList()));
+        
+        rels = MutableUri.normalizeRels(Arrays.asList("a"));
+        assertThat(rels, is(Arrays.asList("a")));
+        
+        rels = MutableUri.normalizeRels(Arrays.asList("a", "b"));
+        assertThat(rels, is(Arrays.asList("a", "b")));
+        
+        rels = MutableUri.normalizeRels(Arrays.asList("a", ".", "b"));
+        assertThat(rels, is(Arrays.asList("a", "b")));
+        
+        rels = MutableUri.normalizeRels(Arrays.asList("a", "..", "b"));
+        assertThat(rels, is(Arrays.asList("b")));
+        
+        rels = MutableUri.normalizeRels(Arrays.asList("..", "..", "b"));
+        assertThat(rels, is(Arrays.asList("b")));
+    }
+    
+    @Test
     public void parse() {
         MutableUri uri;
         

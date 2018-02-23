@@ -136,6 +136,9 @@ public class UriTest {
         b = a.resolve("/dude");
         assertThat(b.toString(), is("http://www.fizzed.com/dude"));
         
+        b = a.resolve("   /dude   ");
+        assertThat(b.toString(), is("http://www.fizzed.com/dude"));
+        
         b = a.resolve("/dude?a=1");
         assertThat(b.toString(), is("http://www.fizzed.com/dude?a=1"));
         
@@ -155,20 +158,22 @@ public class UriTest {
         assertThat(b.toString(), is("mailto:joe@example.com"));
         
         // relative urls...
-        // need to fix this
-//        a = new Uri("http://www.fizzed.com/a/b/c");
-//        
-//        b = a.resolve("d");
-//        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
-//        
-//        b = a.resolve("./d");
-//        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
-//        
-//        b = a.resolve("../d");
-//        assertThat(b.toString(), is("http://www.fizzed.com/a/d"));
-//        
-//        b = a.resolve("../../d");
-//        assertThat(b.toString(), is("http://www.fizzed.com/a/d"));
+        a = new Uri("http://www.fizzed.com/a/b/c");
+        
+        b = a.resolve("d");
+        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
+        
+        b = a.resolve("./d");
+        assertThat(b.toString(), is("http://www.fizzed.com/a/b/d"));
+        
+        b = a.resolve("../d");
+        assertThat(b.toString(), is("http://www.fizzed.com/a/d"));
+        
+        b = a.resolve("../../d");
+        assertThat(b.toString(), is("http://www.fizzed.com/d"));
+        
+        b = a.resolve("../../.././.././../d");
+        assertThat(b.toString(), is("http://www.fizzed.com/d"));
     }
     
     @Test
@@ -213,6 +218,70 @@ public class UriTest {
         //Uri uri = new Uri("https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,500italic|Open+Sans:400&subset=latin");
         
         //assertThat(uri, is(not(nullValue())));
+    }
+    
+    @Test
+    public void navigate() {
+        Uri uri;
+
+        uri = Uri.navigate(null);
+        assertThat(uri, is(nullValue()));
+        
+        uri = Uri.navigate("");
+        assertThat(uri, is(nullValue()));
+        
+        uri = Uri.navigate("   ");
+        assertThat(uri, is(nullValue()));
+        
+        uri = Uri.navigate("http://www.fizzed.com/");
+        assertThat(uri.toString(), is("http://www.fizzed.com/"));
+        
+        uri = Uri.navigate("https://www.fizzed.com");
+        assertThat(uri.toString(), is("https://www.fizzed.com/"));
+        
+        uri = Uri.navigate("    http://www.fizzed.com/    ");
+        assertThat(uri.toString(), is("http://www.fizzed.com/"));
+        
+        uri = Uri.navigate("http://www.fizzed.com");
+        assertThat(uri.toString(), is("http://www.fizzed.com/"));
+        
+        uri = Uri.navigate("www.fizzed.com");
+        assertThat(uri.toString(), is("http://www.fizzed.com/"));
+        
+        uri = Uri.navigate("www.fizzed.com/dude");
+        assertThat(uri.toString(), is("http://www.fizzed.com/dude"));
+        
+        uri = Uri.navigate("www.fizzed.com/dude?a=1");
+        assertThat(uri.toString(), is("http://www.fizzed.com/dude?a=1"));
+        
+        uri = Uri.navigate("www.fizzed.com?a=1");
+        assertThat(uri.toString(), is("http://www.fizzed.com/?a=1"));
+        
+        uri = Uri.navigate("www.fizzed.com?a=1#test");
+        assertThat(uri.toString(), is("http://www.fizzed.com/?a=1#test"));
+        
+        uri = Uri.navigate("www.fizzed.com:81");
+        assertThat(uri.toString(), is("http://www.fizzed.com:81/"));
+        
+        uri = Uri.navigate("www.fizzed.com:81/");
+        assertThat(uri.toString(), is("http://www.fizzed.com:81/"));
+        
+        uri = Uri.navigate("www.fizzed.com:81/dude");
+        assertThat(uri.toString(), is("http://www.fizzed.com:81/dude"));
+        
+        uri = Uri.navigate("fizzed.com:81/dude");
+        assertThat(uri.toString(), is("http://fizzed.com:81/dude"));
+        
+        // this causes the original uri to fail parsing, but the navigate
+        // method should work around that case as well
+        uri = Uri.navigate("127.0.0.1:81/dude");
+        assertThat(uri.toString(), is("http://127.0.0.1:81/dude"));
+        
+        uri = Uri.navigate("localhost:81");
+        assertThat(uri.toString(), is("http://localhost:81/"));
+        
+        uri = Uri.navigate("localhost");
+        assertThat(uri.toString(), is("http://localhost/"));
     }
     
 }

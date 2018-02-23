@@ -399,6 +399,33 @@ public class MutableUri extends Uri {
         }
     }
     
+    static List<String> normalizeRels(List<String> rels) {
+        if (rels == null || rels.isEmpty()) {
+            return rels;
+        }
+        
+        List<String> newRels = new ArrayList<>();
+        
+        for (String rel : rels) {
+            switch (rel) {
+                case ".":
+                    // skip it
+                    break;
+                case "..":
+                    // remove last newRel (if it exists)
+                    if (newRels.size() > 0) {
+                        newRels.remove(newRels.size()-1);
+                    }
+                    break;
+                default:
+                    newRels.add(rel);
+                    break;
+            }
+        }
+        
+        return newRels;
+    }
+    
     // not sure we want this public (so package-level for now)
     static List<String> splitPath(String path, boolean decode) {
         List<String> paths = new ArrayList<>();
