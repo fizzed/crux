@@ -16,6 +16,7 @@
 package com.fizzed.crux.util;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -52,6 +53,9 @@ public class MoreObjects {
      * @return True if the value is contained otherwise false
      */
     static public <T> boolean in(T value, Iterable<T> values) {
+        if (values == null) {
+            throw new IllegalArgumentException("values was null");
+        }
         for (T v : values) {
             if (Objects.equals(v, value)) {
                 return true;
@@ -77,6 +81,15 @@ public class MoreObjects {
      */
     static public boolean isEmpty(Collection<?> values) {
         return values == null || values.isEmpty();
+    }
+    
+    /**
+     * Null-safe evaluation of whether a map is empty.
+     * @param map The map
+     * @return True if the map is null or has 0 elements.
+     */
+    static public boolean isEmpty(Map<?,?> map) {
+        return map == null || map.isEmpty();
     }
     
 }
