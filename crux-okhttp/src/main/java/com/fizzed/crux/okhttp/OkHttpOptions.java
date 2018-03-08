@@ -21,25 +21,25 @@ import com.fizzed.crux.util.BindingPropertySupport;
 
 /**
  * Options for building an OkHttp client.
+ * @param <A>
  */
-public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
+public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropertySupport<A> {
     
-    static private final BindingPropertyMap<OkHttpOptions> PROP_MAP
-        = new BindingPropertyMap<OkHttpOptions>()
-            .bindString("base_uri", OkHttpOptions::setBaseUri)
-            .bindBoolean("insecure", OkHttpOptions::setInsecure)
-            .bindLong("connect_timeout", OkHttpOptions::setConnectTimeout)
-            .bindLong("write_timeout", OkHttpOptions::setWriteTimeout)
-            .bindLong("read_timeout", OkHttpOptions::setReadTimeout)
-            .bindBoolean("follow_redirects", OkHttpOptions::setFollowRedirects)
-            .bindType("logging_level", OkHttpOptions::setLoggingLevel, OkLoggingLevel.class, (s) -> {
-                OkLoggingLevel level = OkLoggingLevel.valueOf(s.toUpperCase());
-                if (level == null) {
-                    throw new IllegalArgumentException("Invalid logging level " + s);
-                }
-                return level;
-            })
-            .bindString("logger_name", OkHttpOptions::setLoggerName);
+    protected final BindingPropertyMap<A> bindingPropertyMap = new BindingPropertyMap<A>()
+        .bindString("base_uri", A::setBaseUri)
+        .bindBoolean("insecure", A::setInsecure)
+        .bindLong("connect_timeout", A::setConnectTimeout)
+        .bindLong("write_timeout", A::setWriteTimeout)
+        .bindLong("read_timeout", A::setReadTimeout)
+        .bindBoolean("follow_redirects", A::setFollowRedirects)
+        .bindType("logging_level", A::setLoggingLevel, OkLoggingLevel.class, (s) -> {
+            OkLoggingLevel level = OkLoggingLevel.valueOf(s.toUpperCase());
+            if (level == null) {
+                throw new IllegalArgumentException("Invalid logging level " + s);
+            }
+            return level;
+        })
+        .bindString("logger_name", OkHttpOptions::setLoggerName);
     
     private String baseUri;
     private Boolean insecure;
@@ -50,6 +50,7 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
     private OkLoggingLevel loggingLevel;
     private String loggerName;
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public OkHttpOptions() {
     }
     
@@ -59,13 +60,17 @@ public class OkHttpOptions implements BindingPropertySupport<OkHttpOptions> {
     }
     
     @Override
-    public BindingPropertyMap<OkHttpOptions> getPropertyMap() {
-        return PROP_MAP;
+    public BindingPropertyMap<A> getPropertyMap() {
+        return this.bindingPropertyMap;
     }
 
     public void setUri(Uri uri) {
+        this.setUri(uri, true);
+    }
+    
+    public void setUri(Uri uri, boolean skipUnknownKeys) {
         // set properties via query parameters in a uri
-        this.setProperties(uri.getQueryFirstMap(), true);
+        this.setProperties(uri.getQueryFirstMap(), skipUnknownKeys);
         // strip out query parameters to set base uri
         this.baseUri = uri.mutable()
             .setQuery(null)
