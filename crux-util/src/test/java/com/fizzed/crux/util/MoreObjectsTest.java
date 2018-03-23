@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,6 +49,20 @@ public class MoreObjectsTest {
     public void isEmpty() {
         assertThat(MoreObjects.isEmpty((Object[])null), is(true));
         assertThat(MoreObjects.isEmpty(new HashSet<>()), is(true));
+        assertThat(MoreObjects.isEmpty(new ArrayList<>()), is(true));
+        Iterable<String> iterable = new ArrayList<>();
+        assertThat(MoreObjects.isEmpty(iterable), is(true));
+        assertThat(MoreObjects.isEmpty((String)null), is(true));
+        assertThat(MoreObjects.isEmpty(""), is(true));
+    }
+    
+    @Test
+    public void isBlank() {
+        assertThat(MoreObjects.isBlank((String)null), is(true));
+        assertThat(MoreObjects.isBlank(""), is(true));
+        assertThat(MoreObjects.isBlank(" "), is(true));
+        assertThat(MoreObjects.isBlank("  "), is(true));
+        assertThat(MoreObjects.isBlank("d"), is(false));
     }
     
 }
