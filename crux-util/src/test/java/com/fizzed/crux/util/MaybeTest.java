@@ -17,6 +17,7 @@ package com.fizzed.crux.util;
 
 import static com.fizzed.crux.util.Maybe.maybe;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -84,6 +85,14 @@ public class MaybeTest {
         assertThat(s.orElse("yo"), is("dude"));
         assertThat(Maybe.empty().orElse("yo"), is("yo"));
         assertThat(Maybe.empty().orGet(() -> "yo"), is("yo"));
+    }
+    
+    @Test
+    public void flatMapAndOptMap() {
+        Maybe<String> s = maybe("dude");
+        
+        assertThat(s.flatMap(v -> maybe("yo")).orElse(null), is("yo"));
+        assertThat(s.optMap(v -> Optional.ofNullable("yo")).orElse(null), is("yo"));
     }
 
 }
