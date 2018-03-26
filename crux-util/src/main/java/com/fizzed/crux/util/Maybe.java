@@ -126,6 +126,14 @@ public class Maybe<T> {
         }
     }
     
+    public <U> Maybe<U> optMap(Function<? super T, Optional<U>> mapper) {
+        if (value != null) {
+            return Maybe.of(mapper.apply(value));
+        } else {
+            return Maybe.empty();
+        }
+    }
+    
     public Optional<T> toOptional() {
         return Optional.ofNullable(value);
     }
@@ -135,11 +143,22 @@ public class Maybe<T> {
     }
     
     static public <T> Maybe<T> of(T value) {
-        return new Maybe<>(value);
+        return maybe(value);
     }
     
     static public <T> Maybe<T> maybe(T value) {
         return new Maybe<>(value);
+    }
+    
+    static public <T> Maybe<T> of(Optional<T> valueOptional) {
+        return maybe(valueOptional);
+    }
+    
+    static public <T> Maybe<T> maybe(Optional<T> valueOptional) {
+        if (valueOptional == null) {
+            return Maybe.empty();
+        }
+        return new Maybe<>(valueOptional.orElse(null));
     }
 
     @Override

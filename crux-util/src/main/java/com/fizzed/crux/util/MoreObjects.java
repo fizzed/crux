@@ -84,12 +84,44 @@ public class MoreObjects {
     }
     
     /**
+     * Null-safe evaluation of whether an Iterable is empty.
+     * @param values The iterable
+     * @return True if the iterable is null or has 0 elements.
+     */
+    static public boolean isEmpty(Iterable<?> values) {
+        return values == null || !values.iterator().hasNext();
+    }
+    
+    /**
      * Null-safe evaluation of whether a map is empty.
      * @param map The map
      * @return True if the map is null or has 0 elements.
      */
     static public boolean isEmpty(Map<?,?> map) {
         return map == null || map.isEmpty();
+    }
+    
+    /**
+     * Checks if the string is null or has zero chars.
+     */
+    static public boolean isEmpty(CharSequence chars) {
+        return chars == null || chars.length() == 0;
+    }
+    
+    /**
+     * Checks if the string is null, empty, or has only characters consisting
+     * of spaces.
+     */
+    static public boolean isBlank(CharSequence chars) {
+        if (chars == null || chars.length() == 0) {
+            return true;
+        }
+        for (int i = 0; i < chars.length(); i++) {
+            if (chars.charAt(i) != ' ') {
+                return false;
+            }
+        }
+        return true;
     }
     
 }
