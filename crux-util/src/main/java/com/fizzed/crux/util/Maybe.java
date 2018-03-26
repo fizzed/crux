@@ -91,6 +91,14 @@ public class Maybe<T> {
         }
     }
     
+    public <U> Maybe<U> typed(Class<? super U> type) {
+        if (this.value != null && type.isInstance(this.value)) {
+            return Maybe.of((U)this.value);
+        } else {
+            return Maybe.empty();
+        }
+    }
+    
     public Maybe<T> filter(Predicate<? super T> predicate) {
         if (value != null) {
             if (predicate.test(value)) {

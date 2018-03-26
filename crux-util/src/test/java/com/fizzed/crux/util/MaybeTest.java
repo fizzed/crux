@@ -16,6 +16,8 @@
 package com.fizzed.crux.util;
 
 import static com.fizzed.crux.util.Maybe.maybe;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -86,4 +88,12 @@ public class MaybeTest {
         assertThat(Maybe.empty().orGet(() -> "yo"), is("yo"));
     }
 
+//    @Test
+//    public void typed() {
+//        Map<String,String> a = new HashMap<>();
+//        
+//        maybe(a)
+//            .typed(HashMap<String,String>)
+//    }
+    
 }
