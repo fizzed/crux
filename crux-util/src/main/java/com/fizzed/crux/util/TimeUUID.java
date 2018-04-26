@@ -95,9 +95,12 @@ public class TimeUUID implements Serializable, Comparable<TimeUUID> {
     public int compareTo(TimeUUID val) {
         int c;
         for (int i = 0; i < timeBytes.length; i++) {
-            c = timeBytes[i] - val.timeBytes[i];
-            if (c != 0) {
-                return c;
+            // unsigned comparison is critical
+            c = Byte.toUnsignedInt(timeBytes[i]) - Byte.toUnsignedInt(val.timeBytes[i]);
+            if (c < 0) {
+                return -1;
+            } else if (c > 0) {
+                return 1;
             }
         }
         return 0;

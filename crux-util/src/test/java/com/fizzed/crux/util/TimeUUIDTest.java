@@ -70,4 +70,25 @@ public class TimeUUIDTest {
         assertThat(timeuuid1, greaterThan(timeuuid8));
     }
     
+    @Test
+    public void compareToRequiredUnsignedBytes() {
+        // these are good examples of sorted timeuuids that will only be valid
+        // if their bytes are compared using unsigned ints rather than as byte arrays
+        
+        // epoch: 1524757638448, utc is Thu Apr 26 2018 15:47:18
+        TimeUUID timeuuid1 = TimeUUID.fromString("199663c4-4969-11e8-84c8-af9a6849ad63");
+        
+        assertThat(timeuuid1.getEpochMillis(), is(1524757638448L));
+        
+        // epoch: 1524774650702, utc is Thu Apr 26 2018 20:30:50
+        TimeUUID timeuuid2 = TimeUUID.fromString("b5ae57a8-4990-11e8-8f6c-d3d609bec473");
+        
+        assertThat(timeuuid2.getEpochMillis(), is(1524774650702L));
+        
+        assertThat(timeuuid1.compareTo(timeuuid2), is(-1));
+        assertThat(timeuuid1.compareTo(timeuuid1), is(0));
+        assertThat(timeuuid2.compareTo(timeuuid1), is(1));
+        assertThat(timeuuid2.compareTo(timeuuid2), is(0));
+    }
+    
 }
