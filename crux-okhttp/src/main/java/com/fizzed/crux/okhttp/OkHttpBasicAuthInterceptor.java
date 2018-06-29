@@ -19,11 +19,15 @@ public class OkHttpBasicAuthInterceptor implements Interceptor {
     
     @Override
     public Response intercept(Chain chain) throws IOException {
-        // modify request and set authorization header
-        Request request = chain.request().newBuilder()
-            .header("Authorization", this.authorizationHeader)
-            .build();
-        return chain.proceed(request);
+        if (!chain.request().headers().names().contains("Authorization")) {
+            // modify request and set authorization header (if not yet set)
+            Request request = chain.request().newBuilder()
+                .header("Authorization", this.authorizationHeader)
+                .build();
+            return chain.proceed(request);
+        } else {
+            return chain.proceed(chain.request());
+        }
     }
 
 }
