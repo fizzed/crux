@@ -25,6 +25,15 @@ import java.util.Objects;
  * @author jjlauer
  */
 public class MoreObjects {
+    
+    /**
+     * Null-safe evaluation of whether a boolean is true.
+     * @param value The value to check
+     * @return True if value is non-null AND true otherwise false
+     */
+    static public boolean isTrue(Boolean value) {
+        return value != null && value;
+    }
  
     /**
      * Checks whether the value is in the list of values.

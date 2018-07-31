@@ -30,6 +30,15 @@ import org.junit.Test;
 public class MoreObjectsTest {
     
     @Test
+    public void isTrue() {
+        assertThat(MoreObjects.isTrue(null), is(false));
+        assertThat(MoreObjects.isTrue(false), is(false));
+        assertThat(MoreObjects.isTrue(true), is(true));
+        assertThat(MoreObjects.isTrue(Boolean.TRUE), is(true));
+        assertThat(MoreObjects.isTrue(Boolean.FALSE), is(false));
+    }
+    
+    @Test
     public void in() {
         assertThat(MoreObjects.in(null, "a", null), is(true));
         
