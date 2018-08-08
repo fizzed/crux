@@ -28,6 +28,7 @@
         <module>crux-okhttp</module>
         <module>crux-okhttp-oauth1</module>
         <module>crux-vagrant</module>
+        <module>crux-mediatype</module>
     </modules>
 
     <dependencyManagement>
@@ -43,6 +44,12 @@
             <dependency>
                 <groupId>com.fizzed</groupId>
                 <artifactId>crux-uri</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.fizzed</groupId>
+                <artifactId>crux-mime</artifactId>
                 <version>${project.version}</version>
             </dependency>
             

@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.fizzed</groupId>
+    <artifactId>crux-mediatype</artifactId>
+    <name>crux-mediatype</name>
+    <packaging>jar</packaging>
+    
+    <parent>
+        <groupId>com.fizzed</groupId>
+        <artifactId>crux</artifactId>
+        <version>0.28.1-SNAPSHOT</version>
+    </parent>
+
+    <dependencies>
+        
+        <!-- no dependencies!! -->
+        
+        <!-- testing -->
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+    
+</project>
