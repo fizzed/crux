@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * RFC 3986
@@ -438,6 +439,31 @@ public class Uri {
         }
        
         return uri.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.toString());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Uri other = (Uri) obj;
+        if (!Objects.equals(this.toString(), other.toString())) {
+            return false;
+        }
+        return true;
     }
     
     static String urlEncode(String value) {

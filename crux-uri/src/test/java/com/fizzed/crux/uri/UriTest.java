@@ -15,8 +15,8 @@
  */
 package com.fizzed.crux.uri;
 
-import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -25,6 +25,30 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 public class UriTest {
+    
+    @Test
+    public void equals() {
+        Uri uri = new Uri("http://www.fizzed.com");
+        
+        assertThat(uri, is(new Uri("http://www.fizzed.com")));
+        
+        uri = new Uri("/");
+        
+        assertThat(uri, is(new Uri("/")));
+    }
+    
+    @Test
+    public void hash() {
+        Map<Uri,String> map = new HashMap<>();
+        
+        Uri uri1 = new Uri("http://www.fizzed.com");
+        Uri uri2 = new Uri("http://www.fizzed.com");
+
+        map.put(uri1, "a");
+        
+        assertThat(uri2.hashCode(), is(uri1.hashCode()));
+        assertThat(map.get(uri2), is("a"));
+    }
     
     @Test
     public void testToString() {
