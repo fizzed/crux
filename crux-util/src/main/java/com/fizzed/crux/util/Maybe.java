@@ -79,16 +79,18 @@ public class Maybe<T> {
         return this.value == null;
     }
     
-    public void ifPresent(Consumer<? super T> consumer) {
+    public Maybe<T> ifPresent(Consumer<? super T> consumer) {
         if (value != null) {
             consumer.accept(value);
         }
+        return this;
     }
     
-    public void ifAbsent(Runnable runnable) {
+    public Maybe<T> ifAbsent(Runnable runnable) {
         if (value == null) {
             runnable.run();
         }
+        return this;
     }
     
     public <U> Maybe<U> typed(Class<? super U> type) {
