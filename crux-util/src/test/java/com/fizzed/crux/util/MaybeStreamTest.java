@@ -47,7 +47,7 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(false));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.map((v,i) -> {
+        maybeList.each((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
@@ -67,7 +67,7 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(true));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.map((v,i) -> {
+        maybeList.each((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
@@ -94,13 +94,13 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(false));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.map((v,i) -> {
+        maybeList.each((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(0));
         
-        maybeList.map(v -> {
+        maybeList.each(v -> {
            forEachCounter.incrementAndGet();
         });
         
@@ -121,7 +121,7 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(true));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.map((v,i) -> {
+        maybeList.each((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         

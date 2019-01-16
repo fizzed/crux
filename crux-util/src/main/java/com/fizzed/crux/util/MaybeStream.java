@@ -74,11 +74,11 @@ public class MaybeStream<T> implements Iterable<T> {
         }
     }
     
-    public MaybeStream<T> map(Consumer<T> consumer) {
-        return this.map((v,i) -> consumer.accept(v));
+    public MaybeStream<T> each(Consumer<T> consumer) {
+        return this.each((v,i) -> consumer.accept(v));
     }
     
-    public MaybeStream<T> map(BiConsumer<T,Integer> consumer) {
+    public MaybeStream<T> each(BiConsumer<T,Integer> consumer) {
         if (values == null) {
             return this;
         }
