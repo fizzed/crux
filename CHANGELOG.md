@@ -1,6 +1,10 @@
 Crux by Fizzed
 ==============
 
+#### 1.0.2 - 2019-01-17
+
+ - New MaybeStream class
+
 #### 0.15.0 - 2017-11-06
 
  - crux-util: New Maybe class
