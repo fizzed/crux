@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -42,11 +41,19 @@ public class MaybeStream<T> implements Iterable<T> {
         if (values == null) {
             throw new NoSuchElementException("No values present");
         }
-        return this.toStream();
+        return this.stream();
     }
     
-    public Stream<T> orEmpty() {
-        return this.toStream();
+    public Stream<T> stream() {
+        if (values == null) {
+            return Stream.empty();
+        }
+        // optimized for collections (e.g. List)
+        if (values instanceof Collection) {
+            return ((Collection<T>)values).stream();
+        } else {
+            return StreamSupport.stream(this.values.spliterator(), false);
+        }
     }
     
     @Override
@@ -62,23 +69,7 @@ public class MaybeStream<T> implements Iterable<T> {
         }
     }
     
-    private Stream<T> toStream() {
-        if (values == null) {
-            return Stream.empty();
-        }
-        // optimized for collections (e.g. List)
-        if (values instanceof Collection) {
-            return ((Collection<T>)values).stream();
-        } else {
-            return StreamSupport.stream(this.values.spliterator(), false);
-        }
-    }
-    
-    public MaybeStream<T> each(Consumer<T> consumer) {
-        return this.each((v,i) -> consumer.accept(v));
-    }
-    
-    public MaybeStream<T> each(BiConsumer<T,Integer> consumer) {
+    public MaybeStream<T> forEach(BiConsumer<T,Integer> consumer) {
         if (values == null) {
             return this;
         }
@@ -87,33 +78,6 @@ public class MaybeStream<T> implements Iterable<T> {
         return this;
     }
     
-//    public T get() {
-//        if (value == null) {
-//            throw new NoSuchElementException("No value present");
-//        }
-//        return value;
-//    }
-//
-//    public void set(T value) {
-//        this.value = value;
-//    }
-//    
-//    public T orElse(T defaultValue) {
-//        return this.isPresent() ? value : defaultValue;
-//    }
-//    
-//    public T orGet(Supplier<T> defaultSupplier) {
-//        Objects.requireNonNull(defaultSupplier, "supplier was null");
-//        return this.isPresent() ? value : defaultSupplier.get();
-//    }
-//    
-//    public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
-//        if (this.value == null) {
-//            throw exceptionSupplier.get();
-//        }
-//        return this.value;
-//    }
-    
     public boolean isPresent() {
         return this.values != null;
     }
@@ -121,68 +85,6 @@ public class MaybeStream<T> implements Iterable<T> {
     public boolean isAbsent() {
         return this.values == null;
     }
-    
-//    
-//    public MaybeStream<T> ifPresent(Consumer<? super T> consumer) {
-//        if (value != null) {
-//            consumer.accept(value);
-//        }
-//        return this;
-//    }
-//    
-//    public MaybeStream<T> ifAbsent(Runnable runnable) {
-//        if (value == null) {
-//            runnable.run();
-//        }
-//        return this;
-//    }
-//    
-//    public <U> MaybeStream<U> typed(Class<? super U> type) {
-//        if (this.value != null && type.isInstance(this.value)) {
-//            return MaybeStream.of((U)this.value);
-//        } else {
-//            return MaybeStream.empty();
-//        }
-//    }
-//    
-//    public MaybeStream<T> filter(Predicate<? super T> predicate) {
-//        if (value != null) {
-//            if (predicate.test(value)) {
-//                return this;
-//            } else {
-//                return MaybeStream.empty();
-//            }
-//        }
-//        return this;
-//    }
-//    
-//    public <U> MaybeStream<U> map(Function<? super T, ? extends U> mapper) {
-//        if (value != null) {
-//            return MaybeStream.of(mapper.apply(value));
-//        } else {
-//            return MaybeStream.empty();
-//        }
-//    }
-//    
-//    public <U> MaybeStream<U> flatMap(Function<? super T, MaybeStream<U>> mapper) {
-//        if (value != null) {
-//            return mapper.apply(value);
-//        } else {
-//            return MaybeStream.empty();
-//        }
-//    }
-//    
-//    public <U> MaybeStream<U> optMap(Function<? super T, Optional<U>> mapper) {
-//        if (value != null) {
-//            return MaybeStream.of(mapper.apply(value));
-//        } else {
-//            return MaybeStream.empty();
-//        }
-//    }
-//    
-//    public Optional<T> toOptional() {
-//        return Optional.ofNullable(value);
-//    }
     
     static public <T> MaybeStream<T> empty() {
         return new MaybeStream<>(null);
@@ -206,37 +108,8 @@ public class MaybeStream<T> implements Iterable<T> {
     static public <T> MaybeStream<T> maybeStream(Iterable<T> value) {
         return new MaybeStream<>(value);
     }
-
-//    @Override
-//    public String toString() {
-//        return this.value != null ? this.value.toString() : null;
-//    }
-
-//    @Override
-//    public boolean equals(Object obj) {
-//        if (this == obj) {
-//            return true;
-//        }
-//
-//        if (!(obj instanceof MaybeStream)) {
-//            return false;
-//        }
-//
-//        MaybeStream<?> other = (MaybeStream<?>) obj;
-//        return Objects.equals(value, other.value);
-//    }
-
-    /**
-     * Returns the hash code of the value, if present, otherwise {@code 0}
-     * (zero) if no value is present.
-     *
-     * @return hash code value of the present value or {@code 0} if no value is
-     *         present
-     */
-//    @Override
-//    public int hashCode() {
-//        return Objects.hashCode(value);
-//    }
+    
+    // helpers
     
     static public class ArrayIterable<V> implements Iterable<V> {
         

@@ -42,18 +42,18 @@ public class MaybeStreamTest {
             // expected
         }
         
-        assertThat(maybeList.orEmpty(), is(not(nullValue())));
+        assertThat(maybeList.stream(), is(not(nullValue())));
         assertThat(maybeList.isAbsent(), is(true));
         assertThat(maybeList.isPresent(), is(false));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.each((v,i) -> {
+        maybeList.forEach((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(0));
         
-        assertThat(maybeList.orEmpty().count(), is(0L));
+        assertThat(maybeList.stream().count(), is(0L));
     }
     
     @Test
@@ -67,13 +67,13 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(true));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.each((v,i) -> {
+        maybeList.forEach((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(3));
         
-        assertThat(maybeList.orEmpty().count(), is(3L));
+        assertThat(maybeList.stream().count(), is(3L));
     }
     
     @Test
@@ -89,25 +89,25 @@ public class MaybeStreamTest {
             // expected
         }
         
-        assertThat(maybeList.orEmpty(), is(not(nullValue())));
+        assertThat(maybeList.stream(), is(not(nullValue())));
         assertThat(maybeList.isAbsent(), is(true));
         assertThat(maybeList.isPresent(), is(false));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.each((v,i) -> {
+        maybeList.forEach((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(0));
         
-        maybeList.each(v -> {
+        maybeList.forEach(v -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(0));
         
         
-        assertThat(maybeList.orEmpty().count(), is(0L));
+        assertThat(maybeList.stream().count(), is(0L));
     }
  
     @Test
@@ -121,13 +121,13 @@ public class MaybeStreamTest {
         assertThat(maybeList.isPresent(), is(true));
         
         AtomicInteger forEachCounter = new AtomicInteger();
-        maybeList.each((v,i) -> {
+        maybeList.forEach((v,i) -> {
            forEachCounter.incrementAndGet();
         });
         
         assertThat(forEachCounter.get(), is(3));
         
-        assertThat(maybeList.orEmpty().count(), is(3L));
+        assertThat(maybeList.stream().count(), is(3L));
     }
     
     @Test
