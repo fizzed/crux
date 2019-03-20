@@ -39,21 +39,10 @@ public class Resources {
     }
     
     static public byte[] readAllBytes(String resourceName) throws IOException {
-        final InputStream input = newInputStream(resourceName);
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            int read;
-            byte[] data = new byte[2048];
-            while ((read = input.read(data, 0, data.length)) != -1) {
-                output.write(data, 0, read);
-            }
-            output.flush();
-            return output.toByteArray();
-        } finally {
-            try {
-                input.close();
-            } catch (IOException e) {
-                // ignore
+        try (InputStream input = newInputStream(resourceName)) {
+            try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                InOuts.copy(input, output);
+                return output.toByteArray();
             }
         }
     }
