@@ -33,6 +33,9 @@ import java.util.Set;
 public enum KnownMediaType {
  
     // order of declaration is critical!
+    APPLICATION_OCTET_STREAM("application/octet-stream"),
+    APPLICATION_OCTET_STREAM_NON_STANDARD("application/octetstream", APPLICATION_OCTET_STREAM),
+    APPLICATION_X_WWW_FORM_URLENCODED("application/x-www-form-urlencoded"),
     APPLICATION_JAR("application/java-archive", asList("jar")),
     APPLICATION_JAVASCRIPT("application/javascript", asList("js")),
     APPLICATION_JSON("application/json", asList("json")),
@@ -49,6 +52,7 @@ public enum KnownMediaType {
     IMAGE_X_ICO("image/x-icon", asList("ico")),
     IMAGE_PNG("image/png", asList("png")),
     IMAGE_JPEG("image/jpeg", asList("jpg", "jpeg")),
+    IMAGE_JPEG_NON_STANDARD("image/jpg", IMAGE_JPEG),
     IMAGE_GIF("image/gif", asList("gif")),
     IMAGE_BMP("image/bmp", asList("bmp")),
     IMAGE_TIFF("image/tiff", asList("tiff", "tif")),
@@ -57,6 +61,10 @@ public enum KnownMediaType {
     FONT_TTF("font/ttf", asList("ttf")),
     FONT_WOFF("font/woff", asList("woff")),
     FONT_WOFF2("font/woff2", asList("woff2")),
+    MULTIPART_ALTERNATIVE("multipart/alternative"),
+    MULTIPART_FORM_DATA("multipart/form-data"),
+    MULTIPART_MIXED("multipart/mixed"),
+    MULTIPART_RELATED("multipart/related"),
     VIDEO_3GPP("video/3gpp", asList("3gp", "3gpp")),
     VIDEO_X_MATROSKA("video/x-matroska", asList("mkv")),
     VIDEO_X_FLV("video/x-flv", asList("flv")),
@@ -113,6 +121,10 @@ public enum KnownMediaType {
     private final String label;
     private final List<String> extensions;
     private final KnownMediaType aliasOf;
+    
+    KnownMediaType(String label) {
+        this(label, null, null);
+    }
     
     KnownMediaType(String label, List<String> extensions) {
         this(label, extensions, null);
@@ -177,6 +189,20 @@ public enum KnownMediaType {
     
     public KnownMediaType getAliasOf() {
         return this.aliasOf;
+    }
+    
+    /**
+     * Normalize a known media type by recursing thru its aliasOf list till it
+     * gets to a known media type that doesn't have an alias.
+     * 
+     * @return 
+     */
+    public KnownMediaType normalize() {
+        KnownMediaType kmt = this;
+        while (kmt.getAliasOf() != null) {
+            kmt = kmt.getAliasOf();
+        }
+        return kmt;
     }
     
     public boolean isSame(KnownMediaType mediaType) {

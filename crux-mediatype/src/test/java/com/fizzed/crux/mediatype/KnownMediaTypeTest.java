@@ -34,6 +34,12 @@ public class KnownMediaTypeTest {
             is(KnownMediaType.APPLICATION_JSON));
         assertThat(KnownMediaType.fromLabel("apPlication/Json").orElse(null),
             is(KnownMediaType.APPLICATION_JSON));
+        assertThat(KnownMediaType.fromLabel("image/jpg").orElse(null),
+            is(KnownMediaType.IMAGE_JPEG_NON_STANDARD));
+        assertThat(KnownMediaType.fromLabel("application/octet-stream").orElse(null),
+            is(KnownMediaType.APPLICATION_OCTET_STREAM));
+        assertThat(KnownMediaType.fromLabel("application/octetstream").orElse(null),
+            is(KnownMediaType.APPLICATION_OCTET_STREAM_NON_STANDARD));
     }
     
     @Test
@@ -44,6 +50,10 @@ public class KnownMediaTypeTest {
             is(KnownMediaType.IMAGE_JPEG));
         assertThat(KnownMediaType.fromExtension("jpeg").orElse(null),
             is(KnownMediaType.IMAGE_JPEG));
+        assertThat(KnownMediaType.fromExtension("svg").orElse(null),
+            is(KnownMediaType.IMAGE_SVG_XML));
+        assertThat(KnownMediaType.fromExtension("pdf").orElse(null),
+            is(KnownMediaType.APPLICATION_PDF));
     }
     
     @Test
@@ -67,6 +77,14 @@ public class KnownMediaTypeTest {
         assertThat(KnownMediaType.APPLICATION_JSON.isSame(KnownMediaType.IMAGE_GIF), is(false));
         assertThat(KnownMediaType.APPLICATION_JSON.isSame(KnownMediaType.APPLICATION_JSON), is(true));
         assertThat(KnownMediaType.APPLICATION_JSON.isSame(KnownMediaType.APPLICATION_VND_API_JSON), is(true));
+        assertThat(KnownMediaType.IMAGE_JPEG.isSame(KnownMediaType.IMAGE_JPEG_NON_STANDARD), is(true));
+    }
+    
+    @Test
+    public void normalize() {
+        assertThat(KnownMediaType.APPLICATION_JSON.normalize(), is(KnownMediaType.APPLICATION_JSON));
+        assertThat(KnownMediaType.APPLICATION_VND_API_JSON.normalize(), is(KnownMediaType.APPLICATION_JSON));
+        assertThat(KnownMediaType.IMAGE_JPEG_NON_STANDARD.normalize(), is(KnownMediaType.IMAGE_JPEG));
     }
     
 }
