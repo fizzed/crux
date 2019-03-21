@@ -35,6 +35,19 @@ public class Base16Test {
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), 0), is(""));
         assertThat(Base16.encode(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }), is("0123456789abcdef"));
     }
+ 
+    @Test
+    public void encodeUpper() throws UnsupportedEncodingException {
+        assertThat(Base16.encode(null), is(nullValue()));
+        assertThat(Base16.encode(new byte[0]), is(""));
+        assertThat(Base16.encode(new byte[1]), is("00"));
+        assertThat(Base16.encode(new byte[2]), is("0000"));
+        assertThat(Base16.encode("test".getBytes("UTF-8")), is("74657374"));
+        assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), true), is("E282AC"));
+        assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), true, 2), is("E282"));
+        assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), true, 0), is(""));
+        assertThat(Base16.encode(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }, true), is("0123456789ABCDEF"));
+    }
     
     @Test
     public void decode() throws UnsupportedEncodingException {
@@ -48,6 +61,20 @@ public class Base16Test {
         assertThat(Base16.decode("e282ac"), is("\u20AC".getBytes("UTF-8")));
         assertThat(Base16.decode("0123456789ABCDEF"), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
         assertThat(Base16.decode("0123456789abcdef"), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
+    }
+
+    @Test
+    public void encodeDecodeHuge() {
+        for (int length = 0; length < 30000; length+=57) {
+            byte[] bytes = new byte[length];
+            // initialize data
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte)(i % 127);
+            }
+            String encoded = Base16.encode(bytes);
+            byte[] decoded = Base16.decode(encoded);
+            assertThat(decoded, is(bytes));
+        }
     }
     
 }

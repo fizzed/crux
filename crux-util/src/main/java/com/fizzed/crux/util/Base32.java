@@ -1,5 +1,22 @@
 /*
- * Adapted from Amazon AWS Base32 codec for more leniency...
+ * Adapted from Amazon AWS Base32 codec for control over padding being added
+ * by default and optionally included on decoding.  Their code was the same
+ * License as this.
+ *
+ * Copyright 2019 Fizzed, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
  */
 package com.fizzed.crux.util;
 
@@ -14,12 +31,12 @@ public class Base32 {
     // Base 32 alphabet as defined at http://www.ietf.org/rfc/rfc4648.txt
     static private final byte PAD = '=';
     
-    static private final byte[] ALPHABETS = alphabets();
+    //static private final byte[] ALPHABETS = upperAlphabets();
     
     //static private final char[] UPPER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".toCharArray();
     //static private final char[] LOWER_CHARS = "abcdefghijklmnopqrstuvwxyz234567".toCharArray();
 
-    static private byte[] internalEncode(byte[] src, boolean padded) {
+    static private byte[] internalEncode(byte[] encodeAlphabet, byte[] src, boolean padded) {
         final int num5bytes = src.length / 5;
         final int remainder = src.length % 5;
         
@@ -28,7 +45,7 @@ public class Base32 {
             byte[] dest = new byte[num5bytes * 8];
     
             for (int s=0,d=0; s < src.length; s+=5, d+=8)
-                encode5bytes(src, s, dest, d);
+                encode5bytes(encodeAlphabet, src, s, dest, d);
             
             return dest;
         }
@@ -58,20 +75,20 @@ public class Base32 {
         int s=0, d=0;
         
         for (; s < src.length-remainder; s+=5, d+=8)
-            encode5bytes(src, s, dest, d);
+            encode5bytes(encodeAlphabet, src, s, dest, d);
         
         switch(remainder) {
             case 1:
-                encode1byte(src, s, dest, d, padded);
+                encode1byte(encodeAlphabet, src, s, dest, d, padded);
                 break;
             case 2:
-                encode2bytes(src, s, dest, d, padded);
+                encode2bytes(encodeAlphabet, src, s, dest, d, padded);
                 break;
             case 3:
-                encode3bytes(src, s, dest, d, padded);
+                encode3bytes(encodeAlphabet, src, s, dest, d, padded);
                 break;
             case 4:
-                encode4bytes(src, s, dest, d, padded);
+                encode4bytes(encodeAlphabet, src, s, dest, d, padded);
                 break;
             default:
                 throw new IllegalStateException();
@@ -79,42 +96,42 @@ public class Base32 {
         return dest;
     }
     
-    static private void encode5bytes(byte[] src, int s, byte[] dest, int d) {
+    static private void encode5bytes(byte[] encodeAlphabet, byte[] src, int s, byte[] dest, int d) {
         // operator precedence in descending order: >>> or <<, &, |
         byte p;
-        dest[d++] = (byte)ALPHABETS[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
-        dest[d++] = (byte)ALPHABETS[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
-        dest[d++] = (byte)ALPHABETS[p >>> 1 & MASK_5BITS];                                    //   5
-        dest[d++] = (byte)ALPHABETS[(p & 1) << 4 | (p=src[s++]) >>> 4 & MASK_4BITS];          //   1 4
-        dest[d++] = (byte)ALPHABETS[(p & MASK_4BITS) << 1 | (p=src[s++]) >>> 7 & 1];          //     4 1
-        dest[d++] = (byte)ALPHABETS[p >>> 2 & MASK_5BITS];                                    //       5
-        dest[d++] = (byte)ALPHABETS[(p & MASK_2BITS) << 3 | (p=src[s]) >>> 5 & MASK_3BITS];   //       2 3
-        dest[d] = (byte)ALPHABETS[p & MASK_5BITS];                                            //         5
+        dest[d++] = encodeAlphabet[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
+        dest[d++] = encodeAlphabet[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
+        dest[d++] = encodeAlphabet[p >>> 1 & MASK_5BITS];                                    //   5
+        dest[d++] = encodeAlphabet[(p & 1) << 4 | (p=src[s++]) >>> 4 & MASK_4BITS];          //   1 4
+        dest[d++] = encodeAlphabet[(p & MASK_4BITS) << 1 | (p=src[s++]) >>> 7 & 1];          //     4 1
+        dest[d++] = encodeAlphabet[p >>> 2 & MASK_5BITS];                                    //       5
+        dest[d++] = encodeAlphabet[(p & MASK_2BITS) << 3 | (p=src[s]) >>> 5 & MASK_3BITS];   //       2 3
+        dest[d] = encodeAlphabet[p & MASK_5BITS];                                            //         5
     }
     
-    static private void encode4bytes(byte[] src, int s, byte[] dest, int d, boolean padding) {
+    static private void encode4bytes(byte[] encodeAlphabet, byte[] src, int s, byte[] dest, int d, boolean padding) {
         // operator precedence in descending order: >>> or <<, &, |
         byte p;
-        dest[d++] = (byte)ALPHABETS[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
-        dest[d++] = (byte)ALPHABETS[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
-        dest[d++] = (byte)ALPHABETS[p >>> 1 & MASK_5BITS];                                    //   5
-        dest[d++] = (byte)ALPHABETS[(p & 1) << 4 | (p=src[s++]) >>> 4 & MASK_4BITS];          //   1 4
-        dest[d++] = (byte)ALPHABETS[(p & MASK_4BITS) << 1 | (p=src[s]) >>> 7 & 1];            //     4 1
-        dest[d++] = (byte)ALPHABETS[p >>> 2 & MASK_5BITS];                                    //       5
-        dest[d++] = (byte)ALPHABETS[(p & MASK_2BITS) << 3];                                   //       2
+        dest[d++] = encodeAlphabet[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
+        dest[d++] = encodeAlphabet[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
+        dest[d++] = encodeAlphabet[p >>> 1 & MASK_5BITS];                                    //   5
+        dest[d++] = encodeAlphabet[(p & 1) << 4 | (p=src[s++]) >>> 4 & MASK_4BITS];          //   1 4
+        dest[d++] = encodeAlphabet[(p & MASK_4BITS) << 1 | (p=src[s]) >>> 7 & 1];            //     4 1
+        dest[d++] = encodeAlphabet[p >>> 2 & MASK_5BITS];                                    //       5
+        dest[d++] = encodeAlphabet[(p & MASK_2BITS) << 3];                                   //       2
         if (padding) {
             dest[d] = PAD;
         }
     }
     
-    static private void encode3bytes(byte[] src, int s, byte[] dest, int d, boolean padding) {
+    static private void encode3bytes(byte[] encodeAlphabet, byte[] src, int s, byte[] dest, int d, boolean padding) {
         // operator precedence in descending order: >>> or <<, &, |
         byte p;
-        dest[d++] = (byte)ALPHABETS[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
-        dest[d++] = (byte)ALPHABETS[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
-        dest[d++] = (byte)ALPHABETS[p >>> 1 & MASK_5BITS];                                    //   5
-        dest[d++] = (byte)ALPHABETS[(p & 1) << 4 | (p=src[s]) >>> 4 & MASK_4BITS];            //   1 4
-        dest[d++] = (byte)ALPHABETS[(p & MASK_4BITS) << 1];                                   //     4
+        dest[d++] = encodeAlphabet[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
+        dest[d++] = encodeAlphabet[(p & MASK_3BITS) << 2 | (p=src[s++]) >>> 6 & MASK_2BITS]; // 3 2
+        dest[d++] = encodeAlphabet[p >>> 1 & MASK_5BITS];                                    //   5
+        dest[d++] = encodeAlphabet[(p & 1) << 4 | (p=src[s]) >>> 4 & MASK_4BITS];            //   1 4
+        dest[d++] = encodeAlphabet[(p & MASK_4BITS) << 1];                                   //     4
         
         if (padding) {
             for (int i=0; i < 3; i++)
@@ -122,13 +139,13 @@ public class Base32 {
         }
     }
     
-    static private void encode2bytes(byte[] src, int s, byte[] dest, int d, boolean padding) {
+    static private void encode2bytes(byte[] encodeAlphabet, byte[] src, int s, byte[] dest, int d, boolean padding) {
         // operator precedence in descending order: >>> or <<, &, |
         byte p;
-        dest[d++] = (byte)ALPHABETS[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
-        dest[d++] = (byte)ALPHABETS[(p & MASK_3BITS) << 2 | (p=src[s]) >>> 6 & MASK_2BITS];   // 3 2
-        dest[d++] = (byte)ALPHABETS[p >>> 1 & MASK_5BITS];                                    //   5
-        dest[d++] = (byte)ALPHABETS[(p & 1) << 4];                                            //   1
+        dest[d++] = encodeAlphabet[(p=src[s++]) >>> 3 & MASK_5BITS];                         // 5 
+        dest[d++] = encodeAlphabet[(p & MASK_3BITS) << 2 | (p=src[s]) >>> 6 & MASK_2BITS];   // 3 2
+        dest[d++] = encodeAlphabet[p >>> 1 & MASK_5BITS];                                    //   5
+        dest[d++] = encodeAlphabet[(p & 1) << 4];                                            //   1
         
         if (padding) {
             for (int i=0; i < 4; i++)
@@ -136,11 +153,11 @@ public class Base32 {
         }
     }
     
-    static private void encode1byte(byte[] src, int s, byte[] dest, int d, boolean padding) {
+    static private void encode1byte(byte[] encodeAlphabet, byte[] src, int s, byte[] dest, int d, boolean padding) {
         // operator precedence in descending order: >>> or <<, &, |
         byte p;
-        dest[d++] = (byte)ALPHABETS[(p=src[s]) >>> 3 & MASK_5BITS];                            // 5 
-        dest[d++] = (byte)ALPHABETS[(p & MASK_3BITS) << 2];                                    // 3
+        dest[d++] = encodeAlphabet[(p=src[s]) >>> 3 & MASK_5BITS];                            // 5 
+        dest[d++] = encodeAlphabet[(p & MASK_3BITS) << 2];                                    // 3
         
         if (padding) {
             for (int i=0; i < 6; i++)
@@ -293,17 +310,22 @@ public class Base32 {
     }
     
     static public String encode(byte[] bytes) {
-        return encode(bytes, true);
+        return encode(bytes, true, false);
     }
     
     static public String encode(byte[] bytes, boolean padded) {
+        return encode(bytes, padded, false);
+    }
+    
+    static public String encode(byte[] bytes, boolean padded, boolean lower) {
         if (bytes == null) {
             return null;
         }
         if (bytes.length == 0) {
             return "";
         }
-        return new String(internalEncode(bytes, padded), StandardCharsets.ISO_8859_1);
+        byte[] encoded = internalEncode(lower ? LOWER_CHARS : UPPER_CHARS, bytes, padded);
+        return new String(encoded, StandardCharsets.ISO_8859_1);
     }
     
     static public byte[] decode(String b32) {
@@ -316,10 +338,6 @@ public class Base32 {
         
         return internalDecode(buf, buf.length);
     }
-
-//    static public byte[] decode(byte[] b32) {
-//        return b32 == null || b32.length == 0 ? b32 :  internalDecode(b32, b32.length);
-//    }
     
     static private final int OFFSET_OF_2 = '2' - 26;
     
@@ -344,9 +362,17 @@ public class Base32 {
         }
     }
 
-    static private byte[] alphabets() {
+    static private final byte[] UPPER_CHARS = upperAlphabets();
+    static private final byte[] LOWER_CHARS = lowerAlphabets();
+    
+    static private byte[] upperAlphabets() {
         // Base 32 alphabet as defined at http://www.ietf.org/rfc/rfc4648.txt
         return toBytesDirect("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+    }
+
+    static private byte[] lowerAlphabets() {
+        // Base 32 alphabet as defined at http://www.ietf.org/rfc/rfc4648.txt
+        return toBytesDirect("abcdefghijklmnopqrstuvwxyz234567");
     }
     
     static private byte[] toBytesDirect(final String singleOctets) {
@@ -355,11 +381,11 @@ public class Base32 {
         
         for (int i=0; i < dest.length; i++) {
             final char c = src[i];
-            
             if (c > Byte.MAX_VALUE)
                 throw new IllegalArgumentException("Invalid character found at position " + i + " for " + singleOctets);
             dest[i] = (byte)c;
         }
+        
         return dest;
     }
     

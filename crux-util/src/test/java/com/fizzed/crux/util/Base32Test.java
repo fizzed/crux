@@ -30,6 +30,7 @@ public class Base32Test {
         assertThat(Base32.encode(new byte[0]), is(""));
         assertThat(Base32.encode(new byte[1]), is("AA======"));
         assertThat(Base32.encode(new byte[1], false), is("AA"));
+        assertThat(Base32.encode(new byte[1], false, true), is("aa"));
         assertThat(Base32.encode(new byte[2]), is("AAAA===="));
         assertThat(Base32.encode(new byte[2], false), is("AAAA"));
         assertThat(Base32.encode(new byte[3]), is("AAAAA==="));
@@ -41,7 +42,10 @@ public class Base32Test {
         assertThat(Base32.encode(new byte[6]), is("AAAAAAAAAA======"));
         assertThat(Base32.encode(new byte[6], false), is("AAAAAAAAAA"));
         assertThat(Base32.encode("test".getBytes("UTF-8")), is("ORSXG5A="));
+        assertThat(Base32.encode("test".getBytes("UTF-8"), true, true), is("orsxg5a="));
+        assertThat(Base32.encode("test".getBytes("UTF-8"), false, true), is("orsxg5a"));
         assertThat(Base32.encode("test1".getBytes("UTF-8")), is("ORSXG5BR"));
+        assertThat(Base32.encode("test1".getBytes("UTF-8"), true, true), is("orsxg5br"));
         assertThat(Base32.encode(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }), is("AERUKZ4JVPG66==="));
         assertThat(Base32.encode("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.".getBytes("UTF-8")), is("JRXXEZLNEBUXA43VNUQGI33MN5ZCA43JOQQGC3LFOQWCAY3PNZZWKY3UMV2HK4RAMFSGS4DJONRWS3THEBSWY2LUFQQHGZLEEBSG6IDFNF2XG3LPMQQHIZLNOBXXEIDJNZRWSZDJMR2W45BAOV2CA3DBMJXXEZJAMV2CAZDPNRXXEZJANVQWO3TBEBQWY2LROVQS4ICVOQQGK3TJNUQGCZBANVUW42LNEB3GK3TJMFWSYIDROVUXGIDON5ZXI4TVMQQGK6DFOJRWS5DBORUW63RAOVWGYYLNMNXSA3DBMJXXE2LTEBXGS43JEB2XIIDBNRUXC5LJOAQGK6BAMVQSAY3PNVWW6ZDPEBRW63TTMVYXKYLUFYQEI5LJOMQGC5LUMUQGS4TVOJSSAZDPNRXXEIDJNYQHEZLQOJSWQZLOMRSXE2LUEBUW4IDWN5WHK4DUMF2GKIDWMVWGS5BAMVZXGZJAMNUWY3DVNUQGI33MN5ZGKIDFOUQGM5LHNFQXIIDOOVWGYYJAOBQXE2LBOR2XELRAIV4GGZLQORSXK4RAONUW45BAN5RWGYLFMNQXIIDDOVYGSZDBORQXIIDON5XCA4DSN5UWIZLOOQWCA43VNZ2CA2LOEBRXK3DQMEQHC5LJEBXWMZTJMNUWCIDEMVZWK4TVNZ2CA3LPNRWGS5BAMFXGS3JANFSCAZLTOQQGYYLCN5ZHK3JO"));
     }
@@ -51,6 +55,7 @@ public class Base32Test {
         assertThat(Base32.decode(null), is(nullValue()));
         assertThat(Base32.decode(""), is(new byte[0]));
         assertThat(Base32.decode("AA======"), is(new byte[1]));
+        assertThat(Base32.decode("aa======"), is(new byte[1]));
         assertThat(Base32.decode("AA"), is(new byte[1]));
         assertThat(Base32.decode("AA="), is(new byte[1]));
         assertThat(Base32.decode("AA=="), is(new byte[1]));
@@ -71,7 +76,9 @@ public class Base32Test {
         assertThat(Base32.decode("AAAAAAAA"), is(new byte[5]));
         assertThat(Base32.decode("ORSXG5A="), is("test".getBytes("UTF-8")));
         assertThat(Base32.decode("ORSXG5A"), is("test".getBytes("UTF-8")));
+        assertThat(Base32.decode("orsxG5A"), is("test".getBytes("UTF-8")));
         assertThat(Base32.decode("ORSXG5BR"), is("test1".getBytes("UTF-8")));
+        assertThat(Base32.decode("ORSXG5br"), is("test1".getBytes("UTF-8")));
         assertThat(Base32.decode("AERUKZ4JVPG66==="), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
         assertThat(Base32.decode("AERUKZ4JVPG66=="), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
         assertThat(Base32.decode("AERUKZ4JVPG66="), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
@@ -97,6 +104,34 @@ public class Base32Test {
             fail();
         } catch (IllegalArgumentException e) {
             // expected
+        }
+    }
+    
+    @Test
+    public void encodeDecodeHugeWithPadding() {
+        for (int length = 0; length < 30000; length+=57) {
+            byte[] bytes = new byte[length];
+            // initialize data
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte)(i % 127);
+            }
+            String encoded = Base32.encode(bytes);
+            byte[] decoded = Base32.decode(encoded);
+            assertThat(decoded, is(bytes));
+        }
+    }
+    
+    @Test
+    public void encodeDecodeHugeWithoutPadding() {
+        for (int length = 0; length < 30000; length+=57) {
+            byte[] bytes = new byte[length];
+            // initialize data
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte)(i % 127);
+            }
+            String encoded = Base32.encode(bytes, false);
+            byte[] decoded = Base32.decode(encoded);
+            assertThat(decoded, is(bytes));
         }
     }
     
