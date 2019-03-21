@@ -51,4 +51,70 @@ public class Base16 {
         return buf.toString();
     }
     
+    static public byte[] decode(String b16) {
+        if (b16 == null) {
+            return null;
+        }
+        int stringLength = b16.length();
+        if (stringLength == 0) {
+            return new byte[0];
+        }
+        if (stringLength % 2 != 0) {
+            throw new IllegalArgumentException("Invalid length for hex string");
+        }
+        int byteLength = stringLength / 2;
+        byte[] bytes = new byte[byteLength];
+        
+        for (int i = 0 ; i < byteLength; i++) {
+            bytes[i] |= (0x0f & decode(b16.charAt(i*2))) << 4;
+            bytes[i] |= (0x0f & decode(b16.charAt((i*2)+1)));
+        }
+        return bytes;
+    }
+    
+    static private int decode(char c) {
+        switch (c) {
+            case '0':
+                return 0;
+            case '1':
+                return 1;
+            case '2':
+                return 2;
+            case '3':
+                return 3;
+            case '4':
+                return 4;
+            case '5':
+                return 5;
+            case '6':
+                return 6;
+            case '7':
+                return 7;
+            case '8':
+                return 8;
+            case '9':
+                return 9;
+            case 'A':
+            case 'a':
+                return 10;
+            case 'B':
+            case 'b':
+                return 11;
+            case 'C':
+            case 'c':
+                return 12;
+            case 'D':
+            case 'd':
+                return 13;
+            case 'E':
+            case 'e':
+                return 14;
+            case 'F':
+            case 'f':
+                return 15;
+            default:
+                throw new IllegalArgumentException("Invalid hex char " + c);
+        }
+    }
+    
 }

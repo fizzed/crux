@@ -33,6 +33,21 @@ public class Base16Test {
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8")), is("e282ac"));
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), 2), is("e282"));
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), 0), is(""));
+        assertThat(Base16.encode(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }), is("0123456789abcdef"));
+    }
+    
+    @Test
+    public void decode() throws UnsupportedEncodingException {
+        assertThat(Base16.decode(null), is(nullValue()));
+        assertThat(Base16.decode(""), is(new byte[0]));
+        assertThat(Base16.decode("00"), is(new byte[1]));
+        assertThat(Base16.decode("0000"), is(new byte[2]));
+        assertThat(Base16.decode("74657374"), is("test".getBytes("UTF-8")));
+        assertThat(Base16.decode("e282ac"), is("\u20AC".getBytes("UTF-8")));
+        assertThat(Base16.decode("E282AC"), is("\u20AC".getBytes("UTF-8")));
+        assertThat(Base16.decode("e282ac"), is("\u20AC".getBytes("UTF-8")));
+        assertThat(Base16.decode("0123456789ABCDEF"), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
+        assertThat(Base16.decode("0123456789abcdef"), is(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }));
     }
     
 }
