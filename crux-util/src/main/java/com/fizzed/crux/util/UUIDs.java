@@ -43,6 +43,10 @@ public class UUIDs {
         return new UUID(msb, lsb);
     }
     
+    static public byte[] toBytes(String uuid) {
+        return toBytes(UUID.fromString(uuid));
+    }
+    
     static public byte[] toBytes(UUID uuid) {
         if (uuid == null) {
             return null;

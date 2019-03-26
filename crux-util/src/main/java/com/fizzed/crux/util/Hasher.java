@@ -37,6 +37,8 @@ abstract public class Hasher {
      */
     abstract public Hasher update(byte[] buffer, int offset, int length);
     
+    abstract public boolean isCompleted();
+    
     /**
      * Closes the hasher (if not yet closed) and returns the result as bytes.
      * @return 
@@ -112,8 +114,13 @@ abstract public class Hasher {
             }
         }
 
+        @Override
+        public boolean isCompleted() {
+            return this.hash != null;
+        }
+        
         protected void verifyNotCompleted() {
-            if (this.hash != null) {
+            if (this.isCompleted()) {
                 throw new IllegalStateException("Hasher is completed and cannot be updated");
             }
         }

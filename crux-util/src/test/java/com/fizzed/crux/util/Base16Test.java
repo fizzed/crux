@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.util;
 
+import static com.fizzed.crux.util.UUIDs.toBytes;
 import java.io.UnsupportedEncodingException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -33,6 +34,7 @@ public class Base16Test {
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8")), is("e282ac"));
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), 2), is("e282"));
         assertThat(Base16.encode("\u20AC".getBytes("UTF-8"), 0), is(""));
+        assertThat(Base16.encode(toBytes("470276ef-152d-4a43-8bf7-ffe70affb551")), is("470276ef152d4a438bf7ffe70affb551"));
         assertThat(Base16.encode(new byte[] { (byte)0x01, (byte)0x23, (byte)0x45, (byte)0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF }), is("0123456789abcdef"));
     }
  

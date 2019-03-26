@@ -68,8 +68,9 @@ public class HasherTest {
         
         hasher.update("test".getBytes("UTF-8"));
         
+        assertThat(hasher.isCompleted(), is(false));
         assertThat(hasher.asHex(), is("098f6bcd4621d373cade4e832627b4f6"));
-        
+        assertThat(hasher.isCompleted(), is(true));
         
         // try a file now...
         try (InputStream input = Resources.newInputStream("/fixtures/rect4136.png")) {
