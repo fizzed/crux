@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utilities for working with resources on classpath.
@@ -51,6 +52,10 @@ public class Resources {
         final byte[] bytes = readAllBytes(resourceName);
         
         return new String(bytes, charset);
+    }
+ 
+    static public String readToStringUTF8(String resourceName) throws IOException {
+        return readToString(resourceName, StandardCharsets.UTF_8);
     }
     
 }
