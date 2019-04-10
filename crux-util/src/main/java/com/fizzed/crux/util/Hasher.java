@@ -149,14 +149,8 @@ abstract public class Hasher {
 
         @Override
         public byte[] asBytes() {
-            // only enter synchronized block if still null
             if (this.hash == null) {
-                synchronized(this) {
-                    // verify hash is till null
-                    if (this.hash == null) {
-                        this.hash = this.digest.digest();
-                    }
-                }
+                this.hash = this.digest.digest();
             }
             return this.hash;
         }
@@ -164,7 +158,6 @@ abstract public class Hasher {
         @Override
         public String asHex() {
             return Base16.encode(this.asBytes());
-            //return new BigInteger(1, this.asBytes()).toString(16);
         }
 
     }
