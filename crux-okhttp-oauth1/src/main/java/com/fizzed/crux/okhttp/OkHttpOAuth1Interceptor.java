@@ -10,7 +10,7 @@ import se.akerfeldt.okhttp.signpost.SigningInterceptor;
 
 public class OkHttpOAuth1Interceptor implements Interceptor {
 
-    protected IOSupplier<OAuth1Credentials> supplier;
+    protected final IOSupplier<OAuth1Credentials> supplier;
     // used for caching...
     protected OAuth1Credentials lastCredentials;
     protected OkHttpOAuthConsumer oauthConsumer;
@@ -51,7 +51,7 @@ public class OkHttpOAuth1Interceptor implements Interceptor {
             IOSupplier<OAuth1Credentials> supplier) {
         
         Objects.requireNonNull(supplier, "supplier was null");
-        
+        this.supplier = supplier;
     }
     
     public SigningInterceptor buildSigningInterceptor() throws IOException {

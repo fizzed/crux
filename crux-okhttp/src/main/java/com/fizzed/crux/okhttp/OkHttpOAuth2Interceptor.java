@@ -6,14 +6,14 @@ import java.util.Objects;
 
 public class OkHttpOAuth2Interceptor extends OkHttpAuthorizationInterceptor {
 
-    protected IOSupplier<AccessTokenCredentials> supplier;
+    protected final IOSupplier<AccessTokenCredentials> supplier;
     
     public OkHttpOAuth2Interceptor(String accessToken) {
         this(null, accessToken);
     }
     
     public OkHttpOAuth2Interceptor(String tokenType, String accessToken) {
-        this(new AccessTokenCredentials(tokenType, accessToken));
+        this(new AccessTokenCredentials(accessToken, tokenType));
     }
     
     public OkHttpOAuth2Interceptor(AccessTokenCredentials credentials) {
@@ -32,6 +32,7 @@ public class OkHttpOAuth2Interceptor extends OkHttpAuthorizationInterceptor {
         
         final String tt = maybe(creds.getTokenType())
             .orElse("Bearer");
+        
         final String at = creds.getAccessToken();
         
         int size = tt.length() + 1 + at.length();
