@@ -15,6 +15,12 @@
     <dependencies>
         
         <dependency>
+            <groupId>com.fizzed</groupId>
+            <artifactId>crux-okhttp</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
             <groupId>oauth.signpost</groupId>
             <artifactId>signpost-core</artifactId>
             <version>1.2.1.2</version>

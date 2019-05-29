@@ -18,6 +18,7 @@ package com.fizzed.crux.okhttp;
 import com.fizzed.crux.uri.Uri;
 import com.fizzed.crux.util.BindingPropertyMap;
 import com.fizzed.crux.util.BindingPropertySupport;
+import com.fizzed.crux.util.MessageLevel;
 
 /**
  * Options for building an OkHttp client.
@@ -39,7 +40,14 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
             }
             return level;
         })
-        .bindString("logger_name", OkHttpOptions::setLoggerName);
+        .bindString("logger_name", OkHttpOptions::setLoggerName)
+        .bindType("message_level", A::setMessageLevel, MessageLevel.class, (s) -> {
+            MessageLevel level = MessageLevel.valueOf(s.toUpperCase());
+            if (level == null) {
+                throw new IllegalArgumentException("Invalid message level " + s);
+            }
+            return level;
+        });
     
     private String baseUri;
     private Boolean insecure;
@@ -49,6 +57,7 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
     private Boolean followRedirects;
     private OkLoggingLevel loggingLevel;
     private String loggerName;
+    private MessageLevel messageLevel;
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public OkHttpOptions() {
@@ -144,6 +153,14 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
 
     public void setLoggerName(String loggerName) {
         this.loggerName = loggerName;
+    }
+
+    public MessageLevel getMessageLevel() {
+        return messageLevel;
+    }
+
+    public void setMessageLevel(MessageLevel messageLevel) {
+        this.messageLevel = messageLevel;
     }
     
 }

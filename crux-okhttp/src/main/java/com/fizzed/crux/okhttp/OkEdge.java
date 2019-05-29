@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.okhttp;
 
+import com.fizzed.crux.util.MessageLevel;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
@@ -34,11 +35,29 @@ public class OkEdge {
     private Long readTimeout;
     
     public OkEdge() {
-        this(null);
+        this(null, null, null);
     }
     
-    public OkEdge(OkEdgeState state) {
-        this.loggingInterceptor  = new HttpLoggingInterceptor();
+    public OkEdge(
+            OkEdgeState state) {
+        
+        this(state, null, null);
+    }
+    
+    public OkEdge(
+            OkLoggingLevel loggingLevel,
+            MessageLevel messageLevel) {
+        
+        this(null, loggingLevel, messageLevel);
+    }
+    
+    public OkEdge(
+            OkEdgeState state,
+            OkLoggingLevel loggingLevel,
+            MessageLevel messageLevel) {
+        
+        this.loggingInterceptor  = OkHttpUtils.createLoggingInterceptor(
+            loggingLevel, "okedge", messageLevel);
         this.clientBuilder = new OkHttpClient.Builder()
             .addNetworkInterceptor(this.loggingInterceptor);
         this.requestBuilder = new Request.Builder();
@@ -58,6 +77,13 @@ public class OkEdge {
     
     static public OkEdge create(OkEdgeState state) {
         return new OkEdge(state);
+    }
+    
+    static public OkEdge create(
+            OkLoggingLevel loggingLevel,
+            MessageLevel messageLevel) {
+        
+        return new OkEdge(loggingLevel, messageLevel);
     }
     
     private void init(OkEdgeState state) {

@@ -3,31 +3,30 @@ package com.fizzed.crux.okhttp;
 import java.io.IOException;
 import java.util.Objects;
 import okhttp3.Credentials;
-import okhttp3.Interceptor;
-import okhttp3.Request;
-import okhttp3.Response;
 
-public class OkHttpBasicAuthInterceptor implements Interceptor {
+public class OkHttpBasicAuthInterceptor extends OkHttpAuthorizationInterceptor {
 
-    private final String authorizationHeader;
+    protected final IOSupplier<BasicAuthCredentials> supplier;
     
     public OkHttpBasicAuthInterceptor(String username, String password) {
-        Objects.requireNonNull(username, "username was null");
-        Objects.requireNonNull(password, "password was null");
-        this.authorizationHeader = Credentials.basic(username, password);
+        this(new BasicAuthCredentials(username, password));
+    }
+    
+    public OkHttpBasicAuthInterceptor(BasicAuthCredentials credentials) {
+        this(() -> credentials);
+        Objects.requireNonNull(credentials, "credentials was null");
+    }
+    
+    public OkHttpBasicAuthInterceptor(IOSupplier<BasicAuthCredentials> supplier) {
+        Objects.requireNonNull(supplier, "supplier was null");
+        this.supplier = supplier;
     }
     
     @Override
-    public Response intercept(Chain chain) throws IOException {
-        if (!chain.request().headers().names().contains("Authorization")) {
-            // modify request and set authorization header (if not yet set)
-            Request request = chain.request().newBuilder()
-                .header("Authorization", this.authorizationHeader)
-                .build();
-            return chain.proceed(request);
-        } else {
-            return chain.proceed(chain.request());
-        }
+    public String buildAuthorizationHeader() throws IOException {
+        BasicAuthCredentials creds = this.supplier.get();
+        
+        return Credentials.basic(creds.getUsername(), creds.getPassword());
     }
-
+    
 }

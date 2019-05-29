@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.okhttp.OkLoggingLevel;
 import okhttp3.CookieJar;
 import okhttp3.Credentials;
 import okhttp3.Headers;

@@ -15,6 +15,8 @@
  */
 package com.fizzed.crux.okhttp;
 
+import com.fizzed.crux.util.MessageLevel;
+import static com.fizzed.crux.util.Maybe.maybe;
 import com.fizzed.crux.util.SecureUtil;
 import java.io.IOException;
 import static java.util.Optional.ofNullable;
@@ -38,19 +40,41 @@ public class OkHttpUtils {
         = SecureUtil.createTrustAllHostnameVerifier();
     
     static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel) {
-        return createLoggingInterceptor(loggingLevel, null);
+        return createLoggingInterceptor(loggingLevel, null, null);
     }
     
     static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName) {
+        return createLoggingInterceptor(loggingLevel, loggerName, null);
+    }
+    
+    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName, MessageLevel messageLevel) {
         if (loggingLevel == null || loggingLevel == OkLoggingLevel.NONE) {
             return null;
         }
+        
+        final MessageLevel _messageLevel = maybe(messageLevel).orElse(MessageLevel.DEBUG);
         
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             private final Logger log = LoggerFactory.getLogger(loggerName != null ? loggerName : "okhttp");
             @Override
             public void log(String message) {
-                log.debug("{}", message);
+                switch (_messageLevel) {
+                    case ERROR:
+                        log.error("{}", message);
+                        break;
+                    case WARN:
+                        log.warn("{}", message);
+                        break;
+                    case INFO:
+                        log.info("{}", message);
+                        break;
+                    case DEBUG:
+                        log.debug("{}", message);
+                        break;
+                    case TRACE:
+                        log.trace("{}", message);
+                        break;
+                }
             }
         });
         
@@ -109,7 +133,7 @@ public class OkHttpUtils {
         }
         
         HttpLoggingInterceptor loggingInterceptor = createLoggingInterceptor(
-            options.getLoggingLevel(), options.getLoggerName());
+            options.getLoggingLevel(), options.getLoggerName(), options.getMessageLevel());
         
         if (loggingInterceptor != null) {
             clientBuilder.addNetworkInterceptor(loggingInterceptor);

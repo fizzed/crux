@@ -1,36 +1,46 @@
 package com.fizzed.crux.okhttp;
 
+import static com.fizzed.crux.util.Maybe.maybe;
 import java.io.IOException;
 import java.util.Objects;
-import okhttp3.Interceptor;
-import okhttp3.Request;
-import okhttp3.Response;
 
-public class OkHttpOAuth2Interceptor implements Interceptor {
+public class OkHttpOAuth2Interceptor extends OkHttpAuthorizationInterceptor {
 
-    private final String authorizationHeader;
+    protected IOSupplier<AccessTokenCredentials> supplier;
     
     public OkHttpOAuth2Interceptor(String accessToken) {
         this(null, accessToken);
     }
     
     public OkHttpOAuth2Interceptor(String tokenType, String accessToken) {
-        Objects.requireNonNull(accessToken, "accessToken was null");
-        this.authorizationHeader = (tokenType == null ? "Bearer" : tokenType)
-            + " " + accessToken;
+        this(new AccessTokenCredentials(tokenType, accessToken));
+    }
+    
+    public OkHttpOAuth2Interceptor(AccessTokenCredentials credentials) {
+        this(() -> credentials);
+        Objects.requireNonNull(credentials, "credentials was null");
+    }
+    
+    public OkHttpOAuth2Interceptor(IOSupplier<AccessTokenCredentials> supplier) {
+        Objects.requireNonNull(supplier, "supplier was null");
+        this.supplier = supplier;
     }
     
     @Override
-    public Response intercept(Chain chain) throws IOException {
-        if (!chain.request().headers().names().contains("Authorization")) {
-            // modify request and set authorization header
-            Request request = chain.request().newBuilder()
-                .header("Authorization", authorizationHeader)
-                .build();
-            return chain.proceed(request);
-        } else {
-            return chain.proceed(chain.request());
-        }
+    public String buildAuthorizationHeader() throws IOException {
+        final AccessTokenCredentials creds = this.supplier.get();
+        
+        final String tt = maybe(creds.getTokenType())
+            .orElse("Bearer");
+        final String at = creds.getAccessToken();
+        
+        int size = tt.length() + 1 + at.length();
+        
+        return new StringBuilder(size)
+            .append(tt)
+            .append(" ")
+            .append(at)
+            .toString();
     }
-
+    
 }
