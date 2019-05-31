@@ -17,6 +17,7 @@ package com.fizzed.crux.util;
 
 import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 
@@ -41,10 +42,31 @@ public class TimeDurationTest {
         TimeDuration.parse("m");
     }
     
+    @Test(expected=IllegalArgumentException.class)
+    public void parseWithSpaces() {
+        TimeDuration.parse("s ");
+    }
+    
+    @Test
     public void parse() {
         TimeDuration td;
         
+        td = TimeDuration.parse(null);
+        assertThat(td, is(nullValue()));
+        
+        td = TimeDuration.parse("");
+        assertThat(td, is(nullValue()));
+        
         td = TimeDuration.parse("1s");
+        assertThat(td.getDuration(), is(1L));
+        assertThat(td.getUnit(), is(TimeUnit.SECONDS));
+        assertThat(td.toString(), is("1s"));
+        assertThat(td.asMillis(), is(1000L));
+        assertThat(td.toMillis().toString(), is("1000ms"));
+        assertThat(td.toSeconds().toString(), is("1s"));
+        
+        // default unit provided
+        td = TimeDuration.parse("1", TimeUnit.SECONDS);
         assertThat(td.getDuration(), is(1L));
         assertThat(td.getUnit(), is(TimeUnit.SECONDS));
         assertThat(td.toString(), is("1s"));
@@ -72,6 +94,14 @@ public class TimeDurationTest {
         assertThat(td.getDuration(), is(3L));
         assertThat(td.getUnit(), is(TimeUnit.DAYS));
         assertThat(td.toString(), is("3d"));
+
+        td = TimeDuration.parse("512ms");
+        assertThat(td.getDuration(), is(512L));
+        assertThat(td.getUnit(), is(TimeUnit.MILLISECONDS));
+        assertThat(td.toString(), is("512ms"));
+        assertThat(td.asMillis(), is(512L));
+        assertThat(td.toMillis().toString(), is("512ms"));
+        assertThat(td.toSeconds().toString(), is("0s"));
     }
     
 }

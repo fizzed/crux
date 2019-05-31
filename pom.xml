@@ -29,6 +29,7 @@
         <module>crux-okhttp-oauth1</module>
         <module>crux-vagrant</module>
         <module>crux-mediatype</module>
+        <module>crux-jackson</module>
     </modules>
 
     <dependencyManagement>

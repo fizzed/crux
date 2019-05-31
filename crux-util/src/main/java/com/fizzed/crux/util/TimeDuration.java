@@ -15,11 +15,14 @@
  */
 package com.fizzed.crux.util;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Config-friendly immutable way to represent a duration of time as long + unit
  * and easily convert from strings.  Great for json, config files, etc.
+ * 
+ * Can be represented as a string such as "10ms" or "1s" or "2d".
  * 
  * @author jjlauer
  */
@@ -92,6 +95,35 @@ public class TimeDuration {
     @Override
     public String toString() {
         return this.duration + toShort(this.unit);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + (int) (this.duration ^ (this.duration >>> 32));
+        hash = 83 * hash + Objects.hashCode(this.unit);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TimeDuration other = (TimeDuration) obj;
+        if (this.duration != other.duration) {
+            return false;
+        }
+        if (this.unit != other.unit) {
+            return false;
+        }
+        return true;
     }
     
     static public String toShort(TimeUnit timeUnit) {
@@ -174,7 +206,7 @@ public class TimeDuration {
         if (unitLength <= 0) {
             unit = defaultUnit;
         } else {
-            String _unit = value.substring(unitLength);
+            String _unit = value.substring(durationLength);
             unit = fromShort(_unit);
             
             if (unit == null) {
