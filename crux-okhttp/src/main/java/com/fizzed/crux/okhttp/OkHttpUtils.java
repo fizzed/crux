@@ -48,10 +48,7 @@ public class OkHttpUtils {
     }
     
     static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName, MessageLevel messageLevel) {
-        if (loggingLevel == null || loggingLevel == OkLoggingLevel.NONE) {
-            return null;
-        }
-        
+        final OkLoggingLevel _loggingLevel = maybe(loggingLevel).orElse(OkLoggingLevel.NONE);
         final MessageLevel _messageLevel = maybe(messageLevel).orElse(MessageLevel.DEBUG);
         
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
@@ -78,7 +75,7 @@ public class OkHttpUtils {
             }
         });
         
-        switch (loggingLevel) {
+        switch (_loggingLevel) {
             case NONE:
                 loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
                 break;

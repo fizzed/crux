@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.okhttp.OkLoggingLevel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
