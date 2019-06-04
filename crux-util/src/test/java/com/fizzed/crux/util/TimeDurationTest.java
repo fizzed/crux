@@ -15,10 +15,15 @@
  */
 package com.fizzed.crux.util;
 
+import static com.fizzed.crux.util.TimeDuration.millis;
+import static com.fizzed.crux.util.TimeDuration.nanos;
+import static com.fizzed.crux.util.TimeDuration.seconds;
 import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import org.junit.Test;
 
 /**
@@ -102,6 +107,37 @@ public class TimeDurationTest {
         assertThat(td.asMillis(), is(512L));
         assertThat(td.toMillis().toString(), is("512ms"));
         assertThat(td.toSeconds().toString(), is("0s"));
+    }
+    
+    @Test
+    public void compareTo() {
+        // same units
+        assertThat(millis(1).compareTo(millis(1)), is(0));
+        assertThat(millis(2).compareTo(millis(1)), greaterThan(0));
+        assertThat(millis(0).compareTo(millis(1)), lessThan(0));
+        // different units
+        assertThat(seconds(1).compareTo(millis(1000)), is(0));
+        assertThat(seconds(1).compareTo(millis(999)), greaterThan(0));
+        assertThat(seconds(1).compareTo(millis(1001)), lessThan(0));
+        assertThat(seconds(1).gt(millis(999)), is(true));
+        assertThat(seconds(1).gte(millis(999)), is(true));
+        assertThat(seconds(1).lt(millis(1001)), is(true));
+        assertThat(seconds(1).lte(millis(1001)), is(true));
+        
+        assertThat(millis(3639).gt(nanos(0)), is(true));
+        assertThat(millis(11113639).gt(nanos(0)), is(true));
+        assertThat(millis(0).lt(nanos(1)), is(true));
+        assertThat(millis(0).lt(nanos(100000000)), is(true));
+    }
+    
+    @Test
+    public void equals() {
+        // same units
+        assertThat(millis(1).equals(millis(1)), is(true));
+        assertThat(millis(2).equals(millis(1)), is(false));
+        assertThat(millis(0).equals(millis(1)), is(false));
+        // different units
+        assertThat(seconds(1).equals(millis(1000)), is(true));
     }
     
 }

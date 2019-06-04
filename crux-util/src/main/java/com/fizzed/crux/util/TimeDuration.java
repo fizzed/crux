@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author jjlauer
  */
-public class TimeDuration {
+public class TimeDuration implements MoreComparable<TimeDuration> {
  
     private final long duration;
     private final TimeUnit unit;
@@ -42,6 +42,14 @@ public class TimeDuration {
 
     public TimeUnit getUnit() {
         return unit;
+    }
+    
+    public TimeDuration toNanos() {
+        if (unit == TimeUnit.NANOSECONDS) {
+            return this;
+        } else {
+            return new TimeDuration(this.unit.toNanos(this.duration), TimeUnit.NANOSECONDS);
+        }
     }
     
     public TimeDuration toMillis() {
@@ -68,28 +76,58 @@ public class TimeDuration {
         }
     }
     
-    public long asMillis() {
-        if (unit == TimeUnit.MILLISECONDS) {
-            return this.duration;
+    public TimeDuration toHours() {
+        if (unit == TimeUnit.HOURS) {
+            return this;
         } else {
-            return this.toMillis().getDuration();
+            return new TimeDuration(this.unit.toHours(this.duration), TimeUnit.HOURS);
         }
+    }
+    
+    public TimeDuration toDays() {
+        if (unit == TimeUnit.DAYS) {
+            return this;
+        } else {
+            return new TimeDuration(this.unit.toDays(this.duration), TimeUnit.DAYS);
+        }
+    }
+    
+    public boolean isZero() {
+        return this.duration == 0;
+    }
+    
+    /**
+     * Calls Thread.sleep() but first converts this duration to milliseconds,
+     * then calls Thread.sleep.
+     * 
+     * @throws InterruptedException 
+     */
+    public void sleep() throws InterruptedException {
+        Thread.sleep(this.asMillis());
+    }
+    
+    public long asNanos() {
+        return this.toNanos().getDuration();
+    }
+    
+    public long asMillis() {
+        return this.toMillis().getDuration();
     }
     
     public long asSeconds() {
-        if (unit == TimeUnit.SECONDS) {
-            return this.duration;
-        } else {
-            return this.toSeconds().getDuration();
-        }
+        return this.toSeconds().getDuration();
     }
     
     public long asMinutes() {
-        if (unit == TimeUnit.MINUTES) {
-            return this.duration;
-        } else {
-            return this.toMinutes().getDuration();
-        }
+        return this.toMinutes().getDuration();
+    }
+    
+    public long asHours() {
+        return this.toHours().getDuration();
+    }
+    
+    public long asDays() {
+        return this.toDays().getDuration();
     }
     
     @Override
@@ -117,15 +155,21 @@ public class TimeDuration {
             return false;
         }
         final TimeDuration other = (TimeDuration) obj;
-        if (this.duration != other.duration) {
-            return false;
-        }
-        if (this.unit != other.unit) {
-            return false;
-        }
-        return true;
+        return this.compareTo(other) == 0;
     }
     
+    @Override
+    public int compareTo(TimeDuration o) {
+        // if units match, compare durations
+        if (this.unit == o.unit) {
+            // use long.compare to prevent overflow from effecting result
+            return Long.compare(this.duration, o.duration);
+        } else {
+            // convert to nanoseconds, then compare
+            return Long.compare(this.asNanos(), o.asNanos());
+        }
+    }
+
     static public String toShort(TimeUnit timeUnit) {
         if (timeUnit != null) {
             switch (timeUnit) {
@@ -223,6 +267,30 @@ public class TimeDuration {
         }
         
         return new TimeDuration(duration, unit);
+    }
+    
+    static public TimeDuration nanos(long durationNanos) {
+        return new TimeDuration(durationNanos, TimeUnit.NANOSECONDS);
+    }
+    
+    static public TimeDuration millis(long durationMillis) {
+        return new TimeDuration(durationMillis, TimeUnit.MILLISECONDS);
+    }
+    
+    static public TimeDuration seconds(long durationSeconds) {
+        return new TimeDuration(durationSeconds, TimeUnit.SECONDS);
+    }
+    
+    static public TimeDuration minutes(long durationMinutes) {
+        return new TimeDuration(durationMinutes, TimeUnit.MINUTES);
+    }
+    
+    static public TimeDuration hours(long durationHours) {
+        return new TimeDuration(durationHours, TimeUnit.HOURS);
+    }
+    
+    static public TimeDuration days(long durationDays) {
+        return new TimeDuration(durationDays, TimeUnit.DAYS);
     }
     
 }

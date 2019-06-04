@@ -14,7 +14,13 @@
 
     <dependencies>
         
-        <!-- no dependencies!! -->
+        <!-- no required dependencies!! -->
+        
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <optional>true</optional>
+        </dependency>
         
         <!-- testing -->
 
