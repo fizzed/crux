@@ -67,6 +67,62 @@ public class DateTimesTest {
     }
     
     @Test
+    public void gt() {
+        DateTime a = DateTime.parse("2019-04-02T01:02:03.456Z");
+        DateTime b = DateTime.parse("2019-04-02T01:03:03.456Z");
+        
+        assertThat(DateTimes.gt(null, null), is(false));
+        assertThat(DateTimes.gt(null, a), is(false));
+        assertThat(DateTimes.gt(a, b), is(false));
+        assertThat(DateTimes.gt(a, a), is(false));
+        assertThat(DateTimes.gt(b, b), is(false));
+        assertThat(DateTimes.gt(b, a), is(true));
+        assertThat(DateTimes.gt(a, null), is(true));
+    }
+    
+    @Test
+    public void gte() {
+        DateTime a = DateTime.parse("2019-04-02T01:02:03.456Z");
+        DateTime b = DateTime.parse("2019-04-02T01:03:03.456Z");
+        
+        assertThat(DateTimes.gte(null, null), is(true));
+        assertThat(DateTimes.gte(null, a), is(false));
+        assertThat(DateTimes.gte(a, b), is(false));
+        assertThat(DateTimes.gte(a, a), is(true));
+        assertThat(DateTimes.gte(b, b), is(true));
+        assertThat(DateTimes.gte(b, a), is(true));
+        assertThat(DateTimes.gte(a, null), is(true));
+    }
+    
+    @Test
+    public void lt() {
+        DateTime b = DateTime.parse("2019-04-02T01:02:03.456Z");
+        DateTime a = DateTime.parse("2019-04-02T01:03:03.456Z");
+        
+        assertThat(DateTimes.lt(null, null), is(false));
+        assertThat(DateTimes.lt(null, a), is(true));
+        assertThat(DateTimes.lt(a, b), is(false));
+        assertThat(DateTimes.lt(a, a), is(false));
+        assertThat(DateTimes.lt(b, b), is(false));
+        assertThat(DateTimes.lt(b, a), is(true));
+        assertThat(DateTimes.lt(a, null), is(false));
+    }
+    
+    @Test
+    public void lte() {
+        DateTime b = DateTime.parse("2019-04-02T01:02:03.456Z");
+        DateTime a = DateTime.parse("2019-04-02T01:03:03.456Z");
+        
+        assertThat(DateTimes.lte(null, null), is(true));
+        assertThat(DateTimes.lte(null, a), is(true));
+        assertThat(DateTimes.lte(a, b), is(false));
+        assertThat(DateTimes.lte(a, a), is(true));
+        assertThat(DateTimes.lte(b, b), is(true));
+        assertThat(DateTimes.lte(b, a), is(true));
+        assertThat(DateTimes.lte(a, null), is(false));
+    }
+    
+    @Test
     public void age() {
         DateTime a = DateTime.parse("2019-04-02T01:03:03.456Z");
         

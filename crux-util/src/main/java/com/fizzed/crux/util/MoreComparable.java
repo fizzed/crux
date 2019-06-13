@@ -23,20 +23,76 @@ package com.fizzed.crux.util;
  */
 public interface MoreComparable<T> extends Comparable<T> {
  
+    /**
+     * Whether <code>this</code> value is greater than <code>other</code>
+     * value.
+     * @param other The other value to compare against
+     * @return True if <code>this</code> value is greater than <code>other</code>
+     *      value
+     */
     default public boolean gt(T other) {
         return this.compareTo(other) > 0;
     }
  
+    /**
+     * Whether <code>this</code> value is greater than or equal to <code>other</code>
+     * value.
+     * @param other The other value to compare against
+     * @return True if <code>this</code> value is greater than or equal to <code>other</code>
+     *      value
+     */
     default public boolean gte(T other) {
         return this.compareTo(other) >= 0;
     }
  
+    /**
+     * Whether <code>this</code> value is less than <code>other</code>
+     * value.
+     * @param other The other value to compare against
+     * @return True if <code>this</code> value is less than <code>other</code>
+     *      value
+     */
     default public boolean lt(T other) {
         return this.compareTo(other) < 0;
     }
  
+    /**
+     * Whether <code>this</code> value is less than or equal to <code>other</code>
+     * value.
+     * @param other The other value to compare against
+     * @return True if <code>this</code> value is less than or equal to <code>other</code>
+     *      value
+     */
     default public boolean lte(T other) {
         return this.compareTo(other) <= 0;
+    }
+ 
+    /**
+     * The minimum value between <code>this</code> or the other value.
+     * @param other The other value to compare against
+     * @return Will return <code>this</code> value if less than or equal to
+     *      the <code>other</code> value, otherwise will return <code>other</code>.
+     */
+    default public T min(T other) {
+        if (this.lte(other)) {
+            return (T)this;
+        } else {
+            return other;
+        }
+    }
+ 
+    /**
+     * The maximum value between <code>this</code> or the other value.
+     * @param other The other value to compare against
+     * @return Will return <code>this</code> value if greater than or equal to
+     *      the <code>other</code> value, otherwise will return <code>other</code>.
+     */
+    default public T max(T other) {
+        if (this.gte(other)) {
+            return (T)this;
+        } else {
+            return other;
+        }
     }
     
 }

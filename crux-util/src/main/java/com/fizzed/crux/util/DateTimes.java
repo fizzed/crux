@@ -44,6 +44,12 @@ public class DateTimes {
         return a.getMillis() == b.getMillis();
     }
     
+    /**
+     * Returns a if less than or equal to b, otherwise b.
+     * @param a
+     * @param b
+     * @return 
+     */
     static public DateTime min(DateTime a, DateTime b) {
         if (b == null) {
             return a;
@@ -53,6 +59,12 @@ public class DateTimes {
         return a.isAfter(b) ? b : a;
     }
     
+    /**
+     * Returns a if greater than or equal to b, otherwise b.
+     * @param a
+     * @param b
+     * @return 
+     */
     static public DateTime max(DateTime a, DateTime b) {
         if (b == null) {
             return a;
@@ -62,6 +74,77 @@ public class DateTimes {
         return a.isBefore(b) ? b : a;
     }
     
+    /**
+     * Is <code>a</code> value greater than <code>b</code>. If a is not null
+     * and b is null then this is true.
+     * @param a
+     * @param b
+     * @return 
+     */
+    static public boolean gt(DateTime a, DateTime b) {
+        if (a == null) {
+            // if a is null then even if b is null it can't be greater than
+            return false;
+        }
+        if (b == null) {
+            // if a is NOT null and b is then its greater than
+            return true;
+        }
+        return a.getMillis() > b.getMillis();
+    }
+    
+    /**
+     * Is <code>a</code> value greater than or equal to <code>b</code>. Will 
+     * still be true if both values are null OR if a is non-null and b is null.
+     * @param a
+     * @param b
+     * @return 
+     */
+    static public boolean gte(DateTime a, DateTime b) {
+        if (a == null) {
+            // if a is null and b is null then this is true
+            return b == null;
+        }
+        if (b == null) {
+            // if a is NOT null and b is then its greater than
+            return true;
+        }
+        return a.getMillis() >= b.getMillis();
+    }
+    
+    
+    static public boolean lt(DateTime a, DateTime b) {
+        if (b == null) {
+            // if a is null then even if b is null it can't be greater than
+            return false;
+        }
+        if (a == null) {
+            // if a is NOT null and b is then its greater than
+            return true;
+        }
+        return a.getMillis() < b.getMillis();
+    }
+    
+    static public boolean lte(DateTime a, DateTime b) {
+        if (b == null) {
+            // if a is null and b is null then this is true
+            return a == null;
+        }
+        if (a == null) {
+            // if a is NOT null and b is then its greater than
+            return true;
+        }
+        return a.getMillis() <= b.getMillis();
+    }
+    
+    /**
+     * Calculates the age of a datetime from 'now'. Just like your birthday,
+     * if the datetime is in the past then you a positive duration will be returned,
+     * if in the future then negative. For example, if the datetime is April 1
+     * and 'now' is April 2, then the age will be a positive 1 day.
+     * @param dt The datetime to calculate the age of.
+     * @return 
+     */
     static public TimeDuration age(DateTime dt) {
         return age(dt, System.currentTimeMillis());
     }
