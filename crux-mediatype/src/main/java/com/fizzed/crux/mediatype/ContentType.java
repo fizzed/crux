@@ -48,39 +48,46 @@ public class ContentType {
     private final String charset;
 
     private ContentType(String parsed, String type, String subtype, String charset) {
+        this(parsed, type, subtype, charset, KnownMediaType.fromLabel(type + "/" + subtype).orElse(null));
+    }
+
+    private ContentType(String parsed, String type, String subtype, String charset, KnownMediaType knownMediaType) {
         this.parsed = parsed;
         this.type = type;
         this.subtype = subtype;
         this.charset = charset;
-        this.knownMediaType = KnownMediaType.fromLabel(type + "/" + subtype).orElse(null);
+        this.knownMediaType = knownMediaType;
     }
 
     /**
      * Returns a media getType for {@code string}.
      *
-     * @param string
+     * @param contentType
      * @return
      * @throws IllegalArgumentException if {@code string} is not a well-formed
      * media getType.
      */
-    static public ContentType parse(String string) {
+    static public ContentType parse(String contentType) {
+        if (contentType == null || contentType.isEmpty() || contentType.trim().isEmpty()) {
+            return new ContentType(contentType, null, null, null, KnownMediaType.APPLICATION_OCTET_STREAM);
+        }
 
-        Matcher typeSubtype = TYPE_SUBTYPE.matcher(string);
+        Matcher typeSubtype = TYPE_SUBTYPE.matcher(contentType);
         if (!typeSubtype.lookingAt()) {
-            throw new IllegalArgumentException("No subtype found for: \"" + string + '"');
+            throw new IllegalArgumentException("No subtype found for: \"" + contentType + '"');
         }
         String type = typeSubtype.group(1).toLowerCase(Locale.US);
         String subtype = typeSubtype.group(2).toLowerCase(Locale.US);
 
         String charset = null;
-        Matcher parameter = PARAMETER.matcher(string);
-        for (int s = typeSubtype.end(); s < string.length(); s = parameter.end()) {
-            parameter.region(s, string.length());
+        Matcher parameter = PARAMETER.matcher(contentType);
+        for (int s = typeSubtype.end(); s < contentType.length(); s = parameter.end()) {
+            parameter.region(s, contentType.length());
             if (!parameter.lookingAt()) {
                 throw new IllegalArgumentException("Parameter is not formatted correctly: \""
-                    + string.substring(s)
+                    + contentType.substring(s)
                     + "\" for: \""
-                    + string
+                    + contentType
                     + '"');
             }
 
@@ -105,13 +112,13 @@ public class ContentType {
                     + "\" and: \""
                     + charsetParameter
                     + "\" for: \""
-                    + string
+                    + contentType
                     + '"');
             }
             charset = charsetParameter;
         }
 
-        return new ContentType(string, type, subtype, charset);
+        return new ContentType(contentType, type, subtype, charset);
     }
 
     /**

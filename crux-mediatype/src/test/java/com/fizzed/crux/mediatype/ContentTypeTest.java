@@ -28,6 +28,28 @@ import org.junit.Test;
 public class ContentTypeTest {
     
     @Test
+    public void parseNull() {
+        ContentType contentType = ContentType.parse(null);
+        
+        assertThat(contentType.getParsed(), is(nullValue()));
+        assertThat(contentType.getKnownMediaType(), is(KnownMediaType.APPLICATION_OCTET_STREAM));
+        assertThat(contentType.getType(), is(nullValue()));
+        assertThat(contentType.getSubType(), is(nullValue()));
+        assertThat(contentType.getCharset(), is(nullValue()));
+    }
+    
+    @Test
+    public void parseBlank() {
+        ContentType contentType = ContentType.parse("  ");
+        
+        assertThat(contentType.getParsed(), is("  "));
+        assertThat(contentType.getKnownMediaType(), is(KnownMediaType.APPLICATION_OCTET_STREAM));
+        assertThat(contentType.getType(), is(nullValue()));
+        assertThat(contentType.getSubType(), is(nullValue()));
+        assertThat(contentType.getCharset(), is(nullValue()));
+    }
+    
+    @Test
     public void parseBare() {
         ContentType contentType = ContentType.parse("application/json");
         

@@ -28,6 +28,8 @@ public class KnownMediaTypeTest {
     
     @Test
     public void fromLabel() {
+        assertThat(KnownMediaType.fromLabel(null).orElse(null),
+            is(nullValue()));
         assertThat(KnownMediaType.fromLabel("application/json").orElse(null),
             is(KnownMediaType.APPLICATION_JSON));
         assertThat(KnownMediaType.fromLabel(" application/json ").orElse(null),
