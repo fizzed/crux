@@ -88,5 +88,29 @@ public class KnownMediaTypeTest {
         assertThat(KnownMediaType.APPLICATION_VND_API_JSON.normalize(), is(KnownMediaType.APPLICATION_JSON));
         assertThat(KnownMediaType.IMAGE_JPEG_NON_STANDARD.normalize(), is(KnownMediaType.IMAGE_JPEG));
     }
+ 
+    
+    @Test
+    public void baseMediaType() {
+        BaseMediaType baseType;
+        
+        baseType = KnownMediaType.fromLabel("application/json")
+            .map(v -> v.getBaseType())
+            .orElse(null);
+        
+        assertThat(baseType, is(BaseMediaType.APPLICATION));
+        
+        baseType = KnownMediaType.fromLabel("image/jpg")
+            .map(v -> v.getBaseType())
+            .orElse(null);
+        
+        assertThat(baseType, is(BaseMediaType.IMAGE));
+        
+        baseType = KnownMediaType.fromLabel("video/h264")
+            .map(v -> v.getBaseType())
+            .orElse(null);
+        
+        assertThat(baseType, is(BaseMediaType.VIDEO));
+    }
     
 }

@@ -18,24 +18,24 @@ package com.fizzed.crux.util;
 import java.util.Objects;
 
 /**
- * Simple utility immutable class to represent x, y, width, and height in space and
+ * Simple utility immutable class to represent x, y, width, and height in 2D space and
  * not rely on the awful Java AWT Rectangle class.
  */
-public class Rect {
+public class Rect2D {
  
     final private double x;
     final private double y;
     final private double width;
     final private double height;
 
-    public Rect(double x, double y, double width, double height) {
+    public Rect2D(double x, double y, double width, double height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
     }
 
-    public Rect(double x, double y, Size size) {
+    public Rect2D(double x, double y, Size2D size) {
         Objects.requireNonNull(size, "size was null");
         this.x = x;
         this.y = y;
@@ -61,31 +61,31 @@ public class Rect {
 
     // helpers
     
-    public Rect plusX(double x) {
+    public Rect2D plusX(double x) {
         return this.plus(x, 0d, 0d, 0d);
     }
     
-    public Rect plusY(double y) {
+    public Rect2D plusY(double y) {
         return this.plus(0d, y, 0d, 0d);
     }
     
-    public Rect plusWidth(double width) {
+    public Rect2D plusWidth(double width) {
         return this.plus(0d, 0d, width, 0d);
     }
     
-    public Rect plusHeight(double height) {
+    public Rect2D plusHeight(double height) {
         return this.plus(0d, 0d, 0d, height);
     }
     
-    public Rect plus(Rect rect) {
+    public Rect2D plus(Rect2D rect) {
         if (rect == null) {
             return this;
         }
         return this.plus(rect.x, rect.y, rect.width, rect.height);
     }
     
-    public Rect plus(double x, double y, double width, double height) {
-        return new Rect(this.x+x, this.y+y, this.width+width, this.height+height);
+    public Rect2D plus(double x, double y, double width, double height) {
+        return new Rect2D(this.x+x, this.y+y, this.width+width, this.height+height);
     }
     
     public int ceilX() {

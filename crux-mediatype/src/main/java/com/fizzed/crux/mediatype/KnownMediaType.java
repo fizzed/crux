@@ -28,11 +28,13 @@ import java.util.Set;
 /**
  * https://www.iana.org/assignments/media-types/media-types.xhtml
  * 
+ * Only most commonly used are included to keep this list short and useful.
+ * 
  * @author jjlauer
  */
 public enum KnownMediaType {
  
-    // order of declaration is critical!
+    // order of declaration is important
     APPLICATION_OCTET_STREAM("application/octet-stream"),
     APPLICATION_OCTET_STREAM_NON_STANDARD("application/octetstream", APPLICATION_OCTET_STREAM),
     APPLICATION_X_WWW_FORM_URLENCODED("application/x-www-form-urlencoded"),
@@ -51,13 +53,16 @@ public enum KnownMediaType {
     APPLICATION_ZIP("application/zip", asList("zip")),
     IMAGE_X_ICO("image/x-icon", asList("ico")),
     IMAGE_PNG("image/png", asList("png")),
-    IMAGE_JPEG("image/jpeg", asList("jpg", "jpeg")),
+    IMAGE_JPEG2000("image/jp2", asList("jp2")),
+    IMAGE_JPEG("image/jpeg", asList("jpg", "jpeg", "jpe")),
     IMAGE_JPEG_NON_STANDARD("image/jpg", IMAGE_JPEG),
     IMAGE_GIF("image/gif", asList("gif")),
     IMAGE_BMP("image/bmp", asList("bmp")),
+    IMAGE_VND_ADOBE_PHOTOSHOP("image/vnd.adobe.photoshop", asList("psd")),
     IMAGE_TIFF("image/tiff", asList("tiff", "tif")),
     IMAGE_SVG_XML("image/svg+xml", asList("svg")),
     IMAGE_WEBP("image/webp", asList("webp")),
+    FONT_OTF("font/otf", asList("otf")),
     FONT_TTF("font/ttf", asList("ttf")),
     FONT_WOFF("font/woff", asList("woff")),
     FONT_WOFF2("font/woff2", asList("woff2")),
@@ -189,6 +194,16 @@ public enum KnownMediaType {
     
     public KnownMediaType getAliasOf() {
         return this.aliasOf;
+    }
+    
+    public BaseMediaType getBaseType() {
+        int pos = this.label.indexOf('/');
+        if (pos >= 0) {
+            String baseTypeLabel = this.label.substring(0, pos);
+            return BaseMediaType.fromLabel(baseTypeLabel)
+                .orElse(null);
+        }
+        return null;
     }
     
     /**
