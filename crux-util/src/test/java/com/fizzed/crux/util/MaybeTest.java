@@ -16,10 +16,12 @@
 package com.fizzed.crux.util;
 
 import static com.fizzed.crux.util.Maybe.maybe;
-import java.util.HashMap;
-import java.util.Map;
+import static java.util.Arrays.asList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -97,6 +99,65 @@ public class MaybeTest {
         assertThat(s.optMap(v -> Optional.ofNullable("yo")).orElse(null), is("yo"));
     }
 
+    static public class Widget {
+        
+        private List<String> values;
+        private String[] strings;
+        private Set<Integer> set;
+
+        public void setValues(List<String> values) {
+            this.values = values;
+        } 
+        
+        public List<String> getValues() {
+            return this.values;
+        }
+
+        public String[] getStrings() {
+            return strings;
+        }
+
+        public void setStrings(String[] strings) {
+            this.strings = strings;
+        }
+
+        public Set<Integer> getSet() {
+            return set;
+        }
+
+        public void setSet(Set<Integer> set) {
+            this.set = set;
+        }
+
+    }
+    
+    @Test
+    public void maybeStream() {
+        Widget w = new Widget();
+        
+        long count = maybe(w)
+            .mapStream(v -> v.getValues())
+            .count();
+
+        assertThat(count, is(0L));
+        
+        w.setValues(asList("a", "b", "c"));
+        
+        count = maybe(w)
+            .mapStream(v -> v.getValues())
+            .count();
+
+        assertThat(count, is(3L));
+     
+        w.setSet(new HashSet<>(asList(1, 2)));
+        
+        count = maybe(w)
+            .mapStream(v -> v.getSet())
+            .count();
+
+        assertThat(count, is(2L));
+    }
+    
 //    @Test
 //    public void typed() {
 //        Map<String,String> a = new HashMap<>();

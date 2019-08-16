@@ -29,6 +29,18 @@ public class DateTimes {
     }
     
     /**
+     * Returns a new DateTime in UTC.
+     * @param dt
+     * @return 
+     */
+    static public DateTime utc(DateTime dt) {
+        if (dt == null || dt.getZone() == DateTimeZone.UTC) {
+            return dt;
+        }
+        return dt.withZone(DateTimeZone.UTC);
+    }
+    
+    /**
      * Tests equality (ignoring timezones).
      * @param a
      * @param b
@@ -112,7 +124,13 @@ public class DateTimes {
         return a.getMillis() >= b.getMillis();
     }
     
-    
+    /**
+     * Is <code>a</code> value less than <code>b</code>. If b is not null
+     * and a is null then this is true.
+     * @param a
+     * @param b
+     * @return 
+     */
     static public boolean lt(DateTime a, DateTime b) {
         if (b == null) {
             // if a is null then even if b is null it can't be greater than
@@ -125,6 +143,13 @@ public class DateTimes {
         return a.getMillis() < b.getMillis();
     }
     
+    /**
+     * Is <code>a</code> value less than or equal to <code>b</code>. Will 
+     * still be true if both values are null OR if a is non-null and b is null.
+     * @param a
+     * @param b
+     * @return 
+     */
     static public boolean lte(DateTime a, DateTime b) {
         if (b == null) {
             // if a is null and b is null then this is true

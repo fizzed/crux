@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Similar to a Java 8 optional, but this version is different in the following
@@ -117,6 +118,14 @@ public class Maybe<T> {
             return Maybe.of(mapper.apply(value));
         } else {
             return Maybe.empty();
+        }
+    }
+    
+    public <U> Stream<U> mapStream(Function<? super T, ? extends Iterable<U>> mapper) {
+        if (value != null) {
+            return MaybeStream.of(mapper.apply(value)).stream();
+        } else {
+            return Stream.empty();
         }
     }
     

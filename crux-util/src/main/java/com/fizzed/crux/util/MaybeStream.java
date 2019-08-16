@@ -31,9 +31,9 @@ import java.util.stream.StreamSupport;
  */
 public class MaybeStream<T> implements Iterable<T> {
     
-    private Iterable<T> values;
+    final private Iterable<T> values;
     
-    public MaybeStream(Iterable<T> values) {
+    protected MaybeStream(Iterable<T> values) {
         this.values = values;
     }
 
@@ -85,7 +85,7 @@ public class MaybeStream<T> implements Iterable<T> {
     public boolean isAbsent() {
         return this.values == null;
     }
-    
+
     static public <T> MaybeStream<T> empty() {
         return new MaybeStream<>(null);
     }
