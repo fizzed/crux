@@ -16,6 +16,9 @@
 package com.fizzed.crux.util;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -71,6 +74,75 @@ public class MoreObjects {
             }
         }
         return false;
+    }
+    
+    /**
+     * Null-safe iterable to simplify use in for-loops, etc.
+     * @param <T>
+     * @param values 
+     * @return An empty iterable if values is null otherwise an iterable of values.
+     */
+    static public <T> Iterable<T> iterable(T[] values) {
+        return new MaybeStream.ArrayIterable<>(values);
+    }
+    
+    /**
+     * Null-safe iterable to simplify use in for-loops, etc.
+     * @param <T>
+     * @param values 
+     * @return An empty iterable if values is null otherwise an iterable of values.
+     */
+    static public <T> Iterable<T> iterable(Iterable<T> values) {
+        if (values == null) {
+            return new MaybeStream.ArrayIterable<>(null);
+        }
+        return values;
+    }
+    
+    /**
+     * Null-safe evaluation of the length of an array.
+     * @param values
+     * @return 0 if array is null or empty otherwise the length
+     */
+    static public int size(Object[] values) {
+        return values != null ? values.length : 0;
+    }
+    
+    /**
+     * Null-safe evaluation of the size of a collection.
+     * @param values
+     * @return 0 if collection is null or empty otherwise the length
+     */
+    static public int size(Collection<?> values) {
+        return values != null ? values.size() : 0;
+    }
+    
+    /**
+     * Null-safe evaluation of the size of a map.
+     * @param map
+     * @return 0 if map is null or empty otherwise the length
+     */
+    static public int size(Map<?,?> map) {
+        return map != null ? map.size() : 0;
+    }
+    
+    static public <T> T first(T[] values) {
+        return values != null && values.length > 0 ? values[0] : null;
+    }
+    
+    static public <T> T first(Iterable<T> values) {
+        if (values == null) {
+            return null;
+        }
+        if (values instanceof List) {
+            List<T> l = (List<T>)values;
+            return l.isEmpty() ? null : l.get(0);
+        }
+        Iterator<T> it = values.iterator();
+        if (it.hasNext()) {
+            return it.next();
+        }
+        return null;
     }
     
     /**

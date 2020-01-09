@@ -17,9 +17,14 @@ package com.fizzed.crux.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import static java.util.Arrays.asList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 
@@ -52,6 +57,42 @@ public class MoreObjectsTest {
         set.add("a");
         assertThat(MoreObjects.in("a", set), is(true));
         assertThat(MoreObjects.in("c", set), is(false));
+    }
+    
+    @Test
+    public void iterable() {
+        for (String s : MoreObjects.iterable((String[])null)) {
+            
+        }
+        for (String s : MoreObjects.iterable(new String[] { "s" })) {
+            assertThat(s, is("s"));
+        }
+        for (Object s : MoreObjects.iterable((ArrayList)null)) {
+            
+        }
+        for (String s : MoreObjects.iterable(asList("s"))) {
+            assertThat(s, is("s"));
+        }
+    }
+    
+    @Test
+    public void size() {
+        assertThat(MoreObjects.size((Object[])null), is(0));
+        assertThat(MoreObjects.size(new Object[0]), is(0));
+        assertThat(MoreObjects.size((Collection)null), is(0));
+        assertThat(MoreObjects.size(new ArrayList<>()), is(0));
+        assertThat(MoreObjects.size((Map)null), is(0));
+        assertThat(MoreObjects.size(new HashMap<>()), is(0));
+    }
+    
+    @Test
+    public void first() {
+        assertThat(MoreObjects.first((Object[])null), is(nullValue()));
+        assertThat(MoreObjects.first(new Object[0]), is(nullValue()));
+        assertThat(MoreObjects.first(new String[] { "s" }), is("s"));
+        assertThat(MoreObjects.first((Collection)null), is(nullValue()));
+        assertThat(MoreObjects.first(new ArrayList<>()), is(nullValue()));
+        assertThat(MoreObjects.first(asList("s")), is("s"));
     }
     
     @Test

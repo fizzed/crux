@@ -143,6 +143,9 @@ public class MaybeStream<T> implements Iterable<T> {
 
         @Override
         public V next() {
+            if (this.values == null) {
+                return null;
+            }
             V value = this.values[this.index];
             this.index++;
             return value;
