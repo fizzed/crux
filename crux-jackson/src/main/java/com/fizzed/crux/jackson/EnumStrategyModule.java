@@ -1,6 +1,8 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -9,6 +11,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
@@ -67,6 +70,12 @@ public class EnumStrategyModule extends SimpleModule {
                         
                         Class<? extends Enum> rawClass = (Class<Enum<?>>) type.getRawClass();
                         
+                        boolean ignoreUnknown = false;
+                        JsonIgnoreProperties ignoreProps = rawClass.getAnnotation(JsonIgnoreProperties.class);
+                        if (ignoreProps != null) {
+                            ignoreUnknown = ignoreProps.ignoreUnknown();
+                        }
+                        
                         switch (EnumStrategyModule.this.deserializeStrategy) {
                             case IGNORE_CASE:
                                 for (Enum en : rawClass.getEnumConstants()) {
@@ -91,7 +100,14 @@ public class EnumStrategyModule extends SimpleModule {
                                 break;
                         }
                         
-                        throw new IllegalArgumentException("No enum constant " + rawClass.getCanonicalName() + "." + value);
+                        if (!ignoreUnknown) {
+                            throw new UnrecognizedPropertyException(
+                                jp, "No enum constant " + rawClass.getCanonicalName() + "." + value,
+                                JsonLocation.NA, rawClass, "value", null);
+                        }
+                        
+                        // otherwise, ignore and return null
+                        return null;
                     }
                 };
             }

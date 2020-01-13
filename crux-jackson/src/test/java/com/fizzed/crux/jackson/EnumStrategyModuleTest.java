@@ -1,10 +1,13 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fizzed.crux.jackson.EnumStrategyModule.DeserializeStrategy;
 import com.fizzed.crux.jackson.EnumStrategyModule.SerializeStrategy;
 import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -29,7 +32,7 @@ public class EnumStrategyModuleTest {
         try {
             objectMapper.readValue("\"bad\"", Animal.class);
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (UnrecognizedPropertyException e) {
             // expected
         }
     }
@@ -46,7 +49,7 @@ public class EnumStrategyModuleTest {
         try {
             objectMapper.readValue("\"rabbit\"", Animal.class);
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (UnrecognizedPropertyException e) {
             // expected
         }
     }
@@ -63,9 +66,32 @@ public class EnumStrategyModuleTest {
         try {
             objectMapper.readValue("\"RABBIT\"", Animal.class);
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (UnrecognizedPropertyException e) {
             // expected
         }
+    }
+    
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static public enum Animal2 {
+        DOG,
+        CAT,
+        RABBIT
+    }
+    
+    @Test
+    public void deserializeUnknownProperties() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+        
+        Animal2 v;
+        
+        v = objectMapper.readValue("\"dog\"", Animal2.class);
+        
+        assertThat(v, is(Animal2.DOG));
+        
+        v = objectMapper.readValue("\"sheep\"", Animal2.class);
+        
+        assertThat(v, is(nullValue()));
     }
     
     @Test
