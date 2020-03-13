@@ -41,10 +41,10 @@ public class MaybeStream<T> implements Iterable<T> {
         if (values == null) {
             throw new NoSuchElementException("No values present");
         }
-        return this.stream();
+        return this.jvmStream();
     }
     
-    public Stream<T> stream() {
+    public Stream<T> jvmStream() {
         if (values == null) {
             return Stream.empty();
         }
@@ -54,6 +54,11 @@ public class MaybeStream<T> implements Iterable<T> {
         } else {
             return StreamSupport.stream(this.values.spliterator(), false);
         }
+    }
+    
+    @Deprecated
+    public Stream<T> stream() {
+        return this.jvmStream();
     }
     
     public Maybe<T> first() {
@@ -77,13 +82,11 @@ public class MaybeStream<T> implements Iterable<T> {
         }
     }
     
-    public MaybeStream<T> forEach(BiConsumer<T,Integer> consumer) {
-        if (values == null) {
-            return this;
+    public void forEach(BiConsumer<T,Integer> consumer) {
+        if (values != null) {
+            IterableIter<T> iter = new IterableIter<>(this.values);
+            iter.forEach(consumer);
         }
-        IterableIter<T> iter = new IterableIter<>(this.values);
-        iter.forEach(consumer);
-        return this;
     }
     
     public boolean isPresent() {

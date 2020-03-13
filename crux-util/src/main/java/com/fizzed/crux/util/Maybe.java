@@ -89,7 +89,7 @@ public class Maybe<T> {
      * @param predicate
      * @return 
      */
-    public boolean isMatch(Predicate<? super T> predicate) {
+    public boolean match(Predicate<? super T> predicate) {
         Objects.requireNonNull(predicate, "predicate was null");
         
         return this.value != null && predicate.test(this.value);
@@ -110,6 +110,8 @@ public class Maybe<T> {
     }
     
     public <U> Maybe<U> typed(Class<? super U> type) {
+        Objects.requireNonNull(type, "type was null");
+        
         if (this.value != null && type.isInstance(this.value)) {
             return Maybe.of((U)this.value);
         } else {
@@ -136,8 +138,13 @@ public class Maybe<T> {
         }
     }
     
-    public <U> Stream<U> mapStream(Function<? super T, ? extends Iterable<U>> mapper) {
+    public <U> Stream<U> jvmStream(Function<? super T, ? extends Iterable<U>> mapper) {
         return this.stream(mapper).stream();
+    }
+    
+    @Deprecated()
+    public <U> Stream<U> mapStream(Function<? super T, ? extends Iterable<U>> mapper) {
+        return this.jvmStream(mapper);
     }
     
     public <U> MaybeStream<U> stream(Function<? super T, ? extends Iterable<U>> mapper) {
@@ -156,7 +163,7 @@ public class Maybe<T> {
         }
     }
     
-    public <U> Maybe<U> optMap(Function<? super T, Optional<U>> mapper) {
+    public <U> Maybe<U> jvmFlatMap(Function<? super T, Optional<U>> mapper) {
         if (value != null) {
             return Maybe.of(mapper.apply(value));
         } else {
@@ -164,8 +171,18 @@ public class Maybe<T> {
         }
     }
     
-    public Optional<T> toOptional() {
+    @Deprecated
+    public <U> Maybe<U> optMap(Function<? super T, Optional<U>> mapper) {
+        return this.jvmFlatMap(mapper);
+    }
+    
+    public Optional<T> jvmOptional() {
         return Optional.ofNullable(value);
+    }
+    
+    @Deprecated
+    public Optional<T> toOptional() {
+        return this.jvmOptional();
     }
     
     static public <T> Maybe<T> empty() {
