@@ -18,11 +18,13 @@ package com.fizzed.crux.util;
 import static com.fizzed.crux.util.Maybe.maybe;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.Test;
@@ -132,7 +134,7 @@ public class MaybeTest {
     }
     
     @Test
-    public void maybeStream() {
+    public void mapStream() {
         Widget w = new Widget();
         
         long count = maybe(w)
@@ -156,6 +158,38 @@ public class MaybeTest {
             .count();
 
         assertThat(count, is(2L));
+    }
+    
+    @Test
+    public void stream() {
+        Widget w = new Widget();
+        
+        String s;
+        
+        s = maybe(w)
+            .stream(v -> v.getValues())
+            .first()
+            .orNull();
+
+        assertThat(s, is(nullValue()));
+        
+        w.setValues(asList("a", "b", "c"));
+        
+        s = maybe(w)
+            .stream(v -> v.getValues())
+            .first()
+            .orNull();
+
+        assertThat(s, is("a"));
+     
+        w.setSet(new LinkedHashSet<>(asList(2, 1, 3)));
+        
+        Integer i = maybe(w)
+            .stream(v -> v.getSet())
+            .last()
+            .orNull();
+
+        assertThat(i, is(3));
     }
     
 //    @Test

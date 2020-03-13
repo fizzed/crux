@@ -56,6 +56,10 @@ public class Maybe<T> {
         this.value = value;
     }
     
+    public T orNull() {
+        return this.isPresent() ? value : null;
+    }
+    
     public T orElse(T defaultValue) {
         return this.isPresent() ? value : defaultValue;
     }
@@ -78,6 +82,17 @@ public class Maybe<T> {
     
     public boolean isAbsent() {
         return this.value == null;
+    }
+    
+    /**
+     * Matches if value is PRESENT and passes the predicate.
+     * @param predicate
+     * @return 
+     */
+    public boolean isMatch(Predicate<? super T> predicate) {
+        Objects.requireNonNull(predicate, "predicate was null");
+        
+        return this.value != null && predicate.test(this.value);
     }
     
     public Maybe<T> ifPresent(Consumer<? super T> consumer) {
@@ -122,10 +137,14 @@ public class Maybe<T> {
     }
     
     public <U> Stream<U> mapStream(Function<? super T, ? extends Iterable<U>> mapper) {
+        return this.stream(mapper).stream();
+    }
+    
+    public <U> MaybeStream<U> stream(Function<? super T, ? extends Iterable<U>> mapper) {
         if (value != null) {
-            return MaybeStream.of(mapper.apply(value)).stream();
+            return MaybeStream.of(mapper.apply(value));
         } else {
-            return Stream.empty();
+            return MaybeStream.empty();
         }
     }
     

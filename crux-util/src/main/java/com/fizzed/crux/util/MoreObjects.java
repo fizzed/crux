@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedSet;
 
 /**
  * Methods that  java.util.Objects should include.
@@ -138,11 +139,39 @@ public class MoreObjects {
             List<T> l = (List<T>)values;
             return l.isEmpty() ? null : l.get(0);
         }
+        if (values instanceof SortedSet) {
+            SortedSet<T> s = (SortedSet<T>)values;
+            return s.first();
+        }
         Iterator<T> it = values.iterator();
         if (it.hasNext()) {
             return it.next();
         }
         return null;
+    }
+    
+    static public <T> T last(T[] values) {
+        return values != null && values.length > 0 ? values[values.length-1] : null;
+    }
+    
+    static public <T> T last(Iterable<T> values) {
+        if (values == null) {
+            return null;
+        }
+        if (values instanceof List) {
+            List<T> l = (List<T>)values;
+            return l.isEmpty() ? null : l.get(l.size()-1);
+        }
+        if (values instanceof SortedSet) {
+            SortedSet<T> s = (SortedSet<T>)values;
+            return s.last();
+        }
+        Iterator<T> it = values.iterator();
+        T last = null;
+        while (it.hasNext()) {
+            last = it.next();
+        }
+        return last;
     }
     
     /**

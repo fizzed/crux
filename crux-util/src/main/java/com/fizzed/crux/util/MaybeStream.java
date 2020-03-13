@@ -56,6 +56,14 @@ public class MaybeStream<T> implements Iterable<T> {
         }
     }
     
+    public Maybe<T> first() {
+        return Maybe.of(MoreObjects.first(this.values));
+    }
+    
+    public Maybe<T> last() {
+        return Maybe.of(MoreObjects.last(this.values));
+    }
+    
     @Override
     public Iterator<T> iterator() {
         if (values == null) {
