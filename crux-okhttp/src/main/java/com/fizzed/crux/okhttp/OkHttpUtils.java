@@ -15,8 +15,6 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.util.MessageLevel;
-import static com.fizzed.crux.util.Maybe.maybe;
 import com.fizzed.crux.util.SecureUtil;
 import java.io.IOException;
 import static java.util.Optional.ofNullable;
@@ -27,8 +25,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OkHttpUtils {
@@ -39,60 +35,60 @@ public class OkHttpUtils {
     static public final HostnameVerifier TRUST_ALL_HOSTNAME_VERIFIER
         = SecureUtil.createTrustAllHostnameVerifier();
     
-    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel) {
-        return createLoggingInterceptor(loggingLevel, null, null);
-    }
-    
-    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName) {
-        return createLoggingInterceptor(loggingLevel, loggerName, null);
-    }
-    
-    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName, MessageLevel messageLevel) {
-        final OkLoggingLevel _loggingLevel = maybe(loggingLevel).orElse(OkLoggingLevel.NONE);
-        final MessageLevel _messageLevel = maybe(messageLevel).orElse(MessageLevel.DEBUG);
-        
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            private final Logger log = LoggerFactory.getLogger(loggerName != null ? loggerName : "okhttp");
-            @Override
-            public void log(String message) {
-                switch (_messageLevel) {
-                    case ERROR:
-                        log.error("{}", message);
-                        break;
-                    case WARN:
-                        log.warn("{}", message);
-                        break;
-                    case INFO:
-                        log.info("{}", message);
-                        break;
-                    case DEBUG:
-                        log.debug("{}", message);
-                        break;
-                    case TRACE:
-                        log.trace("{}", message);
-                        break;
-                }
-            }
-        });
-        
-        switch (_loggingLevel) {
-            case NONE:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
-                break;
-            case BASIC:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-                break;
-            case HEADERS:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-                break;
-            case BODY:
-                // NOTE: okhttp doesn't do a great job at body logging
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                break;
-        }
-        
-        return loggingInterceptor;
-    }
+//    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel) {
+//        return createLoggingInterceptor(loggingLevel, null, null);
+//    }
+//    
+//    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName) {
+//        return createLoggingInterceptor(loggingLevel, loggerName, null);
+//    }
+//    
+//    static public HttpLoggingInterceptor createLoggingInterceptor(OkLoggingLevel loggingLevel, String loggerName, MessageLevel messageLevel) {
+//        final OkLoggingLevel _loggingLevel = maybe(loggingLevel).orElse(OkLoggingLevel.NONE);
+//        final MessageLevel _messageLevel = maybe(messageLevel).orElse(MessageLevel.DEBUG);
+//        
+//        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+//            private final Logger log = LoggerFactory.getLogger(loggerName != null ? loggerName : "okhttp");
+//            @Override
+//            public void log(String message) {
+//                switch (_messageLevel) {
+//                    case ERROR:
+//                        log.error("{}", message);
+//                        break;
+//                    case WARN:
+//                        log.warn("{}", message);
+//                        break;
+//                    case INFO:
+//                        log.info("{}", message);
+//                        break;
+//                    case DEBUG:
+//                        log.debug("{}", message);
+//                        break;
+//                    case TRACE:
+//                        log.trace("{}", message);
+//                        break;
+//                }
+//            }
+//        });
+//        
+//        switch (_loggingLevel) {
+//            case NONE:
+//                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+//                break;
+//            case BASIC:
+//                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+//                break;
+//            case HEADERS:
+//                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+//                break;
+//            case BODY:
+//                // NOTE: okhttp doesn't do a great job at body logging
+//                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//                break;
+//        }
+//        
+//        return loggingInterceptor;
+//    }
     
     static public OkHttpClient buildClient(OkHttpOptions options) {
         return createBuilder(options).build();

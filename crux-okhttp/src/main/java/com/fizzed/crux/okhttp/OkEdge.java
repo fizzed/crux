@@ -22,11 +22,11 @@ import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 public class OkEdge {
     
-    private final HttpLoggingInterceptor loggingInterceptor;
+//    private final HttpLoggingInterceptor loggingInterceptor;
+    private final OkHttpLoggingInterceptor loggingInterceptor;
     private final OkHttpClient.Builder clientBuilder;
     private final Request.Builder requestBuilder;
     private Boolean insecure;
@@ -56,10 +56,21 @@ public class OkEdge {
             OkLoggingLevel loggingLevel,
             MessageLevel messageLevel) {
         
-        this.loggingInterceptor  = OkHttpUtils.createLoggingInterceptor(
-            loggingLevel, "okedge", messageLevel);
-        this.clientBuilder = new OkHttpClient.Builder()
-            .addNetworkInterceptor(this.loggingInterceptor);
+        OkHttpOptions options = new OkHttpOptions();
+        options.setLoggingLevel(loggingLevel);
+        options.setLoggerName("okedge");
+        options.setMessageLevel(messageLevel);
+        
+//        this.loggingInterceptor  = OkHttpUtils.createLoggingInterceptor(
+//            loggingLevel, "okedge", messageLevel);
+//        this.clientBuilder = new OkHttpClient.Builder()
+//            .addNetworkInterceptor(this.loggingInterceptor);
+        
+        this.clientBuilder = OkHttpUtils.createBuilder(options);
+        
+        // the first network interceptor will be the logging one...
+        this.loggingInterceptor = (OkHttpLoggingInterceptor)this.clientBuilder.networkInterceptors().get(0);
+        
         this.requestBuilder = new Request.Builder();
         // other initial state passed on from state
         if (state != null) {
@@ -135,26 +146,11 @@ public class OkEdge {
         this.loggingLevel = loggingLevel;
         
         if (loggingLevel == null) {
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
-            return this;
+            loggingLevel = OkLoggingLevel.NONE;
         }
         
-        switch (loggingLevel) {
-            case NONE:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
-                break;
-            case BASIC:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
-                break;
-            case HEADERS:
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-                break;
-            case BODY:
-                // do not ever log using square's body logger!
-                // they actually do an awful job of handling body
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-                break;
-        }
+        loggingInterceptor.setRequestLoggingLevel(loggingLevel);
+        loggingInterceptor.setResponseLoggingLevel(loggingLevel);
         
         return this;
     }
