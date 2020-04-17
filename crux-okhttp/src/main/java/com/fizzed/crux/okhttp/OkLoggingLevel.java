@@ -25,6 +25,6 @@ public enum OkLoggingLevel {
     NONE,
     BASIC,
     HEADERS,
-    BODY
+    BODY,
     
 }

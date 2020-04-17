@@ -129,12 +129,39 @@ public class OkHttpUtils {
             clientBuilder.followSslRedirects(options.getFollowRedirects());
         }
         
-        HttpLoggingInterceptor loggingInterceptor = createLoggingInterceptor(
-            options.getLoggingLevel(), options.getLoggerName(), options.getMessageLevel());
+
+        OkHttpLoggingInterceptor loggingInterceptor = new OkHttpLoggingInterceptor();
         
-        if (loggingInterceptor != null) {
-            clientBuilder.addNetworkInterceptor(loggingInterceptor);
+        if (options.getLoggingLevel() != null) {
+            loggingInterceptor.setRequestLoggingLevel(options.getLoggingLevel());
+            loggingInterceptor.setResponseLoggingLevel(options.getLoggingLevel());
         }
+        if (options.getRequestLoggingLevel() != null) {
+            loggingInterceptor.setRequestLoggingLevel(options.getRequestLoggingLevel());
+        }
+        if (options.getResponseLoggingLevel() != null) {
+            loggingInterceptor.setResponseLoggingLevel(options.getResponseLoggingLevel());
+        }
+        if (options.getLoggerName() != null) {
+            loggingInterceptor.setLogger(LoggerFactory.getLogger(options.getLoggerName()));
+        }
+        if (options.getVerboseOnFailure() != null) {
+            loggingInterceptor.setVerboseOnFailure(options.getVerboseOnFailure());
+        }
+        if (options.getLoggingRedactHeaders() != null) {
+            String[] headers = options.getLoggingRedactHeaders().split("\\,");
+            if (headers != null) {
+                for (String h : headers) {
+                    loggingInterceptor.addRedactHeader(h);
+                }
+            }
+            loggingInterceptor.setMessageLevel(options.getMessageLevel());
+        }
+        if (options.getMessageLevel() != null) {
+            loggingInterceptor.setMessageLevel(options.getMessageLevel());
+        }
+        
+        clientBuilder.addNetworkInterceptor(loggingInterceptor);
     }
     
     static public boolean hasStatusCode(Response response, int... statusCodes) {
@@ -193,5 +220,5 @@ public class OkHttpUtils {
                 + response.header("Content-Type") + ")");
         }
     }
-    
+ 
 }

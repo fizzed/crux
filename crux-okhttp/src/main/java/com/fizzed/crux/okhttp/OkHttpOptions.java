@@ -19,12 +19,21 @@ import com.fizzed.crux.uri.Uri;
 import com.fizzed.crux.util.BindingPropertyMap;
 import com.fizzed.crux.util.BindingPropertySupport;
 import com.fizzed.crux.util.MessageLevel;
+import java.util.function.Function;
 
 /**
  * Options for building an OkHttp client.
  * @param <A>
  */
 public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropertySupport<A> {
+    
+    static private final Function<String,OkLoggingLevel> LOGGING_LEVEL_CONVERTER = (s) -> {
+        OkLoggingLevel level = OkLoggingLevel.valueOf(s.toUpperCase());
+        if (level == null) {
+            throw new IllegalArgumentException("Invalid logging level " + s);
+        }
+        return level;
+    };
     
     protected final BindingPropertyMap<A> bindingPropertyMap = new BindingPropertyMap<A>()
         .bindString("base_uri", A::setBaseUri)
@@ -33,14 +42,12 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
         .bindLong("write_timeout", A::setWriteTimeout)
         .bindLong("read_timeout", A::setReadTimeout)
         .bindBoolean("follow_redirects", A::setFollowRedirects)
-        .bindType("logging_level", A::setLoggingLevel, OkLoggingLevel.class, (s) -> {
-            OkLoggingLevel level = OkLoggingLevel.valueOf(s.toUpperCase());
-            if (level == null) {
-                throw new IllegalArgumentException("Invalid logging level " + s);
-            }
-            return level;
-        })
+        .bindType("logging_level", A::setLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
+        .bindType("request_logging_level", A::setRequestLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
+        .bindType("response_logging_level", A::setResponseLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
         .bindString("logger_name", OkHttpOptions::setLoggerName)
+        .bindBoolean("verbose_on_failure", A::setVerboseOnFailure)
+        .bindString("logging_redact_headers", A::setLoggingRedactHeaders)
         .bindType("message_level", A::setMessageLevel, MessageLevel.class, (s) -> {
             MessageLevel level = MessageLevel.valueOf(s.toUpperCase());
             if (level == null) {
@@ -56,7 +63,11 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
     private Long readTimeout;
     private Boolean followRedirects;
     private OkLoggingLevel loggingLevel;
+    private OkLoggingLevel requestLoggingLevel;
+    private OkLoggingLevel responseLoggingLevel;
+    private Boolean verboseOnFailure;
     private String loggerName;
+    private String loggingRedactHeaders;
     private MessageLevel messageLevel;
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
@@ -147,12 +158,44 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
         this.loggingLevel = loggingLevel;
     }
 
+    public OkLoggingLevel getRequestLoggingLevel() {
+        return requestLoggingLevel;
+    }
+
+    public void setRequestLoggingLevel(OkLoggingLevel requestLoggingLevel) {
+        this.requestLoggingLevel = requestLoggingLevel;
+    }
+
+    public OkLoggingLevel getResponseLoggingLevel() {
+        return responseLoggingLevel;
+    }
+
+    public void setResponseLoggingLevel(OkLoggingLevel responseLoggingLevel) {
+        this.responseLoggingLevel = responseLoggingLevel;
+    }
+    
     public String getLoggerName() {
         return loggerName;
     }
 
     public void setLoggerName(String loggerName) {
         this.loggerName = loggerName;
+    }
+
+    public Boolean getVerboseOnFailure() {
+        return verboseOnFailure;
+    }
+
+    public void setVerboseOnFailure(Boolean verboseOnFailure) {
+        this.verboseOnFailure = verboseOnFailure;
+    }
+
+    public String getLoggingRedactHeaders() {
+        return loggingRedactHeaders;
+    }
+
+    public void setLoggingRedactHeaders(String loggingRedactHeaders) {
+        this.loggingRedactHeaders = loggingRedactHeaders;
     }
 
     public MessageLevel getMessageLevel() {
