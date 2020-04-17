@@ -74,11 +74,11 @@
                 <version>3.8.1</version>
             </dependency>
 
-            <dependency>
+<!--            <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>logging-interceptor</artifactId>
                 <version>3.8.1</version>
-            </dependency>
+            </dependency>-->
             
             <!-- for crux-vagrant -->
             
