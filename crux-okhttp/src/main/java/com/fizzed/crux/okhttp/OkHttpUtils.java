@@ -16,6 +16,7 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
+import com.fizzed.crux.util.TrustAllTrustManager;
 import java.io.IOException;
 import static java.util.Optional.ofNullable;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +105,7 @@ public class OkHttpUtils {
     
     static public void configureBuilder(OkHttpClient.Builder clientBuilder, OkHttpOptions options) {
         if (options.getInsecure() != null && options.getInsecure()) {
-            clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY);
+            clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY, TrustAllTrustManager.INSTANCE);
             clientBuilder.hostnameVerifier(OkHttpUtils.TRUST_ALL_HOSTNAME_VERIFIER);
         }
         
