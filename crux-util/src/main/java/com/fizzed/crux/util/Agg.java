@@ -35,6 +35,33 @@ public class Agg {
             this.value = initialValue;
         }
 
+        public boolean isAbsent() {
+            return this.value == null;
+        }
+        
+        public boolean isPresent() {
+            return this.value != null;
+        }
+        
+        public Maybe<T> maybe() {
+            return Maybe.of(this.value);
+        }
+        
+        /**
+         * Clears the current value by setting it to null.
+         */
+        public void clear() {
+            this.value = null;
+        }
+        
+        /**
+         * Directly sets the current value.
+         * @param value 
+         */
+        public void set(T value) {
+            this.value = value;
+        }
+        
         /**
          * Gets the current value.
          * 
@@ -49,9 +76,9 @@ public class Agg {
          * returns the new value.  Nulls are skipped for evaluation!
          * 
          * @param newValue
-         * @return 
+         * @return True if modified, otherwise false.
          */
-        public T apply(T newValue) {
+        public boolean apply(T newValue) {
             return this.apply(newValue, false);
         }
 
@@ -62,20 +89,26 @@ public class Agg {
          * 
          * @param newValue
          * @param includeNulls
-         * @return 
+         * @return True if modified, otherwise false.
          */
-        public T apply(T newValue, boolean includeNulls) {
+        public boolean apply(T newValue, boolean includeNulls) {
             if (includeNulls || newValue != null) {
                 if (!includeNulls && this.value == null) {
-                    this.value = newValue;
+                    if (newValue != null) {
+                        this.value = newValue;
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else {
                     int c = this.comparator.compare(this.value, newValue);
                     if (c > 0) {
                         this.value = newValue;
+                        return true;
                     }
                 }
             }
-            return this.value;
+            return false;
         }
         
     }
@@ -100,10 +133,21 @@ public class Agg {
      * Helps aggregate the min value according to natural ordering of the type.
      * 
      * @param <V>
+     * @return 
+     */
+    static public <V extends Comparable> Min<V> min() {
+        final Comparator<V> comparator = Comparator.naturalOrder();
+        return min(comparator, null);
+    }    
+    
+    /**
+     * Helps aggregate the min value according to natural ordering of the type.
+     * 
+     * @param <V>
      * @param type
      * @return 
      */
-    static public <V extends Comparable<V>> Min<V> min(Class<V> type) {
+    static public <V extends Comparable> Min<V> min(Class<V> type) {
         final Comparator<V> comparator = Comparator.naturalOrder();
         return min(comparator, null);
     }    
@@ -116,7 +160,7 @@ public class Agg {
      * @param initialValue
      * @return 
      */
-    static public <V extends Comparable<V>> Min<V> min(V initialValue) {
+    static public <V extends Comparable> Min<V> min(V initialValue) {
         final Comparator<V> comparator = Comparator.naturalOrder();
         return min(comparator, initialValue);
     } 
@@ -150,10 +194,21 @@ public class Agg {
      * Helps aggregate the max value according to natural ordering of the type.
      * 
      * @param <V>
+     * @return 
+     */
+    static public <V extends Comparable> Max<V> max() {
+        final Comparator<V> comparator = Comparator.naturalOrder();
+        return max(comparator, null);
+    }
+    
+    /**
+     * Helps aggregate the max value according to natural ordering of the type.
+     * 
+     * @param <V>
      * @param type
      * @return 
      */
-    static public <V extends Comparable<V>> Max<V> max(Class<V> type) {
+    static public <V extends Comparable> Max<V> max(Class<V> type) {
         final Comparator<V> comparator = Comparator.naturalOrder();
         return max(comparator, null);
     }
@@ -166,7 +221,7 @@ public class Agg {
      * @param initialValue
      * @return 
      */
-    static public <V extends Comparable<V>> Max<V> max(V initialValue) {
+    static public <V extends Comparable> Max<V> max(V initialValue) {
         final Comparator<V> comparator = Comparator.naturalOrder();
         return max(comparator, initialValue);
     }

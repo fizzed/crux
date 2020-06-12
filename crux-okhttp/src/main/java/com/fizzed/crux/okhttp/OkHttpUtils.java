@@ -16,6 +16,7 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.SecureUtil;
+import com.fizzed.crux.util.TimeDuration;
 import com.fizzed.crux.util.TrustAllTrustManager;
 import java.io.IOException;
 import static java.util.Optional.ofNullable;
@@ -218,4 +219,30 @@ public class OkHttpUtils {
         }
     }
  
+    static public void shutdownGracefully(
+            OkHttpClient httpClient,
+            TimeDuration timeout) throws InterruptedException {
+        
+        if (httpClient != null) {
+            if (httpClient.connectionPool() != null) {
+                httpClient.connectionPool().evictAll();
+            }
+            if (httpClient.dispatcher() != null) {
+                httpClient.dispatcher().executorService().shutdown();
+                httpClient.dispatcher().executorService().awaitTermination(timeout.asMillis(), TimeUnit.MILLISECONDS);
+            }
+        }
+    }
+ 
+    static public void shutdownNow(OkHttpClient httpClient) {
+        if (httpClient != null) {
+            if (httpClient.connectionPool() != null) {
+                httpClient.connectionPool().evictAll();
+            }
+            if (httpClient.dispatcher() != null) {
+                httpClient.dispatcher().executorService().shutdownNow();
+            }
+        }
+    }
+    
 }

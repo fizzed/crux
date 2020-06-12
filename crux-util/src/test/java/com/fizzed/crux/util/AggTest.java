@@ -28,53 +28,68 @@ public class AggTest {
  
     @Test
     public void min1() {
+        boolean changed;
         Min min = Agg.min(Integer.TYPE);
         
         assertThat(min.get(), is(nullValue()));
         
-        min.apply(4);
+        changed = min.apply(null);
+        
+        assertThat(min.get(), is(nullValue()));
+        assertThat(changed, is(false));
+        
+        changed = min.apply(4);
         
         assertThat(min.get(), is(4));
+        assertThat(changed, is(true));
         
-        min.apply(5);
+        changed = min.apply(5);
         
         assertThat(min.get(), is(4));
+        assertThat(changed, is(false));
         
-        min.apply(3);
+        changed = min.apply(3);
         
         assertThat(min.get(), is(3));
+        assertThat(changed, is(true));
         
-        min.apply(2);
+        changed = min.apply(2);
         
         assertThat(min.get(), is(2));
-        
+        assertThat(changed, is(true));
     }
     
     @Test
     public void min2() {
+        boolean changed;
         Min<Integer> min = Agg.min(10);
         
         assertThat(min.get(), is(10));
         
-        min.apply(4);
+        changed = min.apply(4);
         
         assertThat(min.get(), is(4));
+        assertThat(changed, is(true));
         
-        min.apply(5);
+        changed = min.apply(5);
         
         assertThat(min.get(), is(4));
+        assertThat(changed, is(false));
         
-        min.apply(3);
+        changed = min.apply(3);
         
         assertThat(min.get(), is(3));
+        assertThat(changed, is(true));
         
-        min.apply(2);
+        changed = min.apply(2);
         
         assertThat(min.get(), is(2));
+        assertThat(changed, is(true));
         
-        min.apply(null);
+        changed = min.apply(null);
         
-        assertThat(min.get(), is(2));        
+        assertThat(min.get(), is(2));
+        assertThat(changed, is(false));
     }
     
     @Test
