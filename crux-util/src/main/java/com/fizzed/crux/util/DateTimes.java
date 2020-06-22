@@ -72,6 +72,23 @@ public class DateTimes {
     }
     
     /**
+     * Returns the minimum of all datetimes.
+     * 
+     * @param dts
+     * @return 
+     */
+    static public DateTime min(DateTime... dts) {
+        if (dts == null) {
+            return null;
+        }
+        DateTime v = null;
+        for (DateTime dt : dts) {
+            v = min(v, dt);
+        }
+        return v;
+    }
+    
+    /**
      * Returns a if greater than or equal to b, otherwise b.
      * @param a
      * @param b
@@ -84,6 +101,23 @@ public class DateTimes {
             return b;
         }
         return a.isBefore(b) ? b : a;
+    }
+    
+    /**
+     * Returns the minimum of all datetimes.
+     * 
+     * @param dts
+     * @return 
+     */
+    static public DateTime max(DateTime... dts) {
+        if (dts == null) {
+            return null;
+        }
+        DateTime v = null;
+        for (DateTime dt : dts) {
+            v = max(v, dt);
+        }
+        return v;
     }
     
     /**
@@ -188,6 +222,74 @@ public class DateTimes {
         }
         long ageMillis = epochMillis - dt.getMillis();
         return TimeDuration.millis(ageMillis);
+    }
+    
+    /**
+     * Whether datetime is within start and end datetimes. The min of start and
+     * end is detected so the ordering does not matter.  By default, this method
+     * makes the start date INCLUSIVE and the end date EXCLUSIVE.
+     * @param dt The datetime to check
+     * @param start The start (or end) of the datetime range
+     * @param end The end (or start) of the datetime range
+     * @return True if within range, otherwise false.
+     */
+    static public boolean within(DateTime dt, DateTime start, DateTime end) {
+        return within(dt, start, end, true, false);
+    }
+    
+    /**
+     * Whether datetime is within start and end datetimes.The min of start and
+     * end is detected so the ordering does not matter. By default, this method
+     * makes the start date INCLUSIVE and the end date EXCLUSIVE/INCLUSIVE depending
+     * on what you pass in.
+     * @param dt The datetime to check
+     * @param start The start (or end) of the datetime range
+     * @param end The end (or start) of the datetime range
+     * @param endInclusive True if the end date is inclusive, otherwise exclusive.
+     * @return True if within range, otherwise false.
+     */
+    static public boolean within(DateTime dt, DateTime start, DateTime end, boolean endInclusive) {
+        return within(dt, start, end, true, endInclusive);
+    }
+    
+    /**
+     * Whether datetime is within start and end datetimes.The min of start and
+     * end is detected so the ordering does not matter.By default, this method
+     * makes the start date INCLUSIVE and the end date EXCLUSIVE/INCLUSIVE depending
+     * on what you pass in.
+     * @param dt The datetime to check
+     * @param start The start (or end) of the datetime range
+     * @param end The end (or start) of the datetime range
+     * @param startInclusive True if the start date is inclusive, otherwise exclusive.
+     * @param endInclusive True if the end date is inclusive, otherwise exclusive.
+     * @return True if within range, otherwise false.
+     */
+    static public boolean within(DateTime dt, DateTime start, DateTime end, boolean startInclusive, boolean endInclusive) {
+        if (dt == null) {
+            return false;
+        }
+        
+        // intelligentally pick start/end
+        final DateTime _start = min(start, end);
+        final DateTime _end = max(start, end);
+        
+        if (startInclusive && lt(dt, _start)) {
+            return false;
+        }
+        
+        if (!startInclusive && lte(dt, _start)) {
+            return false;
+        }
+        
+        if (endInclusive && gt(dt, _end)) {
+            return false;
+        }
+        
+        if (!endInclusive && gte(dt, _end)) {
+            return false;
+        }
+        
+        return true;
     }
     
 }

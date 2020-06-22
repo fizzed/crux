@@ -44,6 +44,8 @@ public class DateTimesTest {
     public void min() {
         DateTime a = DateTime.parse("2019-04-02T01:02:03.456Z");
         DateTime b = DateTime.parse("2019-04-02T01:03:03.456Z");
+        DateTime c = DateTime.parse("2019-04-01T01:03:03.456Z");
+        DateTime d = DateTime.parse("2019-04-04T01:03:03.456Z");
         
         // default joda is null
         assertThat(DateTimes.min(null, null), is(nullValue()));
@@ -51,12 +53,18 @@ public class DateTimesTest {
         assertThat(DateTimes.min(null, b), is(b));
         assertThat(DateTimes.min(a, b), is(a));
         assertThat(DateTimes.min(b, a), is(a));
+        
+        assertThat(DateTimes.min(a, b, c, d), is(c));
+        assertThat(DateTimes.min(null, a, b, c, d), is(c));
+        assertThat(DateTimes.min((DateTime[])null), is(nullValue()));
     }
     
     @Test
     public void max() {
         DateTime b = DateTime.parse("2019-04-02T01:02:03.456Z");
         DateTime a = DateTime.parse("2019-04-02T01:03:03.456Z");
+        DateTime c = DateTime.parse("2019-04-03T01:03:03.456Z");
+        DateTime d = DateTime.parse("2019-04-01T01:03:03.456Z");
         
         // default joda is null
         assertThat(DateTimes.max(null, null), is(nullValue()));
@@ -64,6 +72,10 @@ public class DateTimesTest {
         assertThat(DateTimes.max(null, b), is(b));
         assertThat(DateTimes.max(a, b), is(a));
         assertThat(DateTimes.max(b, a), is(a));
+        
+        assertThat(DateTimes.max(a, b, c, d), is(c));
+        assertThat(DateTimes.max(null, b, c, d), is(c));
+        assertThat(DateTimes.max((DateTime[])null), is(nullValue()));
     }
     
     @Test
@@ -104,6 +116,7 @@ public class DateTimesTest {
         assertThat(DateTimes.lt(a, b), is(false));
         assertThat(DateTimes.lt(a, a), is(false));
         assertThat(DateTimes.lt(b, b), is(false));
+        assertThat(DateTimes.lt(b, DateTime.parse("2019-04-02T01:02:03.456Z").withZone(DateTimeZone.forID("America/New_York"))), is(false));
         assertThat(DateTimes.lt(b, a), is(true));
         assertThat(DateTimes.lt(a, null), is(false));
     }
@@ -129,6 +142,36 @@ public class DateTimesTest {
         TimeDuration td = DateTimes.age(a, a.getMillis() + 435);
         
         assertThat(td.getDuration(), is(435L));
+    }
+    
+    @Test
+    public void within() {
+        
+        DateTime dt0 = DateTime.parse("2019-04-01T01:03:03.456Z");
+        DateTime dt1 = DateTime.parse("2019-04-02T01:03:03.456Z");
+        DateTime dt2 = DateTime.parse("2019-04-03T01:03:03.456Z");
+        DateTime dt3 = DateTime.parse("2019-04-04T01:03:03.456Z");
+        DateTime dt4 = DateTime.parse("2019-04-05T01:03:03.456Z");
+        
+        assertThat(DateTimes.within(null, dt0, dt2, true, true), is(false));
+        assertThat(DateTimes.within(dt1, null, null, true, true), is(false));
+        assertThat(DateTimes.within(dt1, null, dt2, true, true), is(false));
+        assertThat(DateTimes.within(dt1, dt2, null, true, true), is(false));
+        assertThat(DateTimes.within(dt1, dt0, dt2, true, true), is(true));
+        assertThat(DateTimes.within(dt1, dt2, dt0, true, true), is(true));      // auto picked?
+        assertThat(DateTimes.within(dt1, dt0, dt2, false, false), is(true));
+        assertThat(DateTimes.within(dt0, dt2, dt3, true, true), is(false));
+        assertThat(DateTimes.within(dt0, dt3, dt4, true, true), is(false));
+        assertThat(DateTimes.within(dt0, dt0, dt0, true, true), is(true));
+        assertThat(DateTimes.within(dt0, dt0, dt0, false, true), is(false));
+        assertThat(DateTimes.within(dt0, dt0, dt0, true, false), is(false));
+        assertThat(DateTimes.within(dt0, dt0, dt0, true, false), is(false));
+        assertThat(DateTimes.within(dt3, dt0, dt4, true, true), is(true));
+        assertThat(DateTimes.within(dt4, dt0, dt4, true, true), is(true));
+        assertThat(DateTimes.within(dt4, dt0, dt4, true, false), is(false));
+        assertThat(DateTimes.within(dt0, dt0, dt4, true, true), is(true));
+        assertThat(DateTimes.within(dt0, dt0, dt4, false, true), is(false));
+        assertThat(DateTimes.within(dt0, dt4, dt0, false, true), is(false));
     }
     
 }
