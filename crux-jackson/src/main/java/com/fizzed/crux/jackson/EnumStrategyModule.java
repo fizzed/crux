@@ -15,7 +15,11 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Module that helps deserialize enums accepting any case, while letting you
@@ -36,6 +40,72 @@ public class EnumStrategyModule extends SimpleModule {
         LOWER_CASE,
         IGNORE_CASE
     }
+
+    static private class EnumInfo {
+        
+        private final boolean ignoreUnknown;
+        private final Method unknownEnumMethod;
+
+        public EnumInfo(boolean ignoreUnknown, Method unknownEnumMethod) {
+            this.ignoreUnknown = ignoreUnknown;
+            this.unknownEnumMethod = unknownEnumMethod;
+        }
+
+        public boolean isIgnoreUnknown() {
+            return ignoreUnknown;
+        }
+
+        public Method getUnknownEnumMethod() {
+            return unknownEnumMethod;
+        }
+
+    }
+    
+    // global handler...
+//    static public interface UnknownEnumHandler {
+//        <T extends Enum> T onUnknownEnum(
+//            Class<T> type,
+//            String value);
+//    }
+    
+    static private final ConcurrentHashMap<Class<? extends Enum>,EnumInfo> ENUM_INFOS = new ConcurrentHashMap<>();
+    
+    static private EnumInfo computeEnumInfo(
+            Class<? extends Enum> rawClass) {
+        
+        return ENUM_INFOS.computeIfAbsent(rawClass, t -> {
+            boolean ignoreUnknown = false;
+            JsonIgnoreProperties ignoreProps = rawClass.getAnnotation(JsonIgnoreProperties.class);
+            if (ignoreProps != null) {
+                ignoreUnknown = ignoreProps.ignoreUnknown();
+            }
+
+            Method unknownEnumMethod = null;
+            
+            for (Method m : rawClass.getMethods()) {
+                OnUnknownEnum v = (OnUnknownEnum)m.getAnnotation(OnUnknownEnum.class);
+                if (v != null) {
+                    System.out.println(m.toGenericString());
+                    if (!Modifier.isStatic(m.getModifiers())) {
+                        throw new IllegalArgumentException("OnUnknownEnum method must be static");
+                    }
+                    if (m.getParameterCount() != 1) {
+                        throw new IllegalArgumentException("OnUnknownEnum method must have exactly 1 parameter");
+                    }
+                    if (!m.getParameterTypes()[0].equals(String.class)) {
+                        throw new IllegalArgumentException("OnUnknownEnum method first parameter must be a java.lang.String");
+                    }
+                    if (!m.getReturnType().equals(rawClass)) {
+                        throw new IllegalArgumentException("OnUnknownEnum method return type must be " + rawClass.getCanonicalName());
+                    }
+                    unknownEnumMethod = m;
+                    break;
+                }
+            }
+            
+            return new EnumInfo(ignoreUnknown, unknownEnumMethod);
+        });
+    }
     
     private final SerializeStrategy serializeStrategy;
     private final DeserializeStrategy deserializeStrategy;
@@ -43,8 +113,11 @@ public class EnumStrategyModule extends SimpleModule {
     public EnumStrategyModule() {
         this(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE);
     }
-
-    public EnumStrategyModule(SerializeStrategy serializeStrategy, DeserializeStrategy deserializeStrategy) {
+    
+    public EnumStrategyModule(
+            SerializeStrategy serializeStrategy,
+            DeserializeStrategy deserializeStrategy) {
+        
         Objects.requireNonNull(serializeStrategy, "serialize strategy was null");
         Objects.requireNonNull(deserializeStrategy, "deserialize strategy was null");
         
@@ -68,13 +141,10 @@ public class EnumStrategyModule extends SimpleModule {
                             return null;
                         }
                         
-                        Class<? extends Enum> rawClass = (Class<Enum<?>>) type.getRawClass();
+                        final Class<? extends Enum> rawClass = (Class<Enum<?>>) type.getRawClass();
                         
-                        boolean ignoreUnknown = false;
-                        JsonIgnoreProperties ignoreProps = rawClass.getAnnotation(JsonIgnoreProperties.class);
-                        if (ignoreProps != null) {
-                            ignoreUnknown = ignoreProps.ignoreUnknown();
-                        }
+                        // does it have an unknown enum handler?
+                        final EnumInfo enumInfo = computeEnumInfo(rawClass);
                         
                         switch (EnumStrategyModule.this.deserializeStrategy) {
                             case IGNORE_CASE:
@@ -100,14 +170,31 @@ public class EnumStrategyModule extends SimpleModule {
                                 break;
                         }
                         
-                        if (!ignoreUnknown) {
-                            throw new UnrecognizedPropertyException(
-                                jp, "No enum constant " + rawClass.getCanonicalName() + "." + value,
-                                JsonLocation.NA, rawClass, "value", null);
+                        // if there is an unknown enum handler, call that first
+                        if (enumInfo.getUnknownEnumMethod() != null) {
+                            try {
+                                return (Enum)enumInfo.getUnknownEnumMethod().invoke(null, value);
+                            } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+                                throw new IllegalArgumentException(e.getMessage(), e);
+                            }
                         }
                         
-                        // otherwise, ignore and return null
-                        return null;
+                        // if the enum is flagged as ignoring unknown, then do nothing
+                        if (enumInfo.isIgnoreUnknown()) {
+                            return null;
+                        }
+                        
+                        // custom handler?
+//                        if (EnumStrategyModule.this.unknownEnumHandler != null) {
+//                            // call the global handler, return that default enum
+//                            return EnumStrategyModule.this.unknownEnumHandler.onUnknownEnum(
+//                                rawClass, value);
+//                        }
+                        
+                        // default is to mimic jackson's behavior and throw an unknown property exception
+                        throw new UnrecognizedPropertyException(
+                            jp, "No enum constant " + rawClass.getCanonicalName() + "." + value,
+                            JsonLocation.NA, rawClass, "value", null);
                     }
                 };
             }

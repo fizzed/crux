@@ -124,4 +124,58 @@ public class EnumStrategyModuleTest {
         assertThat(objectMapper.writeValueAsString(Animal.Rabbit), is("\"Rabbit\""));
     }
     
+    static public enum Animal3 {
+        
+        UNKNOWN,
+        DOG,
+        CAT,
+        RABBIT;
+        
+        @OnUnknownEnum
+        static public Animal3 onUnknownEnum(String value) {
+            if ("blah".equalsIgnoreCase(value)) {
+                return UNKNOWN;
+            }
+            return null;
+        }
+    }
+    
+    @Test
+    public void deserializeWithOnEnumHandler() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+        
+        Animal3 v;
+        
+        v = objectMapper.readValue("\"blah\"", Animal3.class);
+        
+        assertThat(v, is(Animal3.UNKNOWN));
+        
+        v = objectMapper.readValue("\"RABBIT\"", Animal3.class);
+        
+        assertThat(v, is(Animal3.RABBIT));
+        
+        v = objectMapper.readValue("\"aaaaa\"", Animal3.class);
+        
+        assertThat(v, is(nullValue()));
+    }
+    
+    static public enum BadEnum {
+
+        ;
+        
+        @OnUnknownEnum
+        static public BadEnum onUnknownEnum() {
+            return null;
+        }
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void deserializeWithInvalidSignature() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+        
+        objectMapper.readValue("\"blah\"", BadEnum.class);
+    }
+    
 }
