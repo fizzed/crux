@@ -1,5 +1,6 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
@@ -131,7 +132,7 @@ public class EnumStrategyModuleTest {
         CAT,
         RABBIT;
         
-        @OnUnknownEnum
+        @JsonUnknownEnum
         static public Animal3 onUnknownEnum(String value) {
             if ("blah".equalsIgnoreCase(value)) {
                 return UNKNOWN;
@@ -164,7 +165,7 @@ public class EnumStrategyModuleTest {
 
         ;
         
-        @OnUnknownEnum
+        @JsonUnknownEnum
         static public BadEnum onUnknownEnum() {
             return null;
         }
@@ -176,6 +177,43 @@ public class EnumStrategyModuleTest {
             .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
         
         objectMapper.readValue("\"blah\"", BadEnum.class);
+    }
+    
+    static public enum Animal4 {
+
+        DOG,
+        CAT,
+        FISH;
+        
+        @JsonCreator
+        static public Animal4 fromLabel(String v) {
+            if ("blah".equalsIgnoreCase(v)) {
+                return null;
+            }
+            return FISH;
+        }
+        
+    }
+    
+    @Test
+    public void deserializeWithJsonCreator() throws IOException {
+        
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+        
+        Animal4 v;
+        
+        v = objectMapper.readValue("\"dog\"", Animal4.class);
+        
+        assertThat(v, is(Animal4.FISH));
+        
+        v = objectMapper.readValue("\"CAT\"", Animal4.class);
+        
+        assertThat(v, is(Animal4.FISH));
+        
+        v = objectMapper.readValue("\"BLAH\"", Animal4.class);
+        
+        assertThat(v, is(nullValue()));
     }
     
 }

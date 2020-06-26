@@ -1,5 +1,6 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonLocation;
@@ -45,10 +46,12 @@ public class EnumStrategyModule extends SimpleModule {
         
         private final boolean ignoreUnknown;
         private final Method unknownEnumMethod;
+        private final Method createEnumMethod;
 
-        public EnumInfo(boolean ignoreUnknown, Method unknownEnumMethod) {
+        public EnumInfo(boolean ignoreUnknown, Method unknownEnumMethod, Method createEnumMethod) {
             this.ignoreUnknown = ignoreUnknown;
             this.unknownEnumMethod = unknownEnumMethod;
+            this.createEnumMethod = createEnumMethod;
         }
 
         public boolean isIgnoreUnknown() {
@@ -59,14 +62,11 @@ public class EnumStrategyModule extends SimpleModule {
             return unknownEnumMethod;
         }
 
+        public Method getCreateEnumMethod() {
+            return createEnumMethod;
+        }
+
     }
-    
-    // global handler...
-//    static public interface UnknownEnumHandler {
-//        <T extends Enum> T onUnknownEnum(
-//            Class<T> type,
-//            String value);
-//    }
     
     static private final ConcurrentHashMap<Class<? extends Enum>,EnumInfo> ENUM_INFOS = new ConcurrentHashMap<>();
     
@@ -83,7 +83,7 @@ public class EnumStrategyModule extends SimpleModule {
             Method unknownEnumMethod = null;
             
             for (Method m : rawClass.getMethods()) {
-                OnUnknownEnum v = (OnUnknownEnum)m.getAnnotation(OnUnknownEnum.class);
+                JsonUnknownEnum v = (JsonUnknownEnum)m.getAnnotation(JsonUnknownEnum.class);
                 if (v != null) {
                     System.out.println(m.toGenericString());
                     if (!Modifier.isStatic(m.getModifiers())) {
@@ -102,8 +102,30 @@ public class EnumStrategyModule extends SimpleModule {
                     break;
                 }
             }
+
+            Method createEnumMethod = null;
             
-            return new EnumInfo(ignoreUnknown, unknownEnumMethod);
+            for (Method m : rawClass.getMethods()) {
+                JsonCreator v = (JsonCreator)m.getAnnotation(JsonCreator.class);
+                if (v != null) {
+                    if (!Modifier.isStatic(m.getModifiers())) {
+                        throw new IllegalArgumentException("JsonCreator method must be static");
+                    }
+                    if (m.getParameterCount() != 1) {
+                        throw new IllegalArgumentException("JsonCreator method must have exactly 1 parameter");
+                    }
+                    if (!m.getParameterTypes()[0].equals(String.class)) {
+                        throw new IllegalArgumentException("JsonCreator method first parameter must be a java.lang.String");
+                    }
+                    if (!m.getReturnType().equals(rawClass)) {
+                        throw new IllegalArgumentException("JsonCreator method return type must be " + rawClass.getCanonicalName());
+                    }
+                    createEnumMethod = m;
+                    break;
+                }
+            }
+            
+            return new EnumInfo(ignoreUnknown, unknownEnumMethod, createEnumMethod);
         });
     }
     
@@ -145,6 +167,15 @@ public class EnumStrategyModule extends SimpleModule {
                         
                         // does it have an unknown enum handler?
                         final EnumInfo enumInfo = computeEnumInfo(rawClass);
+                        
+                        // is there a creator method?
+                        if (enumInfo.getCreateEnumMethod() != null) {
+                            try {
+                                return (Enum)enumInfo.getCreateEnumMethod().invoke(null, value);
+                            } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+                                throw new IllegalArgumentException(e.getMessage(), e);
+                            }   
+                        }
                         
                         switch (EnumStrategyModule.this.deserializeStrategy) {
                             case IGNORE_CASE:
