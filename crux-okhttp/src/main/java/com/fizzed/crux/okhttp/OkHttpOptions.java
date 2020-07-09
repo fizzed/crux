@@ -45,6 +45,9 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
         .bindType("logging_level", A::setLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
         .bindType("request_logging_level", A::setRequestLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
         .bindType("response_logging_level", A::setResponseLoggingLevel, OkLoggingLevel.class, LOGGING_LEVEL_CONVERTER)
+        .bindLong("max_body_size", A::setMaxBodySize)
+        .bindLong("max_request_body_size", A::setMaxRequestBodySize)
+        .bindLong("max_response_body_size", A::setMaxResponseBodySize)
         .bindString("logger_name", OkHttpOptions::setLoggerName)
         .bindBoolean("verbose_on_failure", A::setVerboseOnFailure)
         .bindString("logging_redact_headers", A::setLoggingRedactHeaders)
@@ -65,6 +68,9 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
     private OkLoggingLevel loggingLevel;
     private OkLoggingLevel requestLoggingLevel;
     private OkLoggingLevel responseLoggingLevel;
+    private Long maxBodySize;
+    private Long maxRequestBodySize;
+    private Long maxResponseBodySize;
     private Boolean verboseOnFailure;
     private String loggerName;
     private String loggingRedactHeaders;
@@ -173,7 +179,31 @@ public class OkHttpOptions<A extends OkHttpOptions<A>> implements BindingPropert
     public void setResponseLoggingLevel(OkLoggingLevel responseLoggingLevel) {
         this.responseLoggingLevel = responseLoggingLevel;
     }
+
+    public Long getMaxBodySize() {
+        return maxBodySize;
+    }
+
+    public void setMaxBodySize(Long maxBodySize) {
+        this.maxBodySize = maxBodySize;
+    }
     
+    public Long getMaxRequestBodySize() {
+        return maxRequestBodySize;
+    }
+
+    public void setMaxRequestBodySize(Long maxRequestBodySize) {
+        this.maxRequestBodySize = maxRequestBodySize;
+    }
+
+    public Long getMaxResponseBodySize() {
+        return maxResponseBodySize;
+    }
+
+    public void setMaxResponseBodySize(Long maxResponseBodySize) {
+        this.maxResponseBodySize = maxResponseBodySize;
+    }
+
     public String getLoggerName() {
         return loggerName;
     }

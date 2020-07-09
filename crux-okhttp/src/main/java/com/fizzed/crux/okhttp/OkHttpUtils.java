@@ -140,6 +140,16 @@ public class OkHttpUtils {
         if (options.getResponseLoggingLevel() != null) {
             loggingInterceptor.setResponseLoggingLevel(options.getResponseLoggingLevel());
         }
+        if (options.getMaxBodySize() != null) {
+            loggingInterceptor.setMaxRequestBodySize(options.getMaxBodySize());
+            loggingInterceptor.setMaxResponseBodySize(options.getMaxBodySize());
+        }
+        if (options.getMaxRequestBodySize() != null) {
+            loggingInterceptor.setMaxRequestBodySize(options.getMaxRequestBodySize());
+        }
+        if (options.getMaxResponseBodySize() != null) {
+            loggingInterceptor.setMaxResponseBodySize(options.getMaxResponseBodySize());
+        }
         if (options.getLoggerName() != null) {
             loggingInterceptor.setLogger(LoggerFactory.getLogger(options.getLoggerName()));
         }
