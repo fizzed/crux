@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +28,12 @@ import java.nio.charset.StandardCharsets;
  */
 public class Resources {
     
+    @Deprecated
     static public InputStream newInputStream(String resourceName) throws IOException {
+        return input(resourceName);
+    }
+    
+    static public InputStream input(String resourceName) throws IOException {
         final InputStream input = Resources.class.getResourceAsStream(resourceName);
         
         if (input == null) {
@@ -39,21 +43,34 @@ public class Resources {
         return input;
     }
     
-    static public byte[] readAllBytes(String resourceName) throws IOException {
+    static public byte[] bytes(String resourceName) throws IOException {
         try (InputStream input = newInputStream(resourceName)) {
-            try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                InOuts.copy(input, output);
-                return output.toByteArray();
-            }
+            return InOuts.bytes(input);
         }
     }
+    
+    @Deprecated
+    static public byte[] readAllBytes(String resourceName) throws IOException {
+        return bytes(resourceName);
+    }
  
+    static public String string(String resourceName, Charset charset) throws IOException {
+        final InputStream input = newInputStream(resourceName);
+        return InOuts.string(input, charset);
+    }
+ 
+    static public String stringUTF8(String resourceName) throws IOException {
+        return string(resourceName, StandardCharsets.UTF_8);
+    }
+ 
+    @Deprecated
     static public String readToString(String resourceName, Charset charset) throws IOException {
         final byte[] bytes = readAllBytes(resourceName);
         
         return new String(bytes, charset);
     }
  
+    @Deprecated
     static public String readToStringUTF8(String resourceName) throws IOException {
         return readToString(resourceName, StandardCharsets.UTF_8);
     }

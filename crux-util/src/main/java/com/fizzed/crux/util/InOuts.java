@@ -15,13 +15,113 @@
  */
 package com.fizzed.crux.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class InOuts {
     
     static public final int DEFAULT_BUFFER_SIZE = 2048;
+    
+    /**
+     * Null-safe closing of an inputstream (but will still throw an IOException)
+     * @param input
+     * @throws IOException 
+     */
+    static public void close(InputStream input) throws IOException {
+        if (input != null) {
+            input.close();
+        }
+    }
+    
+    /**
+     * Null-safe closing of an outputstream (but will still throw an IOException)
+     * @param output
+     * @throws IOException 
+     */
+    static public void close(OutputStream output) throws IOException {
+        if (output != null) {
+            output.close();
+        }
+    }
+    
+    /**
+     * Null-safe closing of an inputstream AND any exception during the close
+     * will be discarded.
+     * 
+     * @param input 
+     */
+    static public void closeQuietly(InputStream input) {
+        try {
+            close(input);
+        } catch (IOException e) {
+            // ignore exception
+        }
+    }
+    
+    /**
+     * Null-safe closing of an ouputstream AND any exception during the close
+     * will be discarded.
+     * 
+     * @param output 
+     */
+    static public void closeQuietly(OutputStream output) {
+        try {
+            close(output);
+        } catch (IOException e) {
+            // ignore exception
+        }
+    }
+    
+    /**
+     * Reads all bytes from input to a byte array AND will close input at EOF.
+     * 
+     * @param input
+     * @return
+     * @throws IOException 
+     */
+    static public byte[] bytes(InputStream input) throws IOException {
+        return bytes(input, true);
+    }
+    
+    /**
+     * Reads all bytes from input to a byte array AND will optionally close the
+     * input at EOF.
+     * 
+     * @param input
+     * @return
+     * @throws IOException 
+     */
+    static public byte[] bytes(InputStream input, boolean close) throws IOException {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            InOuts.copy(input, output);
+            return output.toByteArray();
+        } finally {
+            if (close) {
+                close(input);
+            }
+        }
+    }
+ 
+    static public String string(InputStream input, Charset charset) throws IOException {
+        return string(input, charset, true);
+    }
+ 
+    static public String string(InputStream input, Charset charset, boolean close) throws IOException {
+        final byte[] bytes = bytes(input, close);
+        return new String(bytes, charset);
+    }
+    
+    static public String stringUTF8(InputStream input) throws IOException {
+        return string(input, StandardCharsets.UTF_8, true);
+    }
+    
+    static public String stringUTF8(InputStream input, boolean close) throws IOException {
+        return string(input, StandardCharsets.UTF_8, close);
+    }
     
     /**
      * Copies an input stream to an output stream in chunks (the buffer size).
