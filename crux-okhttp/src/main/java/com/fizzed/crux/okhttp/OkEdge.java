@@ -16,6 +16,8 @@
 package com.fizzed.crux.okhttp;
 
 import com.fizzed.crux.util.MessageLevel;
+import com.fizzed.crux.util.SecureUtil;
+import com.fizzed.crux.util.TrustAllTrustManager;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
@@ -241,7 +243,7 @@ public class OkEdge {
     public Response execute() throws IOException {
         // swap in values before client built...
         if (insecure != null && insecure) {
-            this.clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY);
+            this.clientBuilder.sslSocketFactory(OkHttpUtils.TRUST_ALL_SSL_SOCKET_FACTORY, TrustAllTrustManager.INSTANCE);
             this.clientBuilder.hostnameVerifier(OkHttpUtils.TRUST_ALL_HOSTNAME_VERIFIER);
         }
         
