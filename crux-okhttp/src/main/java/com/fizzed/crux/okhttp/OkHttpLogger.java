@@ -174,11 +174,15 @@ public class OkHttpLogger {
                 Buffer buffer = source.buffer();
 
                 Long gzippedLength = null;
+                
                 if ("gzip".equalsIgnoreCase(headers.get("Content-Encoding"))) {
                     gzippedLength = buffer.size();
-                    try (GzipSource gzippedResponseBody = new GzipSource(buffer.clone())) {
-                        buffer = new Buffer();
-                        buffer.writeAll(gzippedResponseBody);
+                    // to avoid an EOFException on write, we need check any content exists
+                    if (gzippedLength > 0) {
+                        try (GzipSource gzippedResponseBody = new GzipSource(buffer.clone())) {
+                            buffer = new Buffer();
+                            buffer.writeAll(gzippedResponseBody);
+                        }
                     }
                 }
 

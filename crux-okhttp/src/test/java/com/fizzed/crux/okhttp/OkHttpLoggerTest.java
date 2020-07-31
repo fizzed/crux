@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.okhttp;
 
-import com.fizzed.crux.util.MessageLevel;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import okhttp3.MediaType;
@@ -93,6 +92,51 @@ public class OkHttpLoggerTest {
             .code(200)
             .message("OK")
             .body(ResponseBody.create(MediaType.parse("text/html; charset=utf-8"), "\u20AC"))
+            .build();
+        
+        ohl.logResponse(null, log, response, 0, true, true, 1);
+    }
+ 
+    @Test
+    public void noContent() throws IOException {
+        
+        OkHttpLogger ohl = new OkHttpLogger();
+        Response response;
+        
+        Request request = new Request.Builder()
+            .url("http://localhost")
+            .build();
+        
+        response = new Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(204)
+            .message("No Content")
+            .addHeader("Content-Length", "0")
+            .body(ResponseBody.create(MediaType.parse("application/json"), new byte[0]))
+            .build();
+        
+        ohl.logResponse(null, log, response, 0, true, true, 1);
+    }
+ 
+    @Test
+    public void noContentGzippedEOFException() throws IOException {
+        
+        OkHttpLogger ohl = new OkHttpLogger();
+        Response response;
+        
+        Request request = new Request.Builder()
+            .url("http://localhost")
+            .build();
+        
+        response = new Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(204)
+            .message("No Content")
+            .addHeader("Content-Encoding", "gzip")
+            .addHeader("Content-Length", "0")
+            .body(ResponseBody.create(MediaType.parse("application/json"), new byte[0]))
             .build();
         
         ohl.logResponse(null, log, response, 0, true, true, 1);
