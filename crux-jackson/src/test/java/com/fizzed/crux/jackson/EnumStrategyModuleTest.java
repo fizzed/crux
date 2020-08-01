@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fizzed.crux.jackson.EnumStrategyModule.DeserializeStrategy;
 import com.fizzed.crux.jackson.EnumStrategyModule.SerializeStrategy;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -214,6 +215,36 @@ public class EnumStrategyModuleTest {
         v = objectMapper.readValue("\"BLAH\"", Animal4.class);
         
         assertThat(v, is(nullValue()));
+    }
+    
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static public enum Animal5 {
+        DOG,
+        CAT,
+        FISH;
+    }
+    
+    @Test
+    public void deserializeWithGlobalUnknownEnumHandler() throws IOException {
+        
+        AtomicInteger count = new AtomicInteger();
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE)
+                .setGlobalUnknownEnumHandler((type, value) -> {
+                    count.incrementAndGet();
+                }));
+        
+        Animal5 v;
+        
+        v = objectMapper.readValue("\"dog\"", Animal5.class);
+        
+        assertThat(v, is(Animal5.DOG));
+        assertThat(count.get(), is(0));
+        
+        v = objectMapper.readValue("\"BLAH\"", Animal5.class);
+        
+        assertThat(v, is(nullValue()));
+        assertThat(count.get(), is(1));
     }
     
 }

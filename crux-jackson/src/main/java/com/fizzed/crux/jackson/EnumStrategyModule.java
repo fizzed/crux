@@ -75,6 +75,7 @@ public class EnumStrategyModule extends SimpleModule {
         
         return ENUM_INFOS.computeIfAbsent(rawClass, t -> {
             boolean ignoreUnknown = false;
+            
             JsonIgnoreProperties ignoreProps = rawClass.getAnnotation(JsonIgnoreProperties.class);
             if (ignoreProps != null) {
                 ignoreUnknown = ignoreProps.ignoreUnknown();
@@ -129,9 +130,17 @@ public class EnumStrategyModule extends SimpleModule {
         });
     }
     
+    @FunctionalInterface
+    static public interface GlobalUnknownEnumHandler<T extends Enum> {
+        
+        void onUnknownEnum(Class<T> enumType, String value);
+        
+    }
+    
     private final SerializeStrategy serializeStrategy;
     private final DeserializeStrategy deserializeStrategy;
-
+    private GlobalUnknownEnumHandler globalUnknownEnumHandler;
+    
     public EnumStrategyModule() {
         this(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE);
     }
@@ -201,7 +210,7 @@ public class EnumStrategyModule extends SimpleModule {
                                 break;
                         }
                         
-                        // if there is an unknown enum handler, call that first
+                        // if there is an unknown enum handler on the enum itself, call that first
                         if (enumInfo.getUnknownEnumMethod() != null) {
                             try {
                                 return (Enum)enumInfo.getUnknownEnumMethod().invoke(null, value);
@@ -210,17 +219,15 @@ public class EnumStrategyModule extends SimpleModule {
                             }
                         }
                         
+                        // global handler?
+                        if (EnumStrategyModule.this.globalUnknownEnumHandler != null) {
+                            EnumStrategyModule.this.globalUnknownEnumHandler.onUnknownEnum(rawClass, value);
+                        }
+                        
                         // if the enum is flagged as ignoring unknown, then do nothing
                         if (enumInfo.isIgnoreUnknown()) {
                             return null;
                         }
-                        
-                        // custom handler?
-//                        if (EnumStrategyModule.this.unknownEnumHandler != null) {
-//                            // call the global handler, return that default enum
-//                            return EnumStrategyModule.this.unknownEnumHandler.onUnknownEnum(
-//                                rawClass, value);
-//                        }
                         
                         // default is to mimic jackson's behavior and throw an unknown property exception
                         throw new UnrecognizedPropertyException(
@@ -249,6 +256,17 @@ public class EnumStrategyModule extends SimpleModule {
                 }
             }
         });
+    }
+
+    public GlobalUnknownEnumHandler getGlobalUnknownEnumHandler() {
+        return globalUnknownEnumHandler;
+    }
+
+    public EnumStrategyModule setGlobalUnknownEnumHandler(
+            GlobalUnknownEnumHandler globalUnknownEnumHandler) {
+        
+        this.globalUnknownEnumHandler = globalUnknownEnumHandler;
+        return this;
     }
 
 }
