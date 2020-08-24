@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.fizzed.crux.jackson.EnumStrategyModule.DeserializeStrategy;
-import com.fizzed.crux.jackson.EnumStrategyModule.SerializeStrategy;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,7 +40,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void deserializeUpperCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.UPPER_CASE, DeserializeStrategy.UPPER_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.UPPER_CASE, EnumDeserializeStrategy.UPPER_CASE));
         
         assertThat(objectMapper.readValue("\"DOG\"", Animal.class), is(Animal.DOG));
         assertThat(objectMapper.readValue("\"CAT\"", Animal.class), is(Animal.cat));
@@ -59,7 +57,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void deserializeLowerCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.UPPER_CASE, DeserializeStrategy.LOWER_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.UPPER_CASE, EnumDeserializeStrategy.LOWER_CASE));
         
         assertThat(objectMapper.readValue("\"dog\"", Animal.class), is(Animal.DOG));
         assertThat(objectMapper.readValue("\"cat\"", Animal.class), is(Animal.cat));
@@ -83,7 +81,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void deserializeUnknownProperties() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         Animal2 v;
         
@@ -109,7 +107,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void serializeUpperCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.UPPER_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.UPPER_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         assertThat(objectMapper.writeValueAsString(Animal.DOG), is("\"DOG\""));
         assertThat(objectMapper.writeValueAsString(Animal.cat), is("\"CAT\""));
@@ -119,7 +117,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void serializeRetainCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.RETAIN_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.RETAIN_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         assertThat(objectMapper.writeValueAsString(Animal.DOG), is("\"DOG\""));
         assertThat(objectMapper.writeValueAsString(Animal.cat), is("\"cat\""));
@@ -145,7 +143,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void deserializeWithOnEnumHandler() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         Animal3 v;
         
@@ -175,7 +173,7 @@ public class EnumStrategyModuleTest {
     @Test(expected=IllegalArgumentException.class)
     public void deserializeWithInvalidSignature() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         objectMapper.readValue("\"blah\"", BadEnum.class);
     }
@@ -200,7 +198,7 @@ public class EnumStrategyModuleTest {
     public void deserializeWithJsonCreator() throws IOException {
         
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE));
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE));
         
         Animal4 v;
         
@@ -229,7 +227,7 @@ public class EnumStrategyModuleTest {
         
         AtomicInteger count = new AtomicInteger();
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new EnumStrategyModule(SerializeStrategy.LOWER_CASE, DeserializeStrategy.IGNORE_CASE)
+            .registerModule(new EnumStrategyModule(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE)
                 .setGlobalUnknownEnumHandler((type, value) -> {
                     count.incrementAndGet();
                 }));
