@@ -103,6 +103,7 @@ public class EnumMapper {
     private final EnumSerializeStrategy serializeStrategy;
     private final EnumDeserializeStrategy deserializeStrategy;
     private EnumGlobalUnknownHandler globalUnknownEnumHandler;
+    private boolean nullOnUnknown;
     
     public EnumMapper() {
         this(EnumSerializeStrategy.LOWER_CASE, EnumDeserializeStrategy.IGNORE_CASE);
@@ -117,8 +118,18 @@ public class EnumMapper {
         
         this.serializeStrategy = serializeStrategy;
         this.deserializeStrategy = deserializeStrategy;
+        this.nullOnUnknown = false;
     }
 
+    public boolean isNullOnUnknown() {
+        return nullOnUnknown;
+    }
+
+    public EnumMapper setNullOnUnknown(boolean nullOnUnknown) {
+        this.nullOnUnknown = nullOnUnknown;
+        return this;
+    }
+    
     public EnumGlobalUnknownHandler getGlobalUnknownEnumHandler() {
         return globalUnknownEnumHandler;
     }
@@ -204,6 +215,10 @@ public class EnumMapper {
             return null;
         }
 
+        if (this.nullOnUnknown) {
+            return null;
+        }
+        
         // default is to mimic jackson's behavior and throw an unknown property exception
         throw new IOException("No enum constant " + rawClass.getCanonicalName() + "." + value);
 //        throw new UnrecognizedPropertyException(

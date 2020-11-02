@@ -88,6 +88,13 @@ public class EnumStrategyModule extends SimpleModule {
         return mapper;
     }
 
+    public EnumStrategyModule setNullOnUnknown(
+            boolean nullOnUnknown) {
+        
+        this.mapper.setNullOnUnknown(nullOnUnknown);
+        return this;
+    }
+    
     public EnumStrategyModule setGlobalUnknownEnumHandler(
             EnumGlobalUnknownHandler globalUnknownEnumHandler) {
         
