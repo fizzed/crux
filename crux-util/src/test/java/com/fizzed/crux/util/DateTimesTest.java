@@ -15,6 +15,7 @@
  */
 package com.fizzed.crux.util;
 
+import java.time.Instant;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -172,6 +173,29 @@ public class DateTimesTest {
         assertThat(DateTimes.within(dt0, dt0, dt4, true, true), is(true));
         assertThat(DateTimes.within(dt0, dt0, dt4, false, true), is(false));
         assertThat(DateTimes.within(dt0, dt4, dt0, false, true), is(false));
+    }
+    
+    @Test
+    public void uptime() {
+        DateTime dt0 = DateTime.parse("2019-04-01T01:03:03.456Z");
+        DateTime dt1 = DateTime.parse("2019-04-02T02:02:01.123Z");
+        DateTime dt2 = DateTime.parse("2019-04-01T01:03:03.457Z");
+        DateTime dt3 = DateTime.parse("2019-04-01T01:03:04.456Z");
+        DateTime dt4 = DateTime.parse("2019-04-01T02:03:04.456Z");
+        DateTime dt5 = DateTime.parse("2019-04-03T02:03:04.456Z");
+        DateTime dt6 = DateTime.parse("2019-04-05T02:03:04.456Z");
+        DateTime dt7 = DateTime.parse("2019-04-10T02:03:04.456Z");
+        DateTime dt8 = DateTime.parse("2019-04-10T03:12:02.812Z");
+        
+        assertThat(DateTimes.uptime(dt2, dt2), is("0ms"));
+        assertThat(DateTimes.uptime(dt2, dt0), is("1ms"));
+        assertThat(DateTimes.uptime(dt1, dt0), is("1d 58m 57s 667ms"));
+        assertThat(DateTimes.uptime(dt3, dt0), is("1s"));
+        assertThat(DateTimes.uptime(dt4, dt0), is("1h 1s"));
+        assertThat(DateTimes.uptime(dt5, dt0), is("2d 1h 1s"));
+        assertThat(DateTimes.uptime(dt6, dt0), is("4d 1h 1s"));
+        assertThat(DateTimes.uptime(dt7, dt0), is("9d 1h 1s"));
+        assertThat(DateTimes.uptime(dt8, dt0), is("9d 2h 8m 59s 356ms"));
     }
     
 }

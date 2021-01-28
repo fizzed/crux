@@ -15,11 +15,38 @@
  */
 package com.fizzed.crux.util;
 
+import java.time.Instant;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
 
 public class DateTimes {
  
+    static public DateTime dateTime(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        
+        return new DateTime(instant.toEpochMilli(), DateTimeZone.UTC);
+    }
+ 
+    static public Instant javaInstant(DateTime dt) {
+        if (dt == null) {
+            return null;
+        }
+        
+        return Instant.ofEpochMilli(dt.getMillis());
+    }
+    
+    static public java.time.Duration javaDuration(Duration duration) {
+        if (duration == null) {
+            return null;
+        }
+        return java.time.Duration.ofMillis(duration.getMillis());
+    }
+    
     /**
      * Returns now() in UTC.
      * @return Now in UTC
@@ -290,6 +317,49 @@ public class DateTimes {
         }
         
         return true;
+    }
+    
+    static private final PeriodFormatter PERIOD_UPTIME_FMT = new PeriodFormatterBuilder()
+        .appendDays()
+        .appendSuffix("d")
+        .appendSeparator(" ")
+        .appendHours()
+        .appendSuffix("h")
+        .appendSeparator(" ")
+        .appendMinutes()
+        .appendSuffix("m")
+        .appendSeparator(" ")
+        .appendSeconds()
+        .appendSuffix("s")
+        .appendSeparator(" ")
+        .appendMillis()
+        .appendSuffix("ms")
+        .toFormatter();
+    
+    /**
+     * Formats a string of "uptime" relative to NOW such as "6m 1s 467ms"
+     * @param dt
+     * @return 
+     */
+    static public String uptime(DateTime dt) {
+        if (dt == null) {
+            return null;
+        }
+        return JavaTimes.uptime(dt.getMillis());
+    }
+    
+    static public String uptime(DateTime end, DateTime start) {
+        if (end == null || start == null) {
+            return null;
+        }
+        return JavaTimes.uptime(end.getMillis(), start.getMillis());
+    }
+    
+    static public String uptime(Duration duration) {
+        if (duration == null) {
+            return null;
+        }
+        return JavaTimes.uptime(javaDuration(duration));
     }
     
 }
