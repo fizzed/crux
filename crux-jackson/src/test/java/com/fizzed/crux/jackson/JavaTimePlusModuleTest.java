@@ -1,10 +1,12 @@
 package com.fizzed.crux.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 public class JavaTimePlusModuleTest {
@@ -47,6 +49,24 @@ public class JavaTimePlusModuleTest {
         // the instant is very flexible on parsing super high resolution on milliseconds...
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999999Z\"", Instant.class), is(i3));
     }
+ 
+    @Test
+    public void deserializeInstantStrictly() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(JavaTimePlusModule.build(true));
+        
+        final Instant i1 = Instant.parse("2021-01-01T00:00:00.999Z");
+        
+        try {
+            objectMapper.readValue("\"2021-01-01T00:00:00.999999Z\"", Instant.class);
+            fail();
+        }
+        catch (IOException e) {
+            // expected
+        }
+
+        assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", Instant.class), is(i1));
+    }
     
     @Test
     public void serializeZonedDateTime() throws Exception {
@@ -87,4 +107,23 @@ public class JavaTimePlusModuleTest {
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", ZonedDateTime.class), is(i3));
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999999Z\"", ZonedDateTime.class), is(i3));
     }
+    
+    @Test
+    public void deserializeZonedDateTimeStrictly() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(JavaTimePlusModule.build(true));
+        
+        final ZonedDateTime i1 = ZonedDateTime.parse("2021-01-01T00:00:00.999Z");
+        
+        try {
+            objectMapper.readValue("\"2021-01-01T00:00:00.999999Z\"", ZonedDateTime.class);
+            fail();
+        }
+        catch (IOException e) {
+            // expected
+        }
+
+        assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", ZonedDateTime.class), is(i1));
+    }
+    
 }
