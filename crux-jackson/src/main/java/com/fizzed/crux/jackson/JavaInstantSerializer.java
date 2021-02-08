@@ -3,19 +3,19 @@ package com.fizzed.crux.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import static com.fizzed.crux.jackson.JavaTimePlusModule.TZ_UTC;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-public class InstantWithMsSerializer extends JsonSerializer<Instant> {
+public class JavaInstantSerializer extends JsonSerializer<Instant> {
 
     private final DateTimeFormatter formatter;
     
-    public InstantWithMsSerializer() {
+    public JavaInstantSerializer() {
         this.formatter = DateTimeFormatter
             .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-            .withZone(ZoneId.of("UTC"));
+            .withZone(TZ_UTC);
     }
 
     @Override
