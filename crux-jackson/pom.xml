@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.fizzed</groupId>
         <artifactId>crux</artifactId>
-        <version>1.0.38-SNAPSHOT</version>
+        <version>1.0.38</version>
     </parent>
 
     <properties>
