@@ -59,11 +59,39 @@ public class JavaTimes {
      * if the datetime is in the past then you a positive duration will be returned,
      * if in the future then negative. For example, if the datetime is April 1
      * and 'now' is April 2, then the age will be a positive 1 day.
+     * @param instant The datetime to calculate the age of.
+     * @return 
+     */
+    static public TimeDuration age(Instant instant) {
+        return age(instant, System.currentTimeMillis());
+    }
+    
+    /**
+     * Calculates the age of a datetime from 'now'. Just like your birthday,
+     * if the datetime is in the past then you a positive duration will be returned,
+     * if in the future then negative. For example, if the datetime is April 1
+     * and 'now' is April 2, then the age will be a positive 1 day.
      * @param dt The datetime to calculate the age of.
      * @return 
      */
     static public TimeDuration age(ZonedDateTime dt) {
         return age(dt, System.currentTimeMillis());
+    }
+    
+    /**
+     * Calculates the age of a datetime against a reference epoch millis. If
+     * the datetime is on April 1 and the epochMillis is on April 2, then the
+     * age will be a positive 1 day.
+     * @param instant
+     * @param epochMillis
+     * @return 
+     */
+    static public TimeDuration age(Instant instant, long epochMillis) {
+        if (instant == null) {
+            return null;
+        }
+        long ageMillis = epochMillis - instant.toEpochMilli();
+        return TimeDuration.millis(ageMillis);
     }
     
     /**
@@ -78,8 +106,7 @@ public class JavaTimes {
         if (dt == null) {
             return null;
         }
-        long ageMillis = epochMillis - dt.toInstant().toEpochMilli();
-        return TimeDuration.millis(ageMillis);
+        return age(dt.toInstant(), epochMillis);
     }
     
     /**

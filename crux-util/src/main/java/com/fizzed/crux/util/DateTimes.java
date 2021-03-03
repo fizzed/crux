@@ -19,8 +19,6 @@ import java.time.Instant;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 
 public class DateTimes {
  
@@ -318,23 +316,6 @@ public class DateTimes {
         
         return true;
     }
-    
-    static private final PeriodFormatter PERIOD_UPTIME_FMT = new PeriodFormatterBuilder()
-        .appendDays()
-        .appendSuffix("d")
-        .appendSeparator(" ")
-        .appendHours()
-        .appendSuffix("h")
-        .appendSeparator(" ")
-        .appendMinutes()
-        .appendSuffix("m")
-        .appendSeparator(" ")
-        .appendSeconds()
-        .appendSuffix("s")
-        .appendSeparator(" ")
-        .appendMillis()
-        .appendSuffix("ms")
-        .toFormatter();
     
     /**
      * Formats a string of "uptime" relative to NOW such as "6m 1s 467ms"

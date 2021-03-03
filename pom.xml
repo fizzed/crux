@@ -30,6 +30,7 @@
         <module>crux-vagrant</module>
         <module>crux-mediatype</module>
         <module>crux-jackson</module>
+        <module>crux-bom</module>
     </modules>
 
     <dependencyManagement>
