@@ -31,6 +31,7 @@
         <module>crux-mediatype</module>
         <module>crux-jackson</module>
         <module>crux-bom</module>
+        <module>crux-hamcrest</module>
     </modules>
 
     <dependencyManagement>
