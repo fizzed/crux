@@ -15,25 +15,27 @@
  */
 package com.fizzed.crux.matchers;
 
+import com.fizzed.crux.util.DateTimes;
 import com.fizzed.crux.util.JavaTimes;
+import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import java.time.Instant;
-import org.hamcrest.BaseMatcher;
+import org.joda.time.DateTime;
 
-public class JavaTimeMatchers {
+public class JodaTimeMatchers {
     
-    static public Matcher<Instant> sameToMillis(final Instant expected) {
-        return sameToMillis(expected, true);
-    }
-    
-    static public Matcher<Instant> sameToMillis(final Instant expected, boolean rounding) {
-        return new BaseMatcher<Instant>() {
+    /**
+     * Is the Joda DateTime value the same moment in time regardless of timezone.
+     * @param expected
+     * @return 
+     */
+    static public Matcher<DateTime> jodaSameToMillis(final DateTime expected) {
+        return new BaseMatcher<DateTime>() {
             @Override
             public void describeTo(final Description description) {
                 description.appendText("value should be ").appendValue(expected);
             }
-            
+
             @Override
             public void describeMismatch(Object actual, Description mismatchDescription) {
                 mismatchDescription.appendText(" was ").appendValue(actual);
@@ -41,11 +43,11 @@ public class JavaTimeMatchers {
 
             @Override
             public boolean matches(Object actual) {
-                final Instant v = (Instant)actual;
+                final DateTime v = (DateTime)actual;
                 return JavaTimes.sameMillisPrecision(
-                    expected,
-                    v,
-                    rounding);
+                    DateTimes.javaInstant(expected),
+                    DateTimes.javaInstant(v),
+                    false);
             }
         };
     }

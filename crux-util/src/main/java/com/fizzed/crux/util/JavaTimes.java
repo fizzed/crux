@@ -19,6 +19,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public class JavaTimes {
@@ -52,6 +54,64 @@ public class JavaTimes {
             return false;
         }
         return a.toInstant().equals(b.toInstant());
+    }
+
+    /**
+     * Tests for similarity down to millisecond precision. Uses a truncating
+     * strategy for the "nanos" part of the value by default, unless rounding is
+     * true in which case the nanos may cause the millis to be also checked if
+     * they would round up.
+     * @param a 
+     * @param b
+     * @param rounding If the nanos should be cause the milliseconds to be rounded up
+     * @return True if same moment in time otherwise false
+     */
+    static public boolean sameMillisPrecision(Instant a, Instant b, boolean rounding) {
+        if (a == null && b == null) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        
+        final Instant expectedTruncated = b.truncatedTo(ChronoUnit.MILLIS);
+        final Instant actualTruncated = a.truncatedTo(ChronoUnit.MILLIS);
+
+        if (expectedTruncated.equals(actualTruncated)) {
+            return true;
+        }
+
+        if (rounding) {
+            int expectedNanoOfSecond = b.get(ChronoField.NANO_OF_SECOND);
+            int actualNanoOfSecond = a.get(ChronoField.NANO_OF_SECOND);
+
+            int expectedNanoRemains = expectedNanoOfSecond - ((expectedNanoOfSecond/1000000)*1000000);
+            int actualNanoRemains = actualNanoOfSecond - ((actualNanoOfSecond/1000000)*1000000);
+
+            final Instant expectedPlus1 = expectedTruncated.plusMillis(1);
+            final Instant actualPlus1 = actualTruncated.plusMillis(1);
+
+            // can expected be rounded?
+            if (expectedNanoRemains >= 500000) {
+                if (expectedPlus1.equals(actualTruncated)) {
+                    return true;
+                }
+                if (actualNanoRemains >= 500000 && expectedPlus1.equals(actualPlus1)) {
+                    return true;
+                }
+            }
+
+            if (actualNanoRemains >= 500000) {
+                if (actualPlus1.equals(expectedTruncated)) {
+                    return true;
+                }
+                if (expectedNanoRemains >= 500000 && actualPlus1.equals(expectedPlus1)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
     
     /**
