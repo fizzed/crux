@@ -2,13 +2,19 @@ package com.fizzed.crux.jackson;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
@@ -23,6 +29,7 @@ public class EnumStrategyModuleTest {
     @Test
     public void deserializeDefaultIgnoreCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             .registerModule(new EnumStrategyModule());
         
         assertThat(objectMapper.readValue("\"dog\"", Animal.class), is(Animal.DOG));
@@ -36,7 +43,25 @@ public class EnumStrategyModuleTest {
             // expected
         }
     }
-    
+
+    @Test
+    public void deserializeDefaultIgnoreCaseAsMapKeys() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new EnumStrategyModule());
+                //.registerModule(new FuzzyEnumModule());
+
+        // jackson uses different serialization for keys
+        final String json = "" +
+                "{" +
+                "  \"dog\": 1," +
+                "  \"CaT\": 2" +
+                "}";
+
+        final Map<Animal,Integer> data = objectMapper.readValue(json, new TypeReference<Map<Animal,Integer>>(){});
+
+        assertThat(data, hasKey(Animal.DOG));
+    }
+
     @Test
     public void deserializeUpperCase() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper()
@@ -102,6 +127,20 @@ public class EnumStrategyModuleTest {
         assertThat(objectMapper.writeValueAsString(Animal.DOG), is("\"dog\""));
         assertThat(objectMapper.writeValueAsString(Animal.cat), is("\"cat\""));
         assertThat(objectMapper.writeValueAsString(Animal.Rabbit), is("\"rabbit\""));
+
+        // jackson uses a different serializer for "keys"
+        final Map<Animal,String> data1 = new LinkedHashMap<>();
+        data1.put(Animal.DOG, "a");
+        data1.put(Animal.cat, "b");
+
+        assertThat(objectMapper.writeValueAsString(data1), is("{\"dog\":\"a\",\"cat\":\"b\"}"));
+
+        // verify non-enums are serialized correctly
+        final Map<Integer,String> data2 = new LinkedHashMap<>();
+        data2.put(1, "a");
+        data2.put(2, "b");
+
+        assertThat(objectMapper.writeValueAsString(data2), is("{\"1\":\"a\",\"2\":\"b\"}"));
     }
     
     @Test
