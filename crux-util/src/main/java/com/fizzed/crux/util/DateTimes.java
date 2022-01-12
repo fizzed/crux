@@ -360,7 +360,7 @@ public class DateTimes {
     }
 
     /**
-     * Returns the minimum of all datetimes.
+     * Returns the minimum of all instants.
      *
      * @param dts
      * @return
@@ -392,7 +392,7 @@ public class DateTimes {
     }
 
     /**
-     * Returns the minimum of all datetimes.
+     * Returns the minimum of all instants.
      *
      * @param dts
      * @return
@@ -485,12 +485,12 @@ public class DateTimes {
     }
 
     /**
-     * Whether datetime is within start and end datetimes. The min of start and
+     * Whether instant is within start and end instants. The min of start and
      * end is detected so the ordering does not matter.  By default, this method
      * makes the start date INCLUSIVE and the end date EXCLUSIVE.
-     * @param dt The datetime to check
-     * @param start The start (or end) of the datetime range
-     * @param end The end (or start) of the datetime range
+     * @param dt The instant to check
+     * @param start The start (or end) of the instant range
+     * @param end The end (or start) of the instant range
      * @return True if within range, otherwise false.
      */
     static public boolean within(Instant dt, Instant start, Instant end) {
@@ -498,13 +498,13 @@ public class DateTimes {
     }
 
     /**
-     * Whether datetime is within start and end datetimes.The min of start and
+     * Whether instant is within start and end instants.The min of start and
      * end is detected so the ordering does not matter. By default, this method
      * makes the start date INCLUSIVE and the end date EXCLUSIVE/INCLUSIVE depending
      * on what you pass in.
-     * @param dt The datetime to check
-     * @param start The start (or end) of the datetime range
-     * @param end The end (or start) of the datetime range
+     * @param dt The instant to check
+     * @param start The start (or end) of the instant range
+     * @param end The end (or start) of the instant range
      * @param endInclusive True if the end date is inclusive, otherwise exclusive.
      * @return True if within range, otherwise false.
      */
@@ -513,13 +513,13 @@ public class DateTimes {
     }
 
     /**
-     * Whether datetime is within start and end datetimes.The min of start and
+     * Whether instant is within start and end instants.The min of start and
      * end is detected so the ordering does not matter.By default, this method
      * makes the start date INCLUSIVE and the end date EXCLUSIVE/INCLUSIVE depending
      * on what you pass in.
-     * @param dt The datetime to check
-     * @param start The start (or end) of the datetime range
-     * @param end The end (or start) of the datetime range
+     * @param dt The instant to check
+     * @param start The start (or end) of the instant range
+     * @param end The end (or start) of the instant range
      * @param startInclusive True if the start date is inclusive, otherwise exclusive.
      * @param endInclusive True if the end date is inclusive, otherwise exclusive.
      * @return True if within range, otherwise false.
