@@ -15,7 +15,6 @@
  */
 package com.fizzed.crux.util;
 
-import java.time.Instant;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,6 +76,14 @@ public class DateTimesTest {
         assertThat(DateTimes.max(a, b, c, d), is(c));
         assertThat(DateTimes.max(null, b, c, d), is(c));
         assertThat(DateTimes.max((DateTime[])null), is(nullValue()));
+        
+        // verify timezones are okay
+        // note: bb is actually BEFORE aa if you take the timezone into account
+        DateTime aa = DateTime.parse("2021-11-03T20:02:39.102-04:00");
+        DateTime bb = DateTime.parse("2021-11-04T03:38:21.000Z");
+
+        assertThat(DateTimes.max(aa, bb), is(bb));
+        assertThat(DateTimes.max(bb, aa), is(bb));
     }
     
     @Test
