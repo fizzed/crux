@@ -64,60 +64,66 @@ public class OkHttpLogger {
             boolean logBody,
             long maxBodySize) throws IOException {
         
-        RequestBody requestBody = request.body();
-        boolean hasRequestBody = requestBody != null;
-
-        String requestStartMessage = "--> "
-            + request.method()
-            + ' ' + request.url()
-            + (connection != null ? " " + connection.protocol() : "");
+        final RequestBody requestBody = request.body();
+        final boolean hasRequestBody = requestBody != null;
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("--> ").append(request.method()).append(' ').append(request.url());
+        sb.append((connection != null ? " " + connection.protocol() : ""));
         
         if (!logHeaders && hasRequestBody) {
-            requestStartMessage += " (" + requestBody.contentLength() + "-byte body)";
+            sb.append(" (").append(requestBody.contentLength()).append("-byte body)");
         }
         
-        Slf4jUtil.log(messageLevel, logger, requestStartMessage);
+        //Slf4jUtil.log(messageLevel, logger, requestStartMessage);
+        sb.append("\n");
 
         if (logHeaders) {
             if (hasRequestBody) {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
                 if (requestBody.contentType() != null) {
-                    Slf4jUtil.log(messageLevel, logger, "Content-Type: {}", requestBody.contentType());
+                    //Slf4jUtil.log(messageLevel, logger, "Content-Type: {}", requestBody.contentType());
+                    sb.append("Content-Type: ").append(requestBody.contentType()).append("\n");
                 }
                 if (requestBody.contentLength() != -1) {
-                    Slf4jUtil.log(messageLevel, logger, "Content-Length: {}", requestBody.contentLength());
+                    //Slf4jUtil.log(messageLevel, logger, "Content-Length: {}", requestBody.contentLength());
+                    sb.append("Content-Length: ").append(requestBody.contentLength()).append("\n");
                 }
             }
 
-            Headers headers = request.headers();
+            final Headers headers = request.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
-                String name = headers.name(i);
+                final String name = headers.name(i);
                 // Skip headers from the request body as they are explicitly logged above.
                 if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                    logHeader(messageLevel, logger, headers, i);
+                    //logHeader(messageLevel, logger, headers, i);
+                    logHeader(sb, headers, i);
                 }
             }
 
             if (!logBody || !hasRequestBody) {
-                Slf4jUtil.log(messageLevel, logger, "--> END {}", request.method());
+                //Slf4jUtil.log(messageLevel, logger, "--> END {}", request.method());
+                sb.append("--> END ").append(request.method()).append("\n");
             } else if (bodyHasUnknownEncoding(request.headers())) {
-                Slf4jUtil.log(messageLevel, logger, "--> END {} (encoded body omitted)", request.method());
+                //Slf4jUtil.log(messageLevel, logger, "--> END {} (encoded body omitted)", request.method());
+                sb.append("--> END ").append(request.method()).append(" encoded body omitted)").append("\n");
 //            } else if (requestBody.isDuplex()) {
 //                Slf4jUtil.log(messageLevel, logger, "--> END " + request.method() + " (duplex request body omitted)");
             } else {
-                Buffer buffer = new Buffer();
+                final Buffer buffer = new Buffer();
                 requestBody.writeTo(buffer);
 
                 Charset charset = StandardCharsets.UTF_8;
-                MediaType contentType = requestBody.contentType();
+                final MediaType contentType = requestBody.contentType();
                 if (contentType != null) {
                     charset = contentType.charset(StandardCharsets.UTF_8);
                 }
 
-                Slf4jUtil.log(messageLevel, logger, "");
+                //Slf4jUtil.log(messageLevel, logger, "");
+                sb.append("\n");
                 
-                long contentLength = requestBody.contentLength();
+                final long contentLength = requestBody.contentLength();
                 
                 if (isPlaintext(contentType, buffer) && contentLength > 0) {
                     long stringLength = contentLength;
@@ -126,18 +132,22 @@ public class OkHttpLogger {
                         stringLength = maxBodySize;
                         truncated = true;
                     }
-                    Slf4jUtil.log(messageLevel, logger, buffer.snapshot((int)stringLength).string(charset));
+                    //Slf4jUtil.log(messageLevel, logger, buffer.snapshot((int)stringLength).string(charset));
+                    sb.append(buffer.snapshot((int)stringLength).string(charset)).append("\n");
                     if (truncated) {
-                        Slf4jUtil.log(messageLevel, logger, "--- TRUNCATED BODY ({} of {} bytes)", maxBodySize, contentLength);
+                        //Slf4jUtil.log(messageLevel, logger, "--- TRUNCATED BODY ({} of {} bytes)", maxBodySize, contentLength);
+                        sb.append("--- TRUNCATED BODY (").append(maxBodySize).append(" of ").append(contentLength).append(" bytes)").append("\n");
                     }
-                    Slf4jUtil.log(messageLevel, logger, "--> END {} ({}-byte body)",
-                        request.method(), contentLength);
+                    //Slf4jUtil.log(messageLevel, logger, "--> END {} ({}-byte body)", request.method(), contentLength);
+                    sb.append("--> END ").append(request.method()).append(" (").append(contentLength).append("-byte body)").append("\n");
                 } else {
-                    Slf4jUtil.log(messageLevel, logger, "--> END {} (binary {}-byte body omitted)",
-                        request.method(), contentLength);
+                    //Slf4jUtil.log(messageLevel, logger, "--> END {} (binary {}-byte body omitted)", request.method(), contentLength);
+                    sb.append("--> END ").append(request.method()).append(" (binary ").append(contentLength).append("-byte body omitted)").append("\n");
                 }
             }
         }
+        
+        Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
     public void logResponse(
@@ -149,25 +159,31 @@ public class OkHttpLogger {
             boolean logBody,
             long maxBodySize) throws IOException {
         
-        ResponseBody responseBody = response.body();
-        long contentLength = responseBody.contentLength();
-        String bodySize = contentLength != -1 ? contentLength + "-byte" : "unknown-length";
-        Slf4jUtil.log(messageLevel, logger, "<-- "
-            + response.code()
-            + (response.message().isEmpty() ? "" : ' ' + response.message())
-            + ' ' + response.request().url()
-            + " (" + tookMs + "ms" + (!logHeaders ? ", " + bodySize + " body" : "") + ')');
+        final ResponseBody responseBody = response.body();
+        final long contentLength = responseBody.contentLength();
+        final String bodySize = contentLength != -1 ? contentLength + "-byte" : "unknown-length";
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append("<-- ").append(response.code())
+            .append(response.message().isEmpty() ? "" : ' ' + response.message()).append(' ')
+            .append(response.request().url())
+            .append(" (").append(tookMs).append("ms")
+            .append(!logHeaders ? ", " + bodySize + " body" : "")
+            .append(')').append("\n");
 
         if (logHeaders) {
-            Headers headers = response.headers();
+            final Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
-                logHeader(messageLevel, logger, headers, i);
+                //logHeader(messageLevel, logger, headers, i);
+                logHeader(sb, headers, i);
             }
 
             if (!logBody || !HttpHeaders.hasBody(response)) {
-                Slf4jUtil.log(messageLevel, logger, "<-- END HTTP");
+                //Slf4jUtil.log(messageLevel, logger, "<-- END HTTP");
+                sb.append("<-- END HTTP").append("\n");
             } else if (bodyHasUnknownEncoding(response.headers())) {
-                Slf4jUtil.log(messageLevel, logger, "<-- END HTTP (encoded body omitted)");
+                //Slf4jUtil.log(messageLevel, logger, "<-- END HTTP (encoded body omitted)");
+                sb.append("<-- END HTTP (encoded body omitted)").append("\n");
             } else {
                 BufferedSource source = responseBody.source();
                 source.request(Long.MAX_VALUE);     // Buffer the entire body.
@@ -195,44 +211,53 @@ public class OkHttpLogger {
                 long bufferSize = buffer.size();
 
                 if (!isPlaintext(contentType, buffer)) {
-                    Slf4jUtil.log(messageLevel, logger, "");
-                    Slf4jUtil.log(messageLevel, logger, "<-- END HTTP (binary {}-byte body omitted)", bufferSize);
-                    return;
+                    //Slf4jUtil.log(messageLevel, logger, "");
+                    sb.append("\n");
+                    //Slf4jUtil.log(messageLevel, logger, "<-- END HTTP (binary {}-byte body omitted)", bufferSize);
+                    sb.append("<-- END HTTP (binary ").append(bufferSize).append("-byte body omitted)").append("\n");
                 }
+                else {
+                    if (contentLength != 0) {
+                        long stringLength = bufferSize;
+                        boolean truncated = false;
+                        if (stringLength > maxBodySize) {
+                            stringLength = maxBodySize;
+                            truncated = true;
+                        }
 
-                if (contentLength != 0) {
-                    long stringLength = bufferSize;
-                    boolean truncated = false;
-                    if (stringLength > maxBodySize) {
-                        stringLength = maxBodySize;
-                        truncated = true;
+                        //Slf4jUtil.log(messageLevel, logger, "");
+                        sb.append("\n");
+                        //Slf4jUtil.log(messageLevel, logger, buffer.snapshot((int)stringLength).string(charset));
+                        sb.append(buffer.snapshot((int)stringLength).string(charset)).append("\n");
+                        if (truncated) {
+                            //Slf4jUtil.log(messageLevel, logger, "--- TRUNCATED BODY ({} of {} bytes)", maxBodySize, bufferSize);
+                            sb.append("--- TRUNCATED BODY (").append(maxBodySize).append(" of ").append(bufferSize).append(" bytes)").append("\n");
+                        }
                     }
-                    
-                    Slf4jUtil.log(messageLevel, logger, "");
-                    Slf4jUtil.log(messageLevel, logger, buffer.snapshot((int)stringLength).string(charset));
-                    if (truncated) {
-                        Slf4jUtil.log(messageLevel, logger, "--- TRUNCATED BODY ({} of {} bytes)", maxBodySize, bufferSize);
-                    }
-                }
 
-                if (gzippedLength != null) {
-                    Slf4jUtil.log(messageLevel, logger, "<-- END HTTP ({}-byte, {}-gzipped-byte body)", buffer.size(), gzippedLength);
-                } else {
-                    Slf4jUtil.log(messageLevel, logger, "<-- END HTTP ({}-byte body)", bufferSize);
+                    if (gzippedLength != null) {
+                        //Slf4jUtil.log(messageLevel, logger, "<-- END HTTP ({}-byte, {}-gzipped-byte body)", buffer.size(), gzippedLength);
+                        sb.append("<-- END HTTP (").append(buffer.size()).append("-byte, ").append(gzippedLength).append("-gzipped-byte body)").append("\n");
+                    } else {
+                        //Slf4jUtil.log(messageLevel, logger, "<-- END HTTP ({}-byte body)", bufferSize);
+                        sb.append("<-- END HTTP (").append(bufferSize).append("-byte body)").append("\n");
+                    }
                 }
             }
         }
+        
+        Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
     private void logHeader(
-            MessageLevel messageLevel,
-            Logger logger,
+            StringBuilder sb,
             Headers headers, int i) {
         
         String value = headersToRedact != null && headersToRedact.contains(headers.name(i))
             ? "<redacted>" : headers.value(i);
         
-        Slf4jUtil.log(messageLevel, logger, headers.name(i) + ": " + value);
+        //Slf4jUtil.log(messageLevel, logger, headers.name(i) + ": " + value);
+        sb.append(headers.name(i)).append(": ").append(value).append("\n");
     }
 
     /**
