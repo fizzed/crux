@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Objects;
 import static com.fizzed.crux.util.Maybe.maybe;
 
-public class Interval {
+public class InstantInterval {
     private final Instant start;
     private final Instant end;
     
-    public Interval(Instant start) {
+    public InstantInterval(Instant start) {
         this(start, null);
     }
 
-    public Interval(Instant start, Instant end) {
+    public InstantInterval(Instant start, Instant end) {
         Objects.requireNonNull(start);
         
         this.start = start;
@@ -31,8 +31,8 @@ public class Interval {
         return end;
     }
     
-    public List<Interval> partition(long temporalDuration, TemporalUnit temporalUnit) {
-        List<Interval> intervals = new ArrayList<>();
+    public List<InstantInterval> partition(long temporalDuration, TemporalUnit temporalUnit) {
+        List<InstantInterval> intervals = new ArrayList<>();
 
         Instant from = end;
 
@@ -43,7 +43,7 @@ public class Interval {
                 to = start;
             }
 
-            intervals.add(new Interval(to, from));
+            intervals.add(new InstantInterval(to, from));
             from = to;
         } while(to.isAfter(start));
 
