@@ -2,3 +2,4 @@ target
 ninja-upstream
 .vagrant
 .idea
+*.iml
