@@ -75,12 +75,6 @@
                 <artifactId>okhttp</artifactId>
                 <version>3.8.1</version>
             </dependency>
-
-<!--            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>logging-interceptor</artifactId>
-                <version>3.8.1</version>
-            </dependency>-->
             
             <!-- for crux-vagrant -->
             
@@ -107,7 +101,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>3.7.0</version>
+                <version>4.11.0</version>
             </dependency>
             
             <dependency>
