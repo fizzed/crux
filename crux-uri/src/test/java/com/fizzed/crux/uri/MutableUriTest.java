@@ -25,9 +25,10 @@ import java.util.Map;
 import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 public class MutableUriTest {
@@ -588,19 +589,19 @@ public class MutableUriTest {
         MutableUri uri;
         
         Path baseDir = Paths.get("/tmp/pronto");
-        
+
         uri = new MutableUri()
             .scheme("local")
-            .host(baseDir.isAbsolute() ? null : ".")
-            .path(baseDir.toString());
+            .host(null)
+            .path("/tmp/pronto");
         
         // this is identical to how java.net.URI would construct it
         assertThat(uri.toString(), is("local:/tmp/pronto"));
         
         uri = new MutableUri()
             .scheme("local")
-            .host(baseDir.isAbsolute() ? "" : ".")
-            .path(baseDir.toString());
+            .host("")
+            .path("/tmp/pronto");
         
         // this is identical to how java.net.URI would construct it
         assertThat(uri.toString(), is("local:///tmp/pronto"));
