@@ -207,41 +207,22 @@ public class UriTest {
         uri = new Uri("mailto:info@example.com");
 
         assertThat(uri.getScheme(), is("mailto"));
-        assertThat(uri.getSchemeSpecificPart(), is("info@example.com"));
         assertThat(uri.toString(), is("mailto:info@example.com"));
         
         uri = new Uri("tel:+1-816-555-1212");
 
         assertThat(uri.getScheme(), is("tel"));
-        assertThat(uri.getSchemeSpecificPart(), is("+1-816-555-1212"));
         assertThat(uri.toString(), is("tel:+1-816-555-1212"));
         
         uri = new Uri("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
 
         assertThat(uri.getScheme(), is("urn"));
-        assertThat(uri.getSchemeSpecificPart(), is("oasis:names:specification:docbook:dtd:xml:4.1.2"));
         assertThat(uri.toString(), is("urn:oasis:names:specification:docbook:dtd:xml:4.1.2"));
         
         uri = new Uri("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
 
         assertThat(uri.getScheme(), is("urn"));
-        assertThat(uri.getSchemeSpecificPart(), is("oasis:names:specification:docbook:dtd:xml:4.1.2"));
         assertThat(uri.toString(), is("urn:oasis:names:specification:docbook:dtd:xml:4.1.2"));
-        
-//        //uri = new Uri("ldap://[2001:db8::7]/c=GB?objectClass?one");
-//        URI uri2 = URI.create("ldap://[2001:db8::7]/c=GB?objectClass?one");
-//        
-//        assertThat(uri2.getScheme(), is("ldap"));
-//        //assertThat(uri2.getSchemeSpecificPart(), is(nullValue()));
-//        assertThat(uri2.toString(), is("ldap://[2001:db8::7]/c=GB?objectClass?one"));
-        
-        
-        // real-world links that chrome handles :-(
-        // https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,500italic|Open+Sans:400&subset=latin
-        
-        //Uri uri = new Uri("https://fonts.googleapis.com/css?family=Roboto:100,300,300italic,400,500italic|Open+Sans:400&subset=latin");
-        
-        //assertThat(uri, is(not(nullValue())));
     }
     
     @Test

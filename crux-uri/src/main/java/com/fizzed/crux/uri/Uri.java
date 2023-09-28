@@ -49,7 +49,7 @@ import java.util.Objects;
 public class Uri {
 
     protected String scheme;
-    protected String schemeSpecificPart;
+    protected boolean hasAuthority;     // if the uri had a :// after the scheme
     protected String userInfo;
     protected String host;
     protected Integer port;
@@ -71,12 +71,12 @@ public class Uri {
     }
     
     public Uri(Uri uri) {
-        this(uri.scheme, uri.schemeSpecificPart, uri.userInfo, uri.host, uri.port, uri.rels, uri.query, uri.fragment);
+        this(uri.scheme, uri.hasAuthority, uri.userInfo, uri.host, uri.port, uri.rels, uri.query, uri.fragment);
     }
     
-    protected Uri(String scheme, String schemeSpecificPart, String userInfo, String host, Integer port, List<String> rels, Map<String,List<String>> query, String fragment) {
+    protected Uri(String scheme, boolean hasAuthority, String userInfo, String host, Integer port, List<String> rels, Map<String,List<String>> query, String fragment) {
         this.scheme = scheme;
-        this.schemeSpecificPart = schemeSpecificPart;
+        this.hasAuthority = hasAuthority;
         this.userInfo = userInfo;
         this.host = host;
         this.port = port;
@@ -101,9 +101,9 @@ public class Uri {
     public String getScheme() {
         return this.scheme;
     }
-    
-    public String getSchemeSpecificPart() {
-        return this.schemeSpecificPart;
+
+    public boolean hasAuthority() {
+        return this.hasAuthority;
     }
     
     public String getUserInfo() {
@@ -298,8 +298,7 @@ public class Uri {
         // with a schemeSpecificPart -- we'll detect this unique case by 
         // determining if the scheme contains a period and assume the user
         // really meant it as a domain name
-        if (maybeUri.getScheme() != null && maybeUri.getSchemeSpecificPart() != null
-                && maybeUri.getHost() == null) {
+        if (maybeUri.getScheme() != null && maybeUri.getHost() == null) {
             maybeUri = new MutableUri("http://" + maybeUrl);
         }
         
@@ -345,8 +344,11 @@ public class Uri {
         
         for (int i = 0; i < this.rels.size(); i++) {
             String path = this.rels.get(i);
-            s.append('/');
-            s.append(MutableUri.urlEncode(path));
+            // special case: if this is the first rel and only if there was authority
+            if (i > 0 || this.hasAuthority || this.host != null || this.scheme == null || this.rels.size() > 1 || path.equals("")) {
+                s.append('/');
+            }
+            s.append(MutableUri.urlEncodePath(path));
         }
         
         return s.toString();
@@ -377,68 +379,63 @@ public class Uri {
     
     @Override
     public String toString() {
-        // Note this code is essentially a copy of 'java.net.URI.defineString',
-        // which is private. We cannot use the 'new URI( scheme, userInfo, ... )' or
-        // 'new URI( scheme, authority, ... )' constructors because they double
-        // urlEncode the query string using 'java.net.URI.quote'
-        StringBuilder uri = new StringBuilder();
-        boolean afterScheme = false;
+        final StringBuilder sb = new StringBuilder();
         
         if (this.scheme != null) {
-            uri.append(this.scheme);
-            if (this.schemeSpecificPart != null) {
-                uri.append(':');
-                uri.append(this.schemeSpecificPart);
-            }
-        } else {
-            afterScheme = true;
+            sb.append(this.scheme);
+        }
+
+        // we make a lot of decisions on the authority, we keep it local so we dont' change it's value
+        boolean _hasAuthority = this.hasAuthority;
+
+        // do we need to append the "://" now?
+        if (_hasAuthority) {
+            sb.append("://");
         }
         
         if (this.host != null) {
-            if (!afterScheme) {
-                uri.append(':');
-                afterScheme = true;
+            if (!_hasAuthority) {
+                // the authority must have been wrong?
+                sb.append("://");
+                _hasAuthority = true;
             }
-            
-            uri.append("//");
-            
+
             if (this.userInfo != null) {
-                uri.append(MutableUri.urlEncode(this.userInfo));
-                uri.append('@');
+                sb.append(MutableUri.urlEncode(this.userInfo));
+                sb.append('@');
             }
             
-            uri.append(this.host);
+            sb.append(this.host);
             
             if (this.port != null) {
-                uri.append(':');
-                uri.append(this.port);
+                sb.append(':');
+                sb.append(this.port);
             }
-            
         }
         
         if (this.rels != null && !this.rels.isEmpty()) {
-            if (!afterScheme) {
-                uri.append(':');
-                afterScheme = true;
+            if (!_hasAuthority && this.scheme != null) {
+                sb.append(':');
+                _hasAuthority = true;
             }
-            uri.append(this.encodedPath());
+            sb.append(this.encodedPath());
         }
 
         if (this.query != null && !this.query.isEmpty()) {
-            if (!afterScheme) {
-                uri.append(':');
-                afterScheme = true;
+            if (!_hasAuthority && this.scheme != null && this.rels == null) {
+                sb.append(':');
+                _hasAuthority = true;
             }
-            uri.append('?');
-            uri.append(this.encodedQueryString());
+            sb.append('?');
+            sb.append(this.encodedQueryString());
         }
         
         if (this.fragment != null) {
-            uri.append('#');
-            uri.append(MutableUri.urlEncode(this.fragment));
+            sb.append('#');
+            sb.append(MutableUri.urlEncode(this.fragment));
         }
        
-        return uri.toString();
+        return sb.toString();
     }
 
     @Override
@@ -469,6 +466,18 @@ public class Uri {
     static String urlEncode(String value) {
         try {
             return java.net.URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
+    }
+
+    static String urlEncodePath(String value) {
+        try {
+            String encoded = java.net.URLEncoder.encode(value, "UTF-8");
+            // hack: we don't want to encode @, : symbols
+            encoded = encoded.replace("%40", "@");
+            encoded = encoded.replace("%3A", ":");
+            return encoded;
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException(e.getMessage());
         }

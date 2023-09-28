@@ -27,6 +27,9 @@ import java.util.Optional;
  * Helps to build a URI.  Why another one?  Unlike Java's URI this one allows
  * modification after it's been created. This one has a simple fluent style
  * to help build uris.
+ *
+ * https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+ * URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
  */
 public class MutableUri extends Uri {
 
@@ -35,17 +38,18 @@ public class MutableUri extends Uri {
     }
     
     public MutableUri(String uri) {
-        this(URI.create(uri));
+        // use our new string parser
+        this.parse(uri);
     }
     
     public MutableUri(URI uri) {
-        this.apply(uri);
+        this.parse(uri);
     }
     
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public MutableUri(Uri uri) {
         this.scheme = uri.scheme;
-        this.schemeSpecificPart = uri.schemeSpecificPart;
+        this.hasAuthority = uri.hasAuthority;
         this.userInfo = uri.userInfo;
         this.host = uri.host;
         this.port = uri.port;
@@ -60,7 +64,7 @@ public class MutableUri extends Uri {
     }
     
     public Uri immutable() {
-        return new Uri(this.scheme, this.schemeSpecificPart, this.userInfo, this.host, this.port, this.rels, this.query, this.fragment);
+        return new Uri(this.scheme, this.hasAuthority, this.userInfo, this.host, this.port, this.rels, this.query, this.fragment);
     }
     
     public Uri toUri() {
@@ -98,8 +102,7 @@ public class MutableUri extends Uri {
      *      path is "/a/b" and you call this method with "c" then the final
      *      path would be "/a/b/c".
      * @return This instance
-     * @see #relPath(java.lang.String) 
-     * @see #rel(java.lang.String[]) 
+     * @see #rel(java.lang.String[])
      */
     public MutableUri path(String path) {
         // clear it?
@@ -317,74 +320,181 @@ public class MutableUri extends Uri {
         this.fragment = fragment;
         return this;
     }
-    
-    private MutableUri apply(URI uri) {
-        if (uri.getScheme() != null) {
-            this.scheme = uri.getScheme();
-        }
-        
-        if (uri.getSchemeSpecificPart() != null
-                && uri.getSchemeSpecificPart().length() > 0
-                && !uri.getSchemeSpecificPart().startsWith("//")) {
-            this.schemeSpecificPart = uri.getSchemeSpecificPart();
-        }
-        
-        if (uri.getRawUserInfo() != null) {
-            this.userInfo = urlDecode(uri.getRawUserInfo());
-        }
-        
-        if (uri.getHost() != null) {
-            this.host = uri.getHost();
-        }
-        
-        if (uri.getPort() >= 0) {
-            this.port = uri.getPort();
+
+    private MutableUri parse(URI uri) {
+        // parsing a URI as a string is WAY more reliable
+        return this.parse(uri.toString());
+    }
+
+    private MutableUri parse(String uri) {
+        // https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+        // URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+        // authority = [userinfo "@"] host [":" port]
+
+        // we will implement our own parsing routine
+        int pos = 0;
+        int len = uri.length();
+
+        // scheme is everything to start up to the "://" such as ldap://[2001:db8::7]/c=GB?objectClass?one
+        boolean maybeHasAuthority = false;
+
+        int schemeEndPos = uri.indexOf("://", pos);
+        if (schemeEndPos > 0) {
+            this.scheme = uri.substring(pos, schemeEndPos);
+            pos = schemeEndPos + 3; // skip over :// on next part to parse
+            maybeHasAuthority = true;
+            this.hasAuthority = true;
+        } else {
+            // this could be a scheme:path scenario such as tel:+1-816-555-1212
+            schemeEndPos = uri.indexOf(":", pos);
+            if (schemeEndPos > 0) {
+                this.scheme = uri.substring(pos, schemeEndPos);
+                pos = schemeEndPos + 1; // skip over : on next part to parse
+                // the rest is apparently always a path
+            } else {
+                // there isn't any scheme, the rest must be a path
+                // we will simply continue on parsing it as a path
+            }
         }
 
-        // if the uri contains reserved, punctuation, and other chars in the
-        // host section of the uri, then those are actually set as the authority
-        // we're going to make a design decision to try and parse it as the host
-        // and potentially the port
-        if (uri.getHost() == null && uri.getUserInfo() == null && uri.getAuthority() != null) {
-            String authority = uri.getAuthority();
-            int portIndex = authority.indexOf(':');
-            if (portIndex >= 0) {
-                this.host = authority.substring(0, portIndex);
-                this.port = Integer.valueOf(authority.substring(portIndex+1));
-            } else {
-                this.host = authority;
-            }
-        }
-        
-        String rawPath = uri.getRawPath();
-        if (rawPath != null && rawPath.length() > 0) {
-            this.path(uri.getRawPath());
-        }
-        
-        if (uri.getRawQuery() != null) {
-            // get rid of map to rebuild
-            this.query = null;
-            
-            // split on ampersand...
-            String[] pairs = uri.getRawQuery().split("&");
-            for (String pair : pairs) {
-                String[] nv = pair.split("=");
-                switch (nv.length) {
-                    case 1:
-                        this.query(urlDecode(nv[0]), null);
-                        break;
-                    case 2:
-                        this.query(urlDecode(nv[0]), urlDecode(nv[1]));
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Name value pair [" + pair + "] in query [" + uri.getRawQuery() + "] missing = char");
+        boolean maybeHasPath = true;
+        boolean maybeHasQuery = true;
+
+        if (maybeHasAuthority) {
+            int authorityEndPos = uri.indexOf("/", pos);
+            if (authorityEndPos < 0) {
+                // definitely no path
+                maybeHasPath = false;
+                // was it instead a ?
+                authorityEndPos = uri.indexOf("?", pos);
+                if (authorityEndPos < 0) {
+                    maybeHasQuery = false;
+                    // was it instead a #
+                    authorityEndPos = uri.indexOf("#", pos);
+                    if (authorityEndPos < 0) {
+                        // the rest of the uri must be the authority
+                        // e.g. https://john.doe@www.example.com:123
+                        authorityEndPos = len;
+                    }
                 }
             }
+
+            // any userinfo?
+            int userInfoPos = uri.indexOf("@", pos);
+            if (userInfoPos > 0 && userInfoPos <= authorityEndPos) {        // in case an @ symbol is AFTER the authority
+                this.userInfo = urlDecode(uri.substring(pos, userInfoPos));
+                pos = userInfoPos + 1;  // skip @ char
+            }
+
+            // we're left with a potential host[:port]
+            int hostEndPos = uri.indexOf(":", pos);
+
+            // does the host start with an "[" indicating its an ipv6 address?
+            if (pos < len && uri.charAt(pos) == '[') {
+                // find the next matching ]
+                int closingSquarePos = uri.indexOf(']', pos);
+                if (closingSquarePos < 0) {
+                    throw new IllegalArgumentException("Invalid IPv6 host (no matching ] char)");
+                }
+                hostEndPos = uri.indexOf(":", closingSquarePos);
+            }
+
+            // was no port found?
+            if (hostEndPos < 0 || hostEndPos >= authorityEndPos) {
+                // host makes up rest of authority
+                hostEndPos = authorityEndPos;
+                this.host = trimAndBlankToNull(uri.substring(pos, hostEndPos));
+            } else {
+                // a port was found and we should parse it and the host
+                this.host = trimAndBlankToNull(uri.substring(pos, hostEndPos));
+                pos = hostEndPos + 1;       // skip over : char
+                String portStr = uri.substring(pos, authorityEndPos);
+                try {
+                    this.port = Integer.parseInt(portStr);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("port " + portStr + " was not an integer in uri " + uri);
+                }
+            }
+
+            pos = authorityEndPos;
         }
-        
-        if (uri.getRawFragment() != null) {
-            this.fragment = urlDecode(uri.getRawFragment());
+
+        // we may be done at this point
+        if (pos >= len) {
+            return this;
         }
+
+        if (maybeHasPath) {
+            // we're left with the path, query, fragment
+            int pathEndPos = uri.indexOf("?", pos);
+            if (pathEndPos < 0) {
+                // we know there is no query
+                maybeHasQuery = false;
+                // we may need to read to the fragment
+                pathEndPos = uri.indexOf("#", pos);
+                if (pathEndPos < 0) {
+                    // the rest of the uri is path
+                    pathEndPos = len;
+                }
+            }
+
+            final String rawPath = uri.substring(pos, pathEndPos);
+            this.path(rawPath);
+            pos = pathEndPos;
+
+            // we may be done at this point
+            if (pos >= len) {
+                return this;
+            }
+        }
+
+        if (maybeHasQuery) {
+            // there must have been a ?, we'll skip over it
+            pos++;
+
+            int queryEndPos = uri.indexOf("#", pos);
+            if (queryEndPos < 0) {
+                // the rest of the uri is query
+                queryEndPos = len;
+            }
+
+            final String rawQuery = uri.substring(pos, queryEndPos);
+            // parse raw query now
+            {
+                // get rid of map to rebuild
+                this.query = null;
+
+                // split on ampersand...
+                String[] pairs = rawQuery.split("&");
+                for (String pair : pairs) {
+                    String[] nv = pair.split("=");
+                    switch (nv.length) {
+                        case 1:
+                            this.query(urlDecode(nv[0]), null);
+                            break;
+                        case 2:
+                            this.query(urlDecode(nv[0]), urlDecode(nv[1]));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Name value pair [" + pair + "] in query [" + rawQuery + "] missing = char");
+                    }
+                }
+            }
+
+            pos = queryEndPos;
+
+            // we may be done at this point
+            if (pos >= len) {
+                return this;
+            }
+        }
+
+        // there must have been a #, we'll skip over it
+        pos++;
+
+        // remaining part is now fragment
+        String rawFragment = uri.substring(pos);
+        this.fragment = urlDecode(rawFragment);
         
         return this;
     }
@@ -453,4 +563,15 @@ public class MutableUri extends Uri {
             paths.add("");
         }
     }
+
+    static String trimAndBlankToNull(String s) {
+        if (s != null) {
+            s = s.trim();
+            if (s.length() == 0) {
+                return null;
+            }
+        }
+        return s;
+    }
+
 }

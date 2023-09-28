@@ -23,9 +23,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.fail;
 
@@ -38,66 +41,64 @@ public class MutableUriTest {
         List<String> paths;
         
         paths = MutableUri.splitPath("", true);
-        assertThat(paths, is(Arrays.asList("")));
+        assertThat(paths, is(asList("")));
         
         paths = MutableUri.splitPath("/", true);
-        assertThat(paths, is(Arrays.asList("", "")));
+        assertThat(paths, is(asList("", "")));
         
         paths = MutableUri.splitPath("test", true);
-        assertThat(paths, is(Arrays.asList("test")));
+        assertThat(paths, is(asList("test")));
         
         paths = MutableUri.splitPath("/test", true);
-        assertThat(paths, is(Arrays.asList("", "test")));
+        assertThat(paths, is(asList("", "test")));
         
         paths = MutableUri.splitPath("/test/", true);
-        assertThat(paths, is(Arrays.asList("", "test", "")));
+        assertThat(paths, is(asList("", "test", "")));
         
         paths = MutableUri.splitPath("/test/t", true);
-        assertThat(paths, is(Arrays.asList("", "test", "t")));
+        assertThat(paths, is(asList("", "test", "t")));
     }
     
     @Test
     public void normalizeRels() {
         List<String> rels;
         
-        rels = MutableUri.normalizeRels(Arrays.asList());
-        assertThat(rels, is(Arrays.asList()));
+        rels = MutableUri.normalizeRels(asList());
+        assertThat(rels, is(asList()));
         
-        rels = MutableUri.normalizeRels(Arrays.asList("a"));
-        assertThat(rels, is(Arrays.asList("a")));
+        rels = MutableUri.normalizeRels(asList("a"));
+        assertThat(rels, is(asList("a")));
         
-        rels = MutableUri.normalizeRels(Arrays.asList("a", "b"));
-        assertThat(rels, is(Arrays.asList("a", "b")));
+        rels = MutableUri.normalizeRels(asList("a", "b"));
+        assertThat(rels, is(asList("a", "b")));
         
-        rels = MutableUri.normalizeRels(Arrays.asList("a", ".", "b"));
-        assertThat(rels, is(Arrays.asList("a", "b")));
+        rels = MutableUri.normalizeRels(asList("a", ".", "b"));
+        assertThat(rels, is(asList("a", "b")));
         
-        rels = MutableUri.normalizeRels(Arrays.asList("a", "..", "b"));
-        assertThat(rels, is(Arrays.asList("b")));
+        rels = MutableUri.normalizeRels(asList("a", "..", "b"));
+        assertThat(rels, is(asList("b")));
         
-        rels = MutableUri.normalizeRels(Arrays.asList("..", "..", "b"));
-        assertThat(rels, is(Arrays.asList("b")));
+        rels = MutableUri.normalizeRels(asList("..", "..", "b"));
+        assertThat(rels, is(asList("b")));
     }
     
     @Test
     public void parse() {
         MutableUri uri;
-        
+
         uri = new MutableUri("http://localhost");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(nullValue()));
         assertThat(uri.getPath(), is(nullValue()));
         assertThat(uri.getQuery(), is(nullValue()));
         assertThat(uri.getFragment(), is(nullValue()));
-        
+
         uri = new MutableUri("http://localhost:8080?a=1&b=2");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -105,11 +106,10 @@ public class MutableUriTest {
         assertThat(uri.getQueryFirst("a"), is("1"));
         assertThat(uri.getQueryFirst("b"), is("2"));
         assertThat(uri.getFragment(), is(nullValue()));
-        
+
         uri = new MutableUri("http://localhost:8080/?a=1&b=2");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -117,11 +117,10 @@ public class MutableUriTest {
         assertThat(uri.getQueryFirst("a"), is("1"));
         assertThat(uri.getQueryFirst("b"), is("2"));
         assertThat(uri.getFragment(), is(nullValue()));
-        
+
         uri = new MutableUri("http://localhost:8080/?a=1&b=2#frag");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -129,11 +128,10 @@ public class MutableUriTest {
         assertThat(uri.getQueryFirst("a"), is("1"));
         assertThat(uri.getQueryFirst("b"), is("2"));
         assertThat(uri.getFragment(), is("frag"));
-        
+
         uri = new MutableUri("http://user1@localhost:8080/this/is/a/path?a=1&b=2#frag");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is("user1"));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
@@ -141,20 +139,195 @@ public class MutableUriTest {
         assertThat(uri.getQueryFirst("a"), is("1"));
         assertThat(uri.getQueryFirst("b"), is("2"));
         assertThat(uri.getFragment(), is("frag"));
-        
+
         uri = new MutableUri("http://user1@localhost:8080/this/is/a/path?a=1&a=2&b=2&c#frag");
-        
+
         assertThat(uri.getScheme(), is("http"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is("user1"));
         assertThat(uri.getHost(), is("localhost"));
         assertThat(uri.getPort(), is(8080));
         assertThat(uri.getPath(), is("/this/is/a/path"));
         assertThat(uri.getQueryFirst("a"), is("1"));
-        assertThat(uri.getQueryAll("a"), is(Arrays.asList("1", "2")));
+        assertThat(uri.getQueryAll("a"), is(asList("1", "2")));
         assertThat(uri.getQueryFirst("b"), is("2"));
         assertThat(uri.getQuery(), hasKey("c"));
         assertThat(uri.getFragment(), is("frag"));
+
+        // only a fragment, no query
+        uri = new MutableUri("http://user1@localhost:8080#frag");
+
+        assertThat(uri.getScheme(), is("http"));
+        assertThat(uri.getUserInfo(), is("user1"));
+        assertThat(uri.getHost(), is("localhost"));
+        assertThat(uri.getPort(), is(8080));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is("frag"));
+    }
+
+    @Test
+    public void parseIpAddress() {
+        MutableUri uri;
+
+        uri = new MutableUri("ws://127.0.0.1");
+
+        assertThat(uri.getScheme(), is("ws"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("127.0.0.1"));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("ws://127.0.0.1"));
+
+        uri = new MutableUri("ws://127.0.0.1:8080");
+
+        assertThat(uri.getScheme(), is("ws"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("127.0.0.1"));
+        assertThat(uri.getPort(), is(8080));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("ws://127.0.0.1:8080"));
+
+        // ipv6
+        uri = new MutableUri("ws://[2001:db8::7]");
+
+        assertThat(uri.getScheme(), is("ws"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("[2001:db8::7]"));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("ws://[2001:db8::7]"));
+
+        // ipv6
+        uri = new MutableUri("ws://[2001:db8::7]:8080");
+
+        assertThat(uri.getScheme(), is("ws"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("[2001:db8::7]"));
+        assertThat(uri.getPort(), is(8080));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("ws://[2001:db8::7]:8080"));
+    }
+
+    @Test
+    public void parsePath() {
+        MutableUri uri;
+
+        uri = new MutableUri("/");
+
+        assertThat(uri.getScheme(), is(nullValue()));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("/"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("/"));
+
+        uri = new MutableUri("/?a=1");
+
+        assertThat(uri.getScheme(), is(nullValue()));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("/"));
+        assertThat(uri.getQuery(), hasKey("a"));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("/?a=1"));
+
+        uri = new MutableUri("/#frag");
+
+        assertThat(uri.getScheme(), is(nullValue()));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("/"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is("frag"));
+        assertThat(uri.toString(), is("/#frag"));
+    }
+
+    @Test
+    public void parseOther() {
+        MutableUri uri;
+
+        uri = new MutableUri("mailto:John.Doe@example.com");
+
+        assertThat(uri.getScheme(), is("mailto"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("John.Doe@example.com"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("mailto:John.Doe@example.com"));
+
+        uri = new MutableUri("news:comp.infosystems.www.servers.unix");
+
+        assertThat(uri.getScheme(), is("news"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("comp.infosystems.www.servers.unix"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("news:comp.infosystems.www.servers.unix"));
+
+        uri = new MutableUri("tel:+1-816-555-1212");
+
+        assertThat(uri.getScheme(), is("tel"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is(nullValue()));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is("+1-816-555-1212"));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("tel:+1-816-555-1212"));
+    }
+
+    @Test
+    public void parseJdbcUrl() {
+        MutableUri uri;
+
+        uri = new MutableUri("jdbc:mysql://localhost");
+
+        assertThat(uri.getScheme(), is("jdbc:mysql"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("localhost"));
+        assertThat(uri.getPort(), is(nullValue()));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("jdbc:mysql://localhost"));
+
+        uri = new MutableUri("jdbc:mysql://localhost:8080");
+
+        assertThat(uri.getScheme(), is("jdbc:mysql"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("localhost"));
+        assertThat(uri.getPort(), is(8080));
+        assertThat(uri.getPath(), is(nullValue()));
+        assertThat(uri.getQuery(), is(nullValue()));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("jdbc:mysql://localhost:8080"));
+
+        uri = new MutableUri("jdbc:mysql://localhost:8080/this/is/a/path?a=1&b=2");
+
+        assertThat(uri.getScheme(), is("jdbc:mysql"));
+        assertThat(uri.getUserInfo(), is(nullValue()));
+        assertThat(uri.getHost(), is("localhost"));
+        assertThat(uri.getPort(), is(8080));
+        assertThat(uri.getQuery(), hasEntry("a", asList("1")));
+        assertThat(uri.getQuery(), hasEntry("b", asList("2")));
+        assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("jdbc:mysql://localhost:8080/this/is/a/path?a=1&b=2"));
     }
     
     @Test
@@ -164,13 +337,13 @@ public class MutableUriTest {
         uri = new MutableUri("file:///path/to/file");
         
         assertThat(uri.getScheme(), is("file"));
-        assertThat(uri.getSchemeSpecificPart(), is(nullValue()));
         assertThat(uri.getUserInfo(), is(nullValue()));
         assertThat(uri.getHost(), is(nullValue()));
         assertThat(uri.getPort(), is(nullValue()));
         assertThat(uri.getPath(), is("/path/to/file"));
         assertThat(uri.getQuery(), is(nullValue()));
         assertThat(uri.getFragment(), is(nullValue()));
+        assertThat(uri.toString(), is("file:///path/to/file"));
     }
     
     @Test
@@ -211,8 +384,8 @@ public class MutableUriTest {
         uri = new MutableUri("local://joe@c$wd:80/path/to/file");
         
         assertThat(uri.getScheme(), is("local"));
-        assertThat(uri.getUserInfo(), is(nullValue()));
-        assertThat(uri.getHost(), is("joe@c$wd"));
+        assertThat(uri.getUserInfo(), is("joe"));
+        assertThat(uri.getHost(), is("c$wd"));
         assertThat(uri.getPort(), is(80));
         assertThat(uri.getPath(), is("/path/to/file"));
         assertThat(uri.getQuery(), is(nullValue()));
@@ -221,32 +394,39 @@ public class MutableUriTest {
     
     @Test
     public void stringify() {
-        String uri;
+        MutableUri uri;
+        
+        uri = new MutableUri()
+            .scheme("http")
+            .host("localhost");
+        
+        assertThat(uri.toString(), is("http://localhost"));
         
         uri = new MutableUri()
             .scheme("http")
             .host("localhost")
-            .toString();
+            .port(8080);
         
-        assertThat(uri, is("http://localhost"));
-        
-        uri = new MutableUri()
-            .scheme("http")
-            .host("localhost")
-            .port(8080)
-            .toString();
-        
-        assertThat(uri, is("http://localhost:8080"));
+        assertThat(uri.toString(), is("http://localhost:8080"));
         
         uri = new MutableUri()
             .scheme("http")
             .host("localhost")
             .port(8080)
             .query("a", "1")
-            .query("b", "2")
-            .toString();
+            .query("b", "2");
         
-        assertThat(uri, is("http://localhost:8080?a=1&b=2"));
+        assertThat(uri.toString(), is("http://localhost:8080?a=1&b=2"));
+        
+        uri = new MutableUri()
+            .scheme("http")
+            .host("localhost")
+            .port(8080)
+            .path("/")
+            .query("a", "1")
+            .query("b", "2");
+        
+        assertThat(uri.toString(), is("http://localhost:8080/?a=1&b=2"));
         
         uri = new MutableUri()
             .scheme("http")
@@ -255,21 +435,9 @@ public class MutableUriTest {
             .path("/")
             .query("a", "1")
             .query("b", "2")
-            .toString();
+            .fragment("frag");
         
-        assertThat(uri, is("http://localhost:8080/?a=1&b=2"));
-        
-        uri = new MutableUri()
-            .scheme("http")
-            .host("localhost")
-            .port(8080)
-            .path("/")
-            .query("a", "1")
-            .query("b", "2")
-            .fragment("frag")
-            .toString();
-        
-        assertThat(uri, is("http://localhost:8080/?a=1&b=2#frag"));
+        assertThat(uri.toString(), is("http://localhost:8080/?a=1&b=2#frag"));
         
         uri = new MutableUri()
             .scheme("http")
@@ -279,10 +447,9 @@ public class MutableUriTest {
             .path("/")
             .query("a", "1")
             .query("b", "2")
-            .fragment("frag")
-            .toString();
+            .fragment("frag");
         
-        assertThat(uri, is("http://user1@localhost:8080/?a=1&b=2#frag"));
+        assertThat(uri.toString(), is("http://user1@localhost:8080/?a=1&b=2#frag"));
         
         uri = new MutableUri()
             .scheme("http")
@@ -292,10 +459,9 @@ public class MutableUriTest {
             .path("/this/is/a/path")
             .query("a", "1")
             .query("b", "2")
-            .fragment("frag")
-            .toString();
+            .fragment("frag");
         
-        assertThat(uri, is("http://user1@localhost:8080/this/is/a/path?a=1&b=2#frag"));
+        assertThat(uri.toString(), is("http://user1@localhost:8080/this/is/a/path?a=1&b=2#frag"));
         
         // multiple parameters
         uri = new MutableUri()
@@ -308,10 +474,9 @@ public class MutableUriTest {
             .query("a", "2")
             .query("b", "2")
             .query("c", null)
-            .fragment("frag")
-            .toString();
+            .fragment("frag");
         
-        assertThat(uri, is("http://user1@localhost:8080/this/is/a/path?a=1&a=2&b=2&c#frag"));
+        assertThat(uri.toString(), is("http://user1@localhost:8080/this/is/a/path?a=1&a=2&b=2&c#frag"));
         
         // multiple parameters & requiring encoding
         uri = new MutableUri()
@@ -324,10 +489,9 @@ public class MutableUriTest {
             .query("a", "2")
             .query("b", 2)
             .query("c", null)
-            .fragment("fr@g")
-            .toString();
+            .fragment("fr@g");
         
-        assertThat(uri, is("http://user%401@localhost:8080/this/is/a/path?a=%40&a=2&b=2&c#fr%40g"));
+        assertThat(uri.toString(), is("http://user%401@localhost:8080/this/is/a/path?a=%40&a=2&b=2&c#fr%40g"));
     }
     
     @Test
@@ -401,7 +565,7 @@ public class MutableUriTest {
         // either single value OR iterable :-)
         Map<String,Object> query = new LinkedHashMap<>();
         query.put("a", "2");
-        query.put("b", Arrays.asList("3"));
+        query.put("b", asList("3"));
         
         uri.query(query);
         
@@ -417,7 +581,7 @@ public class MutableUriTest {
         
         Map<String,Object> query = new LinkedHashMap<>();
         query.put("a", "2");
-        query.put("b", Arrays.asList("3"));
+        query.put("b", asList("3"));
         
         uri.setQuery(query);
         
@@ -468,7 +632,7 @@ public class MutableUriTest {
             .path("test");
         
         assertThat(uri.toString(), is("t://l/api/v1/test"));
-        assertThat(uri.getRels(), is(Arrays.asList("api", "v1", "test")));
+        assertThat(uri.getRels(), is(asList("api", "v1", "test")));
         assertThat(uri.getRel(0), is("api"));
         assertThat(uri.getRel(4), is(nullValue()));
         
@@ -518,18 +682,18 @@ public class MutableUriTest {
         uri = new MutableUri("t://l")
             .rel("a@b");
         
-        assertThat(uri.toString(), is("t://l/a%40b"));
+        assertThat(uri.toString(), is("t://l/a@b"));
         assertThat(uri.getRel(0), is("a@b"));
         
         uri = new MutableUri("t://l")
             .rel("a@b", "c");
         
-        assertThat(uri.toString(), is("t://l/a%40b/c"));
+        assertThat(uri.toString(), is("t://l/a@b/c"));
         
         uri = new MutableUri("t://l")
             .rel("a@b", 80);
         
-        assertThat(uri.toString(), is("t://l/a%40b/80"));
+        assertThat(uri.toString(), is("t://l/a@b/80"));
     }
     
     @Test
