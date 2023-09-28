@@ -8,9 +8,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fizzed.crux.util.SecureCode;
-import com.fizzed.crux.util.TimeDuration;
-import com.fizzed.crux.util.TimeUUID;
+import com.fizzed.crux.util.*;
+
 import java.io.IOException;
 
 public class CruxUtilModule extends SimpleModule {
@@ -80,7 +79,6 @@ public class CruxUtilModule extends SimpleModule {
                 if (value == null || value.isEmpty()) {
                     return null;
                 }
-                System.out.println("'"+value+"'");
                 return TimeDuration.parse(value);
             }
         });
@@ -92,6 +90,76 @@ public class CruxUtilModule extends SimpleModule {
                     jgen.writeNull();
                 } else {
                     jgen.writeString(value.toString());
+                }
+            }
+        });
+
+        //
+        // com.fizzed.crux.util.MutableInteger
+        //
+
+        this.addDeserializer(MutableInteger.class, new StdDeserializer<MutableInteger>(MutableInteger.class) {
+            @Override
+            public MutableInteger deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                final int value = jp.getIntValue();
+                return new MutableInteger(value);
+            }
+        });
+
+        this.addSerializer(MutableInteger.class, new StdSerializer<MutableInteger>(MutableInteger.class) {
+            @Override
+            public void serialize(MutableInteger value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+                if (value == null) {
+                    jgen.writeNull();
+                } else {
+                    jgen.writeNumber(value.value());
+                }
+            }
+        });
+
+        //
+        // com.fizzed.crux.util.MutableLong
+        //
+
+        this.addDeserializer(MutableLong.class, new StdDeserializer<MutableLong>(MutableLong.class) {
+            @Override
+            public MutableLong deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                final long value = jp.getLongValue();
+                return new MutableLong(value);
+            }
+        });
+
+        this.addSerializer(MutableLong.class, new StdSerializer<MutableLong>(MutableLong.class) {
+            @Override
+            public void serialize(MutableLong value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+                if (value == null) {
+                    jgen.writeNull();
+                } else {
+                    jgen.writeNumber(value.value());
+                }
+            }
+        });
+
+
+        //
+        // com.fizzed.crux.util.MutableDouble
+        //
+
+        this.addDeserializer(MutableDouble.class, new StdDeserializer<MutableDouble>(MutableDouble.class) {
+            @Override
+            public MutableDouble deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                final double value = jp.getDoubleValue();
+                return new MutableDouble(value);
+            }
+        });
+
+        this.addSerializer(MutableDouble.class, new StdSerializer<MutableDouble>(MutableDouble.class) {
+            @Override
+            public void serialize(MutableDouble value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+                if (value == null) {
+                    jgen.writeNull();
+                } else {
+                    jgen.writeNumber(value.value());
                 }
             }
         });

@@ -1,12 +1,12 @@
 package com.fizzed.crux.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fizzed.crux.util.SecureCode;
-import com.fizzed.crux.util.TimeDuration;
-import com.fizzed.crux.util.TimeUUID;
+import com.fizzed.crux.util.*;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
@@ -56,5 +56,68 @@ public class CruxUtilModuleTest {
         assertThat(objectMapper.readValue(json, TimeDuration.class), is(td));
         assertThat(objectMapper.writeValueAsString(td), is(json));
     }
-    
+
+    @Test
+    public void mutableInteger() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new CruxUtilModule());
+
+        String json;
+        MutableInteger mi;
+
+        json = "15";
+        mi = new MutableInteger(15);
+
+        assertThat(objectMapper.readValue(json, MutableInteger.class), is(mi));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+
+        json = "null";
+        mi = null;
+
+        assertThat(objectMapper.readValue(json, MutableInteger.class), is(nullValue()));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+    }
+
+    @Test
+    public void mutableLong() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new CruxUtilModule());
+
+        String json;
+        MutableLong mi;
+
+        json = "15";
+        mi = new MutableLong(15);
+
+        assertThat(objectMapper.readValue(json, MutableLong.class), is(mi));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+
+        json = "null";
+        mi = null;
+
+        assertThat(objectMapper.readValue(json, MutableLong.class), is(nullValue()));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+    }
+
+    @Test
+    public void mutableDouble() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new CruxUtilModule());
+
+        String json;
+        MutableDouble mi;
+
+        json = "15.2";
+        mi = new MutableDouble(15.2);
+
+        assertThat(objectMapper.readValue(json, MutableDouble.class), is(mi));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+
+        json = "null";
+        mi = null;
+
+        assertThat(objectMapper.readValue(json, MutableDouble.class), is(nullValue()));
+        assertThat(objectMapper.writeValueAsString(mi), is(json));
+    }
+
 }
