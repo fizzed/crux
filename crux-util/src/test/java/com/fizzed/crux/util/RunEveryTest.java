@@ -12,7 +12,7 @@ public class RunEveryTest {
     @Test
     public void testRunEvery() throws InterruptedException {
         MutableInteger runCount = new MutableInteger();
-        
+
         // run every .5 secs
         RunEvery runEvery = runEvery(millis(500L));
         for (int i = 0; i < 12; i++) {
