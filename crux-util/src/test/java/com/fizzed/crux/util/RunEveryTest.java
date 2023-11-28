@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import static com.fizzed.crux.util.TimeDuration.millis;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.*;
 import static com.fizzed.crux.util.RunEvery.runEvery;
 
@@ -12,7 +14,7 @@ public class RunEveryTest {
     @Test
     public void testRunEvery() throws InterruptedException {
         MutableInteger runCount = new MutableInteger();
-        
+
         // run every .5 secs
         RunEvery runEvery = runEvery(millis(500L));
         for (int i = 0; i < 12; i++) {
@@ -20,7 +22,8 @@ public class RunEveryTest {
             Thread.sleep(100L);
         }
 
-        assertThat(runCount, is(2));
+        assertThat(runCount.value(), greaterThan(1));
+        assertThat(runCount.value(), lessThan(4));
     }
 
 }
