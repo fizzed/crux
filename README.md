@@ -18,8 +18,8 @@ Crux by Fizzed
 
 Project by [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
 
-Developing and maintaining opensource projects requires significant time. If you find this project useful or you are
-looking for commercial support, we'd love to chat. Drop us an email at [ping@fizzed.com](mailto:ping@fizzed.com)
+Developing and maintaining opensource projects requires significant time. If you find this project useful or need
+commercial support, we'd love to chat. Drop us an email at [ping@fizzed.com](mailto:ping@fizzed.com)
 
 Project sponsors will get direct support, priority bug fixes, and private continuous integration tests that ensure
 their use cases are always covered.
