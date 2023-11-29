@@ -12,8 +12,17 @@ Crux by Fizzed
 [![MacOS x64](https://img.shields.io/github/actions/workflow/status/fizzed/crux/macos-x64.yaml?branch=master&label=MacOS%20x64&style=flat-square)](https://github.com/fizzed/crux/actions/workflows/macos-x64.yaml)
 [![Windows x64](https://img.shields.io/github/actions/workflow/status/fizzed/crux/windows-x64.yaml?branch=master&label=Windows%20x64&style=flat-square)](https://github.com/fizzed/crux/actions/workflows/windows-x64.yaml)
 
+## Sponsorship & Support
 
-[Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
+![](https://cdn.fizzed.com/github/fizzed-logo.png)
+
+Project by [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
+
+Developing and maintaining opensource projects requires significant time. If you find this project useful or you are
+looking for commercial support, we'd love to chat. Drop us an email at [ping@fizzed.com](mailto:ping@fizzed.com)
+
+Project sponsors will get direct support, priority bug fixes, and private continuous integration tests that ensure
+their use cases are always covered.
 
 ## Overview
 
