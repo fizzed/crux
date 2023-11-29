@@ -14,7 +14,7 @@ Crux by Fizzed
 
 ## Sponsorship & Support
 
-![](https://cdn.fizzed.com/github/fizzed-logo-150.png)
+![](https://cdn.fizzed.com/github/fizzed-logo-100.png)
 
 Project by [Fizzed, Inc.](http://fizzed.com) (Follow on Twitter: [@fizzed_inc](http://twitter.com/fizzed_inc))
 
