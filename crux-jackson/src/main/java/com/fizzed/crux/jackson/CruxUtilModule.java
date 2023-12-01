@@ -95,6 +95,32 @@ public class CruxUtilModule extends SimpleModule {
         });
 
         //
+        // com.fizzed.crux.util.ByteSize
+        //
+
+        this.addDeserializer(ByteSize.class, new StdDeserializer<ByteSize>(ByteSize.class) {
+            @Override
+            public ByteSize deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                final String value = jp.getValueAsString();
+                if (value == null || value.isEmpty()) {
+                    return null;
+                }
+                return ByteSize.parse(value);
+            }
+        });
+
+        this.addSerializer(ByteSize.class, new StdSerializer<ByteSize>(ByteSize.class) {
+            @Override
+            public void serialize(ByteSize value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+                if (value == null) {
+                    jgen.writeNull();
+                } else {
+                    jgen.writeString(value.toString());
+                }
+            }
+        });
+
+        //
         // com.fizzed.crux.util.MutableInteger
         //
 
