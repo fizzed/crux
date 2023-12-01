@@ -49,6 +49,13 @@ public class ByteSizeTest {
         assertThat(size.getValue(), is(4294967296L));
         assertThat(size.toString(), is("4G"));
         assertThat(size.withDisplayUnit(ByteSizeUnit.MiB).toString(), is("4096M"));
+
+        // as decimal
+        size = ByteSize.parse("3.89 GiB");
+        assertThat(size.getValue(), is(4176855695L));
+        // TODO: is there a fixed width we should use?
+        assertThat(size.toString(), is("3.89G"));
+        assertThat(size.withDisplayUnit(ByteSizeUnit.MiB).toString(), is("3983.36M"));
     }
 
 }

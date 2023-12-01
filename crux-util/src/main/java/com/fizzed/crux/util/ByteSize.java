@@ -1,8 +1,9 @@
 package com.fizzed.crux.util;
 
+import java.text.DecimalFormat;
 import java.util.Objects;
 
-public class ByteSize {
+public class ByteSize implements Comparable<ByteSize> {
 
     final private long value;
     final private ByteSizeUnit displayUnit;
@@ -29,9 +30,15 @@ public class ByteSize {
         return new ByteSize(this.value, displayUnit);
     }
 
-    public double convertValue(ByteSizeUnit unit) {
+    public double asDouble(ByteSizeUnit unit) {
         return unit.fromByteSize(this.value);
     }
+
+    public long asLong(ByteSizeUnit unit) {
+        return (long)unit.fromByteSize(this.value);
+    }
+
+    static final DecimalFormat FMT = new DecimalFormat("#.####");
 
     @Override
     public String toString() {
@@ -39,13 +46,35 @@ public class ByteSize {
             return Long.toString(this.value);
         } else {
             double converted = this.displayUnit.fromByteSize(this.value);
-            String s = Double.toString(converted);
+//            String s = Double.toString(converted);
+            String s = FMT.format(converted);
             if (s.endsWith(".0")) {
                 s = s.substring(0, s.length()-2);
             }
             return s + this.displayUnit.getShortId();
         }
     }
+
+    @Override
+    public int compareTo(ByteSize o) {
+        return Long.compare(this.value, o.value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ByteSize)) return false;
+
+        ByteSize byteSize = (ByteSize) o;
+        return value == byteSize.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (value ^ (value >>> 32));
+    }
+
+    // helpers
 
     static public ByteSize parse(String s) {
         return parse(s, ByteSizeUnit.B);
@@ -58,7 +87,7 @@ public class ByteSize {
 
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (Character.isDigit(c)) {
+            if (Character.isDigit(c) || c == '.') {
                 if (digitStartPos < 0) {
                     digitStartPos = i;
                 } else {
@@ -79,8 +108,6 @@ public class ByteSize {
         }
 
         String digitString = s.substring(digitStartPos, unitStartPos < 0 ? s.length() : unitStartPos).trim();
-
-        long size = Long.parseLong(digitString);
         ByteSizeUnit displayUnit = defaultUnit;
 
         if (unitStartPos > 0) {
@@ -92,7 +119,15 @@ public class ByteSize {
             }
         }
 
-        long value = displayUnit.toByteSize(size);
+        long value;
+        // as double or long?
+        if (digitString.contains(".")) {
+            double size = Double.parseDouble(digitString);
+            value = displayUnit.toByteSize(size);
+        } else {
+            long size = Long.parseLong(digitString);
+            value = displayUnit.toByteSize(size);
+        }
 
         return new ByteSize(value, displayUnit);
     }

@@ -34,6 +34,10 @@ public enum ByteSizeUnit {
         return size * this.multiplier;
     }
 
+    public long toByteSize(double size) {
+        return (long)(size * (double)this.multiplier);
+    }
+
     public double fromByteSize(long byteSize) {
         return ((double)byteSize / (double)this.multiplier);
     }
