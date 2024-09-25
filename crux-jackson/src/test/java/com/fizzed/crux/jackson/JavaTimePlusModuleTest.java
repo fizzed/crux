@@ -1,12 +1,18 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.TimeZone;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Test;
 
 public class JavaTimePlusModuleTest {
@@ -22,7 +28,9 @@ public class JavaTimePlusModuleTest {
         final Instant i4 = Instant.parse("2021-01-01T00:00:00.999999Z");
         final Instant i5 = Instant.parse("2021-01-01T00:00:00.123456789Z");
         final Instant i6 = Instant.parse("2021-01-01T00:00:00Z");
-        
+
+        // this is how jdk would serialize it
+        assertThat(i1.toString(), is("2021-01-01T00:00:00Z"));
         assertThat(objectMapper.writeValueAsString(i1), is("\"2021-01-01T00:00:00.000Z\""));
         assertThat(objectMapper.writeValueAsString(i2), is("\"2021-01-01T00:00:00.471Z\""));
         assertThat(objectMapper.writeValueAsString(i3), is("\"2021-01-01T00:00:00.999Z\""));
@@ -125,5 +133,62 @@ public class JavaTimePlusModuleTest {
 
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", ZonedDateTime.class), is(i1));
     }
-    
+
+    static public class Widget {
+
+        private Instant i1;
+        private ZonedDateTime zdt1;
+
+        public Instant getI1() {
+            return i1;
+        }
+
+        public Widget setI1(Instant i1) {
+            this.i1 = i1;
+            return this;
+        }
+
+        public ZonedDateTime getZdt1() {
+            return zdt1;
+        }
+
+        public Widget setZdt1(ZonedDateTime zdt1) {
+            this.zdt1 = zdt1;
+            return this;
+        }
+
+    }
+
+    @Test
+    public void serializeObject() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        //objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+//        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+//        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+//        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+//        objectMapper.setDateFormat(df);
+        objectMapper.registerModule(JavaTimePlusModule.build(false));
+
+        Widget widget1 = new Widget();
+        widget1.setI1(Instant.parse("2021-01-01T01:02:03Z"));
+        widget1.setZdt1(ZonedDateTime.parse("2021-01-01T01:02:03Z"));
+
+        assertThat(objectMapper.writeValueAsString(widget1), is("{\"i1\":\"2021-01-01T01:02:03.000Z\",\"zdt1\":\"2021-01-01T01:02:03.000Z\"}"));
+
+        Widget widget2 = new Widget();
+        widget2.setI1(Instant.parse("2021-01-01T01:02:03.123Z"));
+        widget2.setZdt1(ZonedDateTime.parse("2021-01-01T01:02:03.123Z"));
+
+        assertThat(objectMapper.writeValueAsString(widget2), is("{\"i1\":\"2021-01-01T01:02:03.123Z\",\"zdt1\":\"2021-01-01T01:02:03.123Z\"}"));
+
+        Widget widget3 = new Widget();
+        widget3.setI1(Instant.ofEpochMilli(1688160824000L));
+        widget3.setZdt1(ZonedDateTime.parse("2021-01-01T01:02:03.123Z"));
+
+        assertThat(objectMapper.writeValueAsString(widget3), is("{\"i1\":\"2021-01-01T01:02:03.123Z\",\"zdt1\":\"2021-01-01T01:02:03.123Z\"}"));
+    }
+
 }
