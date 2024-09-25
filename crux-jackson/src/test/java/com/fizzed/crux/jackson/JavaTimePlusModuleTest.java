@@ -162,14 +162,9 @@ public class JavaTimePlusModuleTest {
     @Test
     public void serializeObject() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        //objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-//        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-//        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-//        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-//        objectMapper.setDateFormat(df);
         objectMapper.registerModule(JavaTimePlusModule.build(false));
 
         Widget widget1 = new Widget();
@@ -188,7 +183,7 @@ public class JavaTimePlusModuleTest {
         widget3.setI1(Instant.ofEpochMilli(1688160824000L));
         widget3.setZdt1(ZonedDateTime.parse("2021-01-01T01:02:03.123Z"));
 
-        assertThat(objectMapper.writeValueAsString(widget3), is("{\"i1\":\"2021-01-01T01:02:03.123Z\",\"zdt1\":\"2021-01-01T01:02:03.123Z\"}"));
+        assertThat(objectMapper.writeValueAsString(widget3), is("{\"i1\":\"2023-06-30T21:33:44.000Z\",\"zdt1\":\"2021-01-01T01:02:03.123Z\"}"));
     }
 
 }
