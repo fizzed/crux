@@ -1,7 +1,9 @@
 package com.fizzed.crux.jackson;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.io.IOException;
@@ -60,6 +62,10 @@ public class QueryParamMapper {
     }
 
     static public <T> T fromQueryParams(ObjectMapper objectMapper, Map<String,String> params, Class<T> type) throws IOException {
+        return fromQueryParams(objectMapper, params, type, false);
+    }
+
+    static public <T> T fromQueryParams(ObjectMapper objectMapper, Map<String,String> params, Class<T> type, boolean failOnUnknownProperties) throws IOException {
 
         // build a map of key -> values, where comma-delimited values are turned into lists
         final Map<String,Object> data = new HashMap<>();
@@ -76,7 +82,19 @@ public class QueryParamMapper {
             }
         }
 
-        return objectMapper.convertValue(data, type);
+        ObjectReader objectReader = objectMapper
+            .readerFor(type)
+            .with(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+
+        if (!failOnUnknownProperties) {
+            objectReader = objectReader.without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        } else {
+            objectReader = objectReader.with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        }
+
+        final JsonNode rootNode = objectMapper.valueToTree(data);
+
+        return objectReader.readValue(rootNode);
     }
 
 }

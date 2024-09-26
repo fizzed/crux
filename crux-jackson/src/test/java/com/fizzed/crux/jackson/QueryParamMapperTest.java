@@ -1,6 +1,7 @@
 package com.fizzed.crux.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.junit.Test;
 
 import java.util.*;
@@ -126,12 +127,32 @@ public class QueryParamMapperTest {
         assertThat(a4.getTypes(), contains("C", "D", "F"));
         assertThat(a4.getAnimals(), containsInAnyOrder(Animal.SHEEP, Animal.DOG));
 
+        values.put("animals", "DOG");
+
+        final A a5 = QueryParamMapper.fromQueryParams(objectMapper, values, A.class);
+
+        assertThat(a5.getId(), is(1));
+        assertThat(a5.getName(), is("Hello!"));
+        assertThat(a5.getTypes(), contains("C", "D", "F"));
+        assertThat(a5.getAnimals(), containsInAnyOrder(Animal.DOG));
+
+        // ignore an unknown property?
+        values.put("doesnot", "exist");
+
+        final A a6 = QueryParamMapper.fromQueryParams(objectMapper, values, A.class);
+
+        assertThat(a6.getId(), is(1));
+        assertThat(a6.getName(), is("Hello!"));
+        assertThat(a6.getTypes(), contains("C", "D", "F"));
+        assertThat(a6.getAnimals(), containsInAnyOrder(Animal.DOG));
+
+
         // bad enum value?
         values.put("animals", "NOTFOUND");
 
         try {
             QueryParamMapper.fromQueryParams(objectMapper, values, A.class);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidFormatException e) {
             // expected
         }
     }
