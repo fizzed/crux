@@ -134,7 +134,7 @@ public class Resources {
             // we'll skip the file: part too
             String jarPath = jarPathAndInnerFile.substring(5, sepPos);
             String filePath = jarPathAndInnerFile.substring(sepPos + 1);
-            try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), null)) {
+            try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), Resources.class.getClassLoader())) {
                 consumer.accept(false, fs.getPath(filePath));
                 return;
             }
