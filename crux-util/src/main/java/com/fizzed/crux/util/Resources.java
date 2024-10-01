@@ -135,7 +135,8 @@ public class Resources {
             // we'll skip the file: part too
             String jarPath = jarPathAndInnerFile.substring(5, sepPos);
             // on windows, there's an extra / before the drive name
-            if (jarPath.charAt(0) == '/' && jarPath.indexOf(':') <= 5) {
+            int colonPos = jarPath.indexOf(':');
+            if (jarPath.charAt(0) == '/' && colonPos > 0 && colonPos <= 5) {
                 // we'll chop off the leading / char
                 jarPath = jarPath.substring(1);
             }
