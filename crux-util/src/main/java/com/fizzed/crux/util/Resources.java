@@ -128,11 +128,17 @@ public class Resources {
         // If we try to access a file that is inside a JAR,
         // It throws NoSuchFileException (linux), InvalidPathException (Windows)
         // jar:file:/home/jjlauer/.m2/repository/joda-time/joda-time/2.10/joda-time-2.10.jar!/org/joda/time/tz/data/ZoneInfoMap
+        // jar:file:/C:/Users/Joe%20Lauer/.m2/repository/joda-time/joda-time/2.10/joda-time-2.10.jar!/org/joda/time/tz/data/ZoneInfoMap
         if (uri.getScheme().equals("jar")) {
             String jarPathAndInnerFile = uri.getSchemeSpecificPart();
             int sepPos = jarPathAndInnerFile.indexOf('!');
             // we'll skip the file: part too
             String jarPath = jarPathAndInnerFile.substring(5, sepPos);
+            // on windows, there's an extra / before the drive name
+            if (jarPath.charAt(0) == '/' && jarPath.indexOf(':') <= 5) {
+                // we'll chop off the leading / char
+                jarPath = jarPath.substring(1);
+            }
             String filePath = jarPathAndInnerFile.substring(sepPos + 1);
             try (FileSystem fs = FileSystems.newFileSystem(Paths.get(jarPath), Resources.class.getClassLoader())) {
                 consumer.accept(false, fs.getPath(filePath));
