@@ -3,7 +3,7 @@
 
     <groupId>com.fizzed</groupId>
     <artifactId>crux</artifactId>
-    <version>1.0.48-SNAPSHOT</version>
+    <version>1.0.47-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <parent>
