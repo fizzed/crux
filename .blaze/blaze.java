@@ -21,11 +21,8 @@ public class blaze {
     private final Logger log = Contexts.logger();
     private final Config config = Contexts.config();
     private final Path projectDir = withBaseDir("../").toAbsolutePath();
-    private final NativeTarget localNativeTarget = NativeTarget.detect();
-    private final Path nativeDir = projectDir.resolve("native");
-    private final Path targetDir = projectDir.resolve("target");
 
-    private final List<Target> crossTargets = asList(
+    private final List<Target> crossTestTargets = asList(
         new Target("linux", "x64").setTags("test").setHost("build-x64-linux-latest"),
         new Target("linux", "arm64").setTags("test").setHost("build-arm64-linux-latest"),
         new Target("linux", "riscv64").setTags("test").setHost("build-riscv64-linux-latest"),
@@ -39,10 +36,10 @@ public class blaze {
 
     @Task(order = 1)
     public void cross_tests() throws Exception {
-        new Buildx(crossTargets)
+        new Buildx(crossTestTargets)
             .tags("test")
             .execute((target, project) -> {
-                project.action("mvn", "test")
+                project.action("mvn", "clean", "test")
                     .run();
             });
     }
