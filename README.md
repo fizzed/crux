@@ -18,12 +18,12 @@ The following Java versions and platforms are tested using GitHub workflows:
 
 The following platforms are tested using the [Fizzed, Inc.](http://fizzed.com) build system:
 
-![Linux arm64](https://img.shields.io/badge/Linux%20arm64-passing-green)
-![Linux riscv64](https://img.shields.io/badge/Linux%20riscv64-passing-green)
-![MacOS x64](https://img.shields.io/badge/MacOS%20x64-passing-green)
-![Windows arm64](https://img.shields.io/badge/Windows%20arm64-passing-green)
-![FreeBSD x64](https://img.shields.io/badge/FreeBSD%20x64-passing-green)
-![OpenBSD x64](https://img.shields.io/badge/OpenBSD%20x64-passing-green)
+[![Linux arm64](https://img.shields.io/badge/Linux%20arm64-passing-green)](buildx-results.txt)
+[![Linux riscv64](https://img.shields.io/badge/Linux%20riscv64-passing-green)](buildx-results.txt)
+[![MacOS x64](https://img.shields.io/badge/MacOS%20x64-passing-green)](buildx-results.txt)
+[![Windows arm64](https://img.shields.io/badge/Windows%20arm64-passing-green)](buildx-results.txt)
+[![FreeBSD x64](https://img.shields.io/badge/FreeBSD%20x64-passing-green)](buildx-results.txt)
+[![OpenBSD x64](https://img.shields.io/badge/OpenBSD%20x64-passing-green)](buildx-results.txt)
 
 ## Overview
 
