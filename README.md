@@ -36,6 +36,20 @@ to maven central.  All documentation is included within each module.
  - [crux-okhttp](crux-okhttp)
  - [crux-vagrant](crux-vagrant)
 
+## Usage
+
+In your pom file add:
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.fizzed</groupId>
+    <artifactId>crux-util</artifactId>
+    <version>1.0.0</version>
+  </dependency>
+</dependencies>
+```
+
 ## Sponsorship & Support
 
 ![](https://cdn.fizzed.com/github/fizzed-logo-100.png)
