@@ -45,7 +45,7 @@ In your pom file add:
   <dependency>
     <groupId>com.fizzed</groupId>
     <artifactId>crux-util</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.48</version>
   </dependency>
 </dependencies>
 ```
