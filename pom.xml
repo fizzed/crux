@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>crux</artifactId>
-    <version>1.0.49-SNAPSHOT</version>
+    <version>1.0.49</version>
     <packaging>pom</packaging>
     
     <parent>
@@ -18,7 +18,7 @@
     <scm>
         <url>https://github.com/fizzed/crux</url>
         <connection>scm:git:git@github.com:fizzed/crux.git</connection>
-      <tag>v1.0.27</tag>
+      <tag>v1.0.49</tag>
   </scm>
 
     <modules>
