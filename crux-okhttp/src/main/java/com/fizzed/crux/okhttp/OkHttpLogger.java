@@ -76,9 +76,10 @@ public class OkHttpLogger {
         }
         
         //Slf4jUtil.log(messageLevel, logger, requestStartMessage);
-        sb.append("\n");
 
         if (logHeaders) {
+            sb.append("\n");
+
             if (hasRequestBody) {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
