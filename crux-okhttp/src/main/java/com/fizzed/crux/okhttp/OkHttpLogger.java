@@ -147,7 +147,12 @@ public class OkHttpLogger {
                 }
             }
         }
-        
+
+        // before we log anything, we need to strip any trailing newlines
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.setLength(sb.length() - 1);
+        }
+
         Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
@@ -174,7 +179,7 @@ public class OkHttpLogger {
 
         if (logHeaders) {
             sb.append("\n");
-            
+
             final Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 //logHeader(messageLevel, logger, headers, i);
@@ -248,7 +253,12 @@ public class OkHttpLogger {
                 }
             }
         }
-        
+
+        // before we log anything, we need to strip any trailing newlines
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.setLength(sb.length() - 1);
+        }
+
         Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
