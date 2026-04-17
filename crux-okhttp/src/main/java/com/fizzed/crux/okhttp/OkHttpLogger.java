@@ -170,9 +170,11 @@ public class OkHttpLogger {
             .append(response.request().url())
             .append(" (").append(tookMs).append("ms")
             .append(!logHeaders ? ", " + bodySize + " body" : "")
-            .append(')').append("\n");
+            .append(')');
 
         if (logHeaders) {
+            sb.append("\n");
+            
             final Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 //logHeader(messageLevel, logger, headers, i);
