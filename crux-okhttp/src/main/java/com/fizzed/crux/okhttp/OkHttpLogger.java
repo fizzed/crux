@@ -76,9 +76,10 @@ public class OkHttpLogger {
         }
         
         //Slf4jUtil.log(messageLevel, logger, requestStartMessage);
-        sb.append("\n");
 
         if (logHeaders) {
+            sb.append("\n");
+
             if (hasRequestBody) {
                 // Request body headers are only present when installed as a network interceptor. Force
                 // them to be included (when available) so there values are known.
@@ -146,7 +147,12 @@ public class OkHttpLogger {
                 }
             }
         }
-        
+
+        // before we log anything, we need to strip any trailing newlines
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.setLength(sb.length() - 1);
+        }
+
         Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
@@ -169,9 +175,11 @@ public class OkHttpLogger {
             .append(response.request().url())
             .append(" (").append(tookMs).append("ms")
             .append(!logHeaders ? ", " + bodySize + " body" : "")
-            .append(')').append("\n");
+            .append(')');
 
         if (logHeaders) {
+            sb.append("\n");
+
             final Headers headers = response.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 //logHeader(messageLevel, logger, headers, i);
@@ -245,7 +253,12 @@ public class OkHttpLogger {
                 }
             }
         }
-        
+
+        // before we log anything, we need to strip any trailing newlines
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.setLength(sb.length() - 1);
+        }
+
         Slf4jUtil.log(messageLevel, logger, "{}", sb);
     }
     
