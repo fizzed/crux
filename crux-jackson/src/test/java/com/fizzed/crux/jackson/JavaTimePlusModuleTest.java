@@ -3,12 +3,11 @@ package com.fizzed.crux.jackson;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -39,6 +38,39 @@ public class JavaTimePlusModuleTest {
         assertThat(i5.getNano(), is(123456789));        // did java parse the high resolution?
         assertThat(objectMapper.writeValueAsString(i5), is("\"2021-01-01T00:00:00.123Z\""));
         assertThat(objectMapper.writeValueAsString(i6), is("\"2021-01-01T00:00:00.000Z\""));
+    }
+
+    @Test
+    public void serializeInstantEpochMilliseconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_MILLIS).build());
+
+        final Instant i1 = Instant.parse("2021-01-01T00:00:00.000Z");
+        final Instant i2 = Instant.parse("2021-01-01T00:00:00.471Z");
+        final Instant i3 = Instant.parse("2021-01-01T00:00:00.999Z");
+        final Instant i4 = Instant.parse("2021-01-01T00:00:00.999999Z");
+
+        assertThat(objectMapper.writeValueAsString(i1), is("1609459200000"));
+        assertThat(objectMapper.writeValueAsString(i2), is("1609459200471"));
+        assertThat(objectMapper.writeValueAsString(i3), is("1609459200999"));
+        assertThat(objectMapper.writeValueAsString(i4), is("1609459200999"));
+        assertThat(objectMapper.writeValueAsString(null), is("null"));
+    }
+
+    @Test
+    public void serializeInstantEpochSeconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_SECS).build());
+
+        final Instant i1 = Instant.parse("2021-01-01T00:00:00.000Z");
+        final Instant i2 = Instant.parse("2021-01-01T00:00:00.471Z");
+        final Instant i3 = Instant.parse("2021-01-01T00:00:00.999Z");
+        final Instant i4 = Instant.parse("2021-01-01T00:00:00.999999Z");
+
+        assertThat(objectMapper.writeValueAsString(i1), is("1609459200"));
+        assertThat(objectMapper.writeValueAsString(i2), is("1609459200"));
+        assertThat(objectMapper.writeValueAsString(i3), is("1609459200"));
+        assertThat(objectMapper.writeValueAsString(i4), is("1609459200"));
     }
  
     @Test
@@ -75,6 +107,40 @@ public class JavaTimePlusModuleTest {
 
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", Instant.class), is(i1));
     }
+
+    @Test
+    public void deserializeInstantEpochMilliseconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_MILLIS).build());
+
+        final Instant i1 = Instant.parse("2021-01-01T00:00:00.000Z");
+        final Instant i2 = Instant.parse("2021-01-01T00:00:00.471Z");
+        final Instant i3 = Instant.parse("2021-01-01T00:00:00.999Z");
+
+        assertThat(objectMapper.readValue("1609459200000", Instant.class), is(i1));
+        assertThat(objectMapper.readValue("1609459200471", Instant.class), is(i2));
+        assertThat(objectMapper.readValue("1609459200999", Instant.class), is(i3));
+        // as a string, not a number
+        assertThat(objectMapper.readValue("\"1609459200999\"", Instant.class), is(i3));
+        // as a string, what does a blank do?
+        assertThat(objectMapper.readValue("\"\"", Instant.class), is(nullValue()));
+        // as a null value
+        assertThat(objectMapper.readValue("null", Instant.class), is(nullValue()));
+    }
+
+    @Test
+    public void deserializeInstantEpochSeconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_SECS).build());
+
+        final Instant i1 = Instant.parse("2021-01-01T00:00:00.000Z");
+        final Instant i2 = Instant.parse("2021-01-01T00:00:01.000Z");
+        final Instant i3 = Instant.parse("2021-01-01T00:00:02.000Z");
+
+        assertThat(objectMapper.readValue("1609459200", Instant.class), is(i1));
+        assertThat(objectMapper.readValue("1609459201", Instant.class), is(i2));
+        assertThat(objectMapper.readValue("1609459202", Instant.class), is(i3));
+    }
     
     @Test
     public void serializeZonedDateTime() throws Exception {
@@ -97,7 +163,35 @@ public class JavaTimePlusModuleTest {
         assertThat(objectMapper.writeValueAsString(i5), is("\"2021-01-01T00:00:00.123Z\""));
         assertThat(objectMapper.writeValueAsString(i6), is("\"2021-01-01T00:00:00.000Z\""));
     }
- 
+
+    @Test
+    public void serializeZonedDateTimeEpochMilliseconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_MILLIS).build());
+
+        final ZonedDateTime i1 = ZonedDateTime.parse("2021-01-01T00:00:00.000Z");
+        final ZonedDateTime i2 = ZonedDateTime.parse("2021-01-01T00:00:00.471Z");
+        final ZonedDateTime i3 = ZonedDateTime.parse("2021-01-01T00:00:00.999Z");
+
+        assertThat(objectMapper.writeValueAsString(i1), is("1609459200000"));
+        assertThat(objectMapper.writeValueAsString(i2), is("1609459200471"));
+        assertThat(objectMapper.writeValueAsString(i3), is("1609459200999"));
+    }
+
+    @Test
+    public void serializeZonedDateTimeEpochSeconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_SECS).build());
+
+        final ZonedDateTime i1 = ZonedDateTime.parse("2021-01-01T00:00:00.000Z");
+        final ZonedDateTime i2 = ZonedDateTime.parse("2021-01-01T00:00:00.471Z");
+        final ZonedDateTime i3 = ZonedDateTime.parse("2021-01-01T00:00:00.999Z");
+
+        assertThat(objectMapper.writeValueAsString(i1), is("1609459200"));
+        assertThat(objectMapper.writeValueAsString(i2), is("1609459200"));
+        assertThat(objectMapper.writeValueAsString(i3), is("1609459200"));
+    }
+
     @Test
     public void deserializeZonedDateTime() throws Exception {
         final ObjectMapper objectMapper = new ObjectMapper()
@@ -114,6 +208,42 @@ public class JavaTimePlusModuleTest {
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.471Z\"", ZonedDateTime.class), is(i2));
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999Z\"", ZonedDateTime.class), is(i3));
         assertThat(objectMapper.readValue("\"2021-01-01T00:00:00.999999Z\"", ZonedDateTime.class), is(i3));
+    }
+
+    @Test
+    public void deserializeZonedDateTimeEpochMilliseconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_MILLIS).build());
+
+        final ZonedDateTime i1 = ZonedDateTime.parse("2021-01-01T00:00:00.000Z");
+        final ZonedDateTime i2 = ZonedDateTime.parse("2021-01-01T00:00:00.471Z");
+
+        assertThat(objectMapper.readValue("1609459200000", ZonedDateTime.class), is(i1));
+        assertThat(objectMapper.readValue("1609459200471", ZonedDateTime.class), is(i2));
+        // as a string
+        assertThat(objectMapper.readValue("\"1609459200000\"", ZonedDateTime.class), is(i1));
+        // as an empty string
+        assertThat(objectMapper.readValue("\"\"", ZonedDateTime.class), is(nullValue()));
+        // as a null
+        assertThat(objectMapper.readValue("null", ZonedDateTime.class), is(nullValue()));
+    }
+
+    @Test
+    public void deserializeZonedDateTimeEpochSeconds() throws Exception {
+        final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModuleBuilder().setFormat(JavaTimeFormat.EPOCH_SECS).build());
+
+        final ZonedDateTime i1 = ZonedDateTime.parse("2021-01-01T00:00:00.000Z");
+        final ZonedDateTime i2 = ZonedDateTime.parse("2021-01-01T00:00:01.000Z");
+
+        assertThat(objectMapper.readValue("1609459200", ZonedDateTime.class), is(i1));
+        assertThat(objectMapper.readValue("1609459201", ZonedDateTime.class), is(i2));
+        // as a string
+        assertThat(objectMapper.readValue("\"1609459200\"", ZonedDateTime.class), is(i1));
+        // as an empty string
+        assertThat(objectMapper.readValue("\"\"", ZonedDateTime.class), is(nullValue()));
+        // as a null
+        assertThat(objectMapper.readValue("null", ZonedDateTime.class), is(nullValue()));
     }
     
     @Test
