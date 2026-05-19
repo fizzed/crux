@@ -54,26 +54,24 @@ public class JavaInstantDeserializer extends JsonDeserializer<Instant> {
 
     @Override
     public Instant deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
-        String s = parser.getText();
-        
-        if (s == null || s.isEmpty()) {
-            return null;
-        }
-
         final Instant raw;
         try {
             switch (format) {
                 case EPOCH_MILLIS: {
-                    long v = Long.parseLong(s);
+                    long v = parser.getLongValue();
                     raw = Instant.ofEpochMilli(v);
                     break;
                 }
                 case EPOCH_SECS: {
-                    long v = Long.parseLong(s);
+                    long v = parser.getLongValue();
                     raw = Instant.ofEpochSecond(v);
                     break;
                 }
                 case ISO_8601:
+                    String s = parser.getText();
+                    if (s == null || s.isEmpty()) {
+                        return null;
+                    }
                     raw = Instant.parse(s);
                     break;
                 default:
@@ -82,7 +80,7 @@ public class JavaInstantDeserializer extends JsonDeserializer<Instant> {
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
-            throw new IOException("Unable to deserialize '" + s + "' into a datetime: " + e.getMessage());
+            throw new IOException("Unable to deserialize '" + parser.getCurrentToken() + "' into a datetime: " + e.getMessage());
         }
 
         // truncate it now...
@@ -90,7 +88,7 @@ public class JavaInstantDeserializer extends JsonDeserializer<Instant> {
             
         // if they don't match and in strict mode, then we've got an issue
         if (strict && !raw.equals(truncated)) {
-            throw new IOException("Unable to deserialize '" + s + "' into a datetime (invalid precision)");
+            throw new IOException("Unable to deserialize '" + parser.getCurrentToken() + "' into a datetime (invalid precision)");
         }
 
         return truncated;
